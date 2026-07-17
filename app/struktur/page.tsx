@@ -322,7 +322,7 @@ function StepNavbar({ currentStep, projectId }: { currentStep: "struktur" | "prd
         const isActive = step.id === currentStep;
         return (
           <div key={step.id} style={{ display: "flex", alignItems: "center" }}>
-            <Link href={step.href} style={{ textDecoration: "none" }}>
+            <Link href={isDone || isActive ? step.href : "#"} style={{ textDecoration: "none", pointerEvents: isDone || isActive ? "auto" : "none" }}>
               <div style={{
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "4px 10px", borderRadius: "6px",
