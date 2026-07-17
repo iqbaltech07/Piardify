@@ -145,7 +145,7 @@ export default function Navbar() {
                     {session.user.image ? (
                         <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full border border-white/20" />
                     ) : (
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-9 h-9 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
                             {session.user.name?.charAt(0) || "U"}
                         </div>
                     )}
