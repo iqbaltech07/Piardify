@@ -16,7 +16,7 @@ import {
   Sprout, Compass, PenLine, LayoutList, Lightbulb,
   Map, Timer, Telescope, Trophy, Wrench,
   Award, Calendar, FolderOpen, CheckCircle2,
-  TrendingUp, Lock, ChevronRight,
+  TrendingUp, Lock, ChevronRight, Star
 } from "lucide-react";
 
 /* ─── Rank icon map ─── */
