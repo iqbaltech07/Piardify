@@ -198,7 +198,7 @@ export default function GeneratePage() {
                   boxShadow: "0 0 24px rgba(99,102,241,0.4)", border: "none",
                   opacity: !currentQ.canProceed() ? 0.4 : 1,
                 }}
-              >✨ Generate PRD</button>
+              >Generate PRD</button>
             )}
           </div>
         )}

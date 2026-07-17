@@ -5,10 +5,11 @@ import { Check } from "lucide-react";
 export default function ProgressBar({ step }: { step: Step }) {
   const steps = [{ n: 1, label: "Your Idea" }, { n: 2, label: "Tech Stack" }, { n: 3, label: "Personalize" }];
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: "0", marginBottom: "40px" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "40px", position: "relative" }}>
       {steps.map((s, i) => (
-        <div key={s.n} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", flex: "0 0 auto" }}>
+        <React.Fragment key={s.n}>
+          {/* Step Circle & Label */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", flexShrink: 0, width: "60px" }}>
             <div
               style={{
                 width: "40px",
@@ -34,18 +35,20 @@ export default function ProgressBar({ step }: { step: Step }) {
               {s.label}
             </span>
           </div>
+
+          {/* Connector Line */}
           {i < steps.length - 1 && (
             <div
               style={{
                 flex: 1,
-                height: "1px",
-                margin: "-16px 8px 0",
+                height: "2px",
+                margin: "19px 12px 0", // roughly middle of 40px circle
                 background: step > s.n ? "linear-gradient(90deg, var(--indigo-500), var(--blue-500))" : "var(--border-subtle)",
                 transition: "background 0.5s",
               }}
             />
           )}
-        </div>
+        </React.Fragment>
       ))}
     </div>
   );
