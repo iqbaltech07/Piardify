@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import HeroSection from "./components/HeroSection";
 import FeaturesSection from "./components/FeaturesSection";
 import HowItWorksSection from "./components/HowItWorksSection";
+import LeaderboardSection from "./components/LeaderboardSection";
 import PricingSection from "./components/PricingSection";
 import CtaSection from "./components/CtaSection";
 import Footer from "./components/Footer";
@@ -20,6 +21,7 @@ export default function HomePage() {
         <HeroSection onSeeExample={() => setShowExample(true)} />
         <FeaturesSection />
         <HowItWorksSection />
+        <LeaderboardSection />
         <PricingSection />
         <CtaSection onSeeExample={() => setShowExample(true)} />
       </main>

@@ -411,7 +411,7 @@ function StrukturPageContent() {
       id,
       type: "category",
       position: { x: 500, y: Math.random() * 200 }, 
-      data: { label: "Kategori Baru", phase: 1, color: "#6366f1", childCount: 0, isEditing: true, onChange: handleNodeLabelChange, onDelete: handleNodeDelete }
+      data: { label: "New Category", phase: 1, color: "#6366f1", childCount: 0, isEditing: true, onChange: handleNodeLabelChange, onDelete: handleNodeDelete }
     };
     setNodes((nds) => [...nds, newNode]);
   };
@@ -422,7 +422,7 @@ function StrukturPageContent() {
       id,
       type: "leaf",
       position: { x: 880, y: Math.random() * 200 },
-      data: { label: "Fitur Baru", color: "#64748b", isEditing: true, onChange: handleNodeLabelChange, onDelete: handleNodeDelete }
+      data: { label: "New Feature", color: "#64748b", isEditing: true, onChange: handleNodeLabelChange, onDelete: handleNodeDelete }
     };
     setNodes((nds) => [...nds, newNode]);
   };
@@ -444,7 +444,7 @@ function StrukturPageContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ projectId }),
         });
-        if (!res.ok) { setError("Gagal membuat struktur."); return; }
+        if (!res.ok) { setError("Failed to create structure."); return; }
         const json = await res.json();
         if (json.error) {
           setError(json.error);
@@ -455,7 +455,7 @@ function StrukturPageContent() {
           setEdges(e);
         }
       } catch {
-        setError("Koneksi ke server gagal.");
+        setError("Failed to connect to the server.");
       } finally {
         setIsLoading(false);
       }
@@ -469,7 +469,7 @@ function StrukturPageContent() {
     
     const rootNode = nodes.find(n => n.type === 'root');
     if (!rootNode) {
-      alert("Root node hilang! Tidak bisa menyimpan.");
+      alert("Root node is missing! Cannot save.");
       return;
     }
 
@@ -508,10 +508,10 @@ function StrukturPageContent() {
         setEdges(e);
         setIsEditing(false);
       } else {
-        alert("Gagal menyimpan Struktur.");
+        alert("Failed to save Structure.");
       }
     } catch (e) {
-      alert("Error koneksi saat menyimpan.");
+      alert("Connection error while saving.");
     } finally {
       setIsSaving(false);
     }
@@ -547,9 +547,9 @@ function StrukturPageContent() {
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
           {isEditing ? (
             <>
-              <button onClick={() => toggleEditMode(false)} style={{ ...btnBase, color: "#f87171", borderColor: "#f8717140", background: "rgba(248,113,113,0.1)" }}>Batal</button>
+              <button onClick={() => toggleEditMode(false)} style={{ ...btnBase, color: "#f87171", borderColor: "#f8717140", background: "rgba(248,113,113,0.1)" }}>Cancel</button>
               <button onClick={handleSave} disabled={isSaving} style={{ ...btnBase, color: "#4ade80", borderColor: "#4ade8040", background: "rgba(74,222,128,0.1)" }}>
-                {isSaving ? "Menyimpan..." : "Simpan & Render"}
+                {isSaving ? "Saving..." : "Save & Render"}
               </button>
             </>
           ) : (
@@ -568,7 +568,7 @@ function StrukturPageContent() {
               boxShadow: "0 0 20px rgba(99,102,241,0.35)",
             }}
           >
-            Lanjutkan ke PRD →
+            Continue to PRD →
           </button>
         </div>
       </header>
@@ -590,7 +590,7 @@ function StrukturPageContent() {
             }}>
               <Loader2 size={24} color="white" strokeWidth={2.5} />
             </div>
-            <p style={{ fontSize: "14px", color: "#64748b" }}>AI sedang menganalisis struktur aplikasi...</p>
+            <p style={{ fontSize: "14px", color: "#64748b" }}>AI is analyzing the application structure...</p>
           </div>
         )}
 

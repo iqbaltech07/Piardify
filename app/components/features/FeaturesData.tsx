@@ -59,8 +59,8 @@ export const FEATURES: Feature[] = [
   {
     id: "gamification",
     label: "Gamification",
-    title: "EXP & Rank Rewards",
-    desc: "Complete your project tasks to claim +100 EXP. Watch your rank grow from an Idea Sprout to a Legendary Builder, complete with special icon badges.",
+    title: "Points & Rank Rewards",
+    desc: "Complete your project tasks to claim +100 Points. Watch your rank grow from an Idea Sprout to a Legendary Builder, complete with special icon badges.",
     stat: "10",
     statLabel: "Unique rank tiers",
     accent: "#f472b6",

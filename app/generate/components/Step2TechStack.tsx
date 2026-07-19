@@ -48,10 +48,10 @@ export default function Step2TechStack({ stackMode, stacks, setStackMode, setSta
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <span style={{ fontSize: "14px", color: "var(--fg-secondary)", fontWeight: 500 }}>
-              Pilih teknologi untuk setiap layer
+              Choose technologies for each layer
             </span>
             <span style={{ fontSize: "13px", fontWeight: 600, color: selectedStacksCount === 4 ? "#f97316" : "var(--fg-muted)" }}>
-              {selectedStacksCount}/4 dipilih
+              {selectedStacksCount}/4 selected
             </span>
           </div>
 
@@ -92,7 +92,7 @@ export default function Step2TechStack({ stackMode, stacks, setStackMode, setSta
                       transition: "all 0.2s"
                     }}
                   >
-                    <option value="" disabled>Pilih {cat.title}...</option>
+                    <option value="" disabled>Select {cat.title}...</option>
                     {cat.options.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
                     ))}

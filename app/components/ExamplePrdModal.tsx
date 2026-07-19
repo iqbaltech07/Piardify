@@ -18,54 +18,54 @@ const SAMPLE_PRD = `# PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
 ## 1. Overview
 
-**TaskFlow** adalah asisten manajemen tugas pintar berbasis AI yang dirancang untuk mengotomatisasi penyusunan prioritas kerja, merangkum diskusi tim menjadi *action items*, dan menyelaraskan deadline secara cerdas.
+**TaskFlow** is an AI-powered smart task management assistant designed to automate work prioritization, summarize team discussions into *action items*, and intelligently align deadlines.
 
-Aplikasi ini ditargetkan untuk tim *software developer*, pekerja lepas (*freelancer*), dan manajer proyek yang membutuhkan efisiensi kerja tinggi.
+This application is targeted at *software developer* teams, *freelancers*, and project managers who require high operational efficiency.
 
 ---
 
 ## 2. Product Objectives
 
 ### Primary Goals
-- Mengotomatisasi distribusi tugas tim menggunakan AI.
-- Mengurangi waktu koordinasi rapat hingga 50%.
-- Menyajikan visualisasi beban kerja (*workload*) yang transparan.
+- Automate team task distribution using AI.
+- Reduce meeting coordination time by up to 50%.
+- Provide transparent workload visualization.
 
 ### Success Metrics
-- Rata-rata waktu pembuatan task baru < 10 detik.
-- Tingkat penyelesaian tugas tepat waktu mencapai 95%.
-- Daily Active Users (DAU) > 10,000 pengguna dalam 3 bulan pertama.
+- Average time to create a new task < 10 seconds.
+- On-time task completion rate reaches 95%.
+- Daily Active Users (DAU) > 10,000 users in the first 3 months.
 
 ---
 
 ## 3. Target Users
 
 ### Project Managers
-- Membutuhkan delegasi tugas cepat tanpa gesekan manual.
-- Menginginkan laporan performa tim otomatis.
+- Require fast task delegation without manual friction.
+- Desire automated team performance reports.
 
 ### Freelancers
-- Butuh manajemen prioritas harian yang dinamis dan terstruktur.
+- Need dynamic and structured daily priority management.
 
 ### Software Developers
-- Membutuhkan pemetaan tiket teknis yang terintegrasi dengan kode repositori.
+- Require technical ticket mapping integrated with code repositories.
 
 ---
 
 ## 4. Key Features
 
 ### 4.1 AI Auto-Prioritization
-- Menganalisis urgensi tugas berdasarkan deadline dan kompleksitas secara otomatis.
-- Menyusun urutan kerja harian pengguna.
+- Automatically analyzes task urgency based on deadlines and complexity.
+- Structures the user's daily work sequence.
 
 ### 4.2 Voice-to-Task Converter
-- Rekam diskusi suara rapat atau memo suara, lalu AI akan mengekstraknya menjadi daftar tugas siap kerjakan (*checklist tasks*).
+- Record meeting voice discussions or voice memos, and AI will extract them into ready-to-execute *checklist tasks*.
 
 ### 4.3 Interactive Gantt Chart
-- Garis waktu pengerjaan proyek yang adaptif secara visual.
+- Visually adaptive project execution timeline.
 
 ### 4.4 Automated Daily Standup Reports
-- Merangkum kontribusi harian dari git commit menjadi laporan teks singkat untuk tim.
+- Summarizes daily contributions from git commits into short text reports for the team.
 
 ---
 
@@ -73,8 +73,8 @@ Aplikasi ini ditargetkan untuk tim *software developer*, pekerja lepas (*freelan
 
 - **Frontend**: Next.js 14, Tailwind CSS, Lucide Icons
 - **Backend**: Node.js (NestJS), Prisma ORM
-- **Database**: PostgreSQL (relasional) & Redis (caching prioritas)
-- **Deployment**: Vercel & AWS (untuk voice processing)
+- **Database**: PostgreSQL (relational) & Redis (priority caching)
+- **Deployment**: Vercel & AWS (for voice processing)
 
 ---
 
@@ -82,11 +82,11 @@ Aplikasi ini ditargetkan untuk tim *software developer*, pekerja lepas (*freelan
 
 \`\`\`mermaid
 flowchart TD
-    A[Pengguna Rekam Memo Suara] --> B[Pemrosesan Transkripsi AI]
-    B --> C[AI Ekstraksi Action Items]
-    C --> D[Tampilkan Draft Task ke User]
-    D -->|Setuju| E[Simpan ke Board TaskFlow]
-    D -->|Edit| F[Edit Deskripsi / Priority]
+    A[User Records Voice Memo] --> B[AI Transcription Processing]
+    B --> C[AI Extracts Action Items]
+    C --> D[Show Draft Tasks to User]
+    D -->|Approve| E[Save to TaskFlow Board]
+    D -->|Edit| F[Edit Description / Priority]
     F --> E
 \`\`\`
 

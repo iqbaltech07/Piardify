@@ -311,9 +311,9 @@ function PreviewPageContent() {
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
           {isEditing ? (
             <>
-              <button onClick={() => setIsEditing(false)} style={{ ...btnBase, color: "#f87171", borderColor: "#f8717140", background: "rgba(248,113,113,0.1)" }}>Batal</button>
+              <button onClick={() => setIsEditing(false)} style={{ ...btnBase, color: "#f87171", borderColor: "#f8717140", background: "rgba(248,113,113,0.1)" }}>Cancel</button>
               <button onClick={handleSave} disabled={isSaving} style={{ ...btnBase, color: "#4ade80", borderColor: "#4ade8040", background: "rgba(74,222,128,0.1)" }}>
-                {isSaving ? "Menyimpan..." : "Simpan PRD"}
+                {isSaving ? "Saving..." : "Save PRD"}
               </button>
             </>
           ) : (
@@ -342,7 +342,7 @@ function PreviewPageContent() {
               boxShadow: "0 0 16px rgba(99,102,241,0.3)",
             }}
           >
-            Lanjutkan ke Task →
+            Continue to Task →
           </button>
         </div>
       </header>
@@ -393,7 +393,7 @@ function PreviewPageContent() {
           {isEditing ? (
             <div style={{ padding: "40px", height: "100%", display: "flex", flexDirection: "column" }}>
               <div style={{ marginBottom: "16px", color: "#94a3b8", fontSize: "14px" }}>
-                Gunakan Markdown untuk mengedit PRD. Perubahan yang disimpan akan menyinkronkan daftar Task Anda secara otomatis.
+                Use Markdown to edit the PRD. Saved changes will automatically sync with your Task list.
               </div>
               <textarea
                 value={editedMarkdown}

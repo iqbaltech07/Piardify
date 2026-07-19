@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     // ── 2. Guard: already finished ────────────────────────────────────────
     if (project.status === "FINISHED") {
       return NextResponse.json(
-        { error: "Project sudah selesai. EXP hanya diberikan sekali." },
+        { error: "Project is already finished. Points are awarded only once." },
         { status: 409 }
       );
     }
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // Parse the taskData that was stored by the AI generation step
     if (!project.taskData) {
       return NextResponse.json(
-        { error: "Task data belum tersedia untuk project ini." },
+        { error: "Task data is not yet available for this project." },
         { status: 400 }
       );
     }
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     try {
       taskData = JSON.parse(project.taskData);
     } catch {
-      return NextResponse.json({ error: "Task data korup." }, { status: 500 });
+      return NextResponse.json({ error: "Task data is corrupted." }, { status: 500 });
     }
 
     // Collect all task IDs from the authoritative server-side data
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     if (allTaskIds.length === 0) {
       return NextResponse.json(
-        { error: "Project tidak memiliki task." },
+        { error: "Project has no tasks." },
         { status: 400 }
       );
     }
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     if (!allDone) {
       return NextResponse.json(
         {
-          error: `Belum semua task selesai. Selesaikan ${allTaskIds.filter((id) => !checkedTasks[id]).length} task lagi.`,
+          error: `Not all tasks are completed. Complete ${allTaskIds.filter((id) => !checkedTasks[id]).length} more tasks.`,
         },
         { status: 422 }
       );

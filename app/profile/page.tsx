@@ -135,7 +135,7 @@ export default async function ProfilePage() {
               {/* Join date */}
               <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--fg-muted)", fontSize: "13px" }}>
                 <Calendar size={14} />
-                <span>Bergabung sejak {joinDateFormatted}</span>
+                <span>Joined since {joinDateFormatted}</span>
               </div>
             </div>
 
@@ -154,7 +154,7 @@ export default async function ProfilePage() {
                   <RankIconComponent size={24} color="white" strokeWidth={2} />
                 </div>
                 <div>
-                  <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--fg-muted)", letterSpacing: "0.08em", marginBottom: "2px" }}>RANK SAAT INI</p>
+                  <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--fg-muted)", letterSpacing: "0.08em", marginBottom: "2px" }}>CURRENT RANK</p>
                   <p style={{ fontSize: "18px", fontWeight: 800, color: "var(--fg-primary)", margin: 0 }}>{rank.name}</p>
                 </div>
               </div>
@@ -162,10 +162,10 @@ export default async function ProfilePage() {
               {/* EXP */}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                 <span style={{ fontSize: "12px", color: "var(--fg-muted)", fontWeight: 600 }}>
-                  {exp.toLocaleString("id-ID")} EXP
+                  {exp.toLocaleString("id-ID")} {exp === 1 ? 'Point' : 'Points'}
                 </span>
                 <span style={{ fontSize: "12px", color: "var(--fg-secondary)" }}>
-                  {nextRank ? `${nextRank.minExp.toLocaleString("id-ID")} EXP` : "MAX"}
+                  {nextRank ? `${nextRank.minExp.toLocaleString("id-ID")} ${nextRank.minExp === 1 ? 'Point' : 'Points'}` : "MAX"}
                 </span>
               </div>
 
@@ -182,10 +182,10 @@ export default async function ProfilePage() {
 
               {nextRank ? (
                 <p style={{ fontSize: "11px", color: "var(--fg-muted)" }}>
-                  <span style={{ color: "var(--indigo-400)", fontWeight: 700 }}>{expToNext} EXP</span> lagi untuk {nextRank.name}
+                  <span style={{ color: "var(--indigo-400)", fontWeight: 700 }}>{expToNext} {expToNext === 1 ? 'Point' : 'Points'}</span> left for {nextRank.name}
                 </p>
               ) : (
-                <p style={{ fontSize: "11px", color: "#fbbf24", fontWeight: 700 }}>🏆 Rank Tertinggi Tercapai!</p>
+                <p style={{ fontSize: "11px", color: "#fbbf24", fontWeight: 700 }}>🏆 Highest Rank Achieved!</p>
               )}
             </div>
           </div>
@@ -199,9 +199,9 @@ export default async function ProfilePage() {
         }}>
           {[
             { label: "Total Projects", value: projects.length, icon: FolderOpen, color: "#818cf8" },
-            { label: "Selesai", value: finishedProjects.length, icon: CheckCircle2, color: "#4ade80" },
-            { label: "Total EXP", value: `${exp.toLocaleString("id-ID")}`, icon: Award, color: "#fbbf24" },
-            { label: "Limit Bulanan", value: `${projectsThisMonth}/${prdLimit}`, icon: TrendingUp, color: "#f472b6" },
+            { label: "Completed", value: finishedProjects.length, icon: CheckCircle2, color: "#4ade80" },
+            { label: "Total Points", value: `${exp.toLocaleString("id-ID")}`, icon: Award, color: "#fbbf24" },
+            { label: "Monthly Limit", value: `${projectsThisMonth}/${prdLimit}`, icon: TrendingUp, color: "#f472b6" },
           ].map((stat) => {
             const IconComp = stat.icon;
             return (

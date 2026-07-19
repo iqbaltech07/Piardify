@@ -84,9 +84,9 @@ export default function ProfileProjects({ projects }: { projects: Project[] }) {
           }}>
             <FolderOpen size={28} color="var(--fg-muted)" />
           </div>
-          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Belum ada Project</h3>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>No Projects Yet</h3>
           <p style={{ color: "var(--fg-muted)", fontSize: "14px", maxWidth: "360px", margin: "0 auto 24px" }}>
-            Mulai rencanakan aplikasi pertama kamu dan raih EXP pertamamu!
+            Start planning your first app and earn your first Points!
           </p>
           <Link href="/generate" style={{
             display: "inline-flex", alignItems: "center", gap: "8px",
@@ -94,7 +94,7 @@ export default function ProfileProjects({ projects }: { projects: Project[] }) {
             background: "linear-gradient(135deg, var(--indigo-500), var(--blue-500))",
             color: "white", textDecoration: "none",
           }}>
-            Generate PRD Sekarang <ChevronRight size={16} />
+            Generate PRD Now <ChevronRight size={16} />
           </Link>
         </div>
       ) : (
@@ -172,13 +172,13 @@ export default function ProfileProjects({ projects }: { projects: Project[] }) {
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       <Calendar size={12} color="var(--fg-muted)" />
                       <span style={{ fontSize: "11px", color: "var(--fg-muted)" }}>
-                        {new Date(project.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                        {new Date(project.createdAt).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
                     </div>
                     {isFinished && (
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <Award size={12} color="#fbbf24" />
-                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#fbbf24" }}>+100 EXP</span>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#fbbf24" }}>+100 Points</span>
                       </div>
                     )}
                   </div>

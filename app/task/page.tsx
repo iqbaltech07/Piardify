@@ -50,7 +50,7 @@ const priorityConfig = {
 /* ─── StepNavbar ─── */
 function StepNavbar({ projectId }: { projectId: string | null }) {
   const steps = [
-    { id: "struktur", label: "Struktur", href: `/struktur${projectId ? `?projectId=${projectId}` : ""}` },
+    { id: "struktur", label: "Structure", href: `/struktur${projectId ? `?projectId=${projectId}` : ""}` },
     { id: "prd", label: "PRD", href: `/preview${projectId ? `?projectId=${projectId}` : ""}` },
     { id: "task", label: "Task", href: `/task${projectId ? `?projectId=${projectId}` : ""}` },
   ];
@@ -209,17 +209,17 @@ function CelebrationModal({ result, onClose }: { result: FinishResult; onClose: 
           Project Selesai! 🎉
         </h2>
         <p style={{ fontSize: "14px", color: "var(--fg-secondary)", marginBottom: "32px" }}>
-          Semua task berhasil diselesaikan. EXP kamu telah diperbarui.
+          Semua task berhasil diselesaikan. Points kamu telah diperbarui.
         </p>
 
-        {/* EXP Gained */}
+        {/* Points Gained */}
         <div style={{
           display: "inline-flex", alignItems: "center", gap: "8px",
           background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)",
           borderRadius: "12px", padding: "10px 20px", marginBottom: "24px",
         }}>
           <Award size={18} style={{ color: "#fbbf24" }} />
-          <span style={{ fontSize: "22px", fontWeight: 800, color: "var(--indigo-400)" }}>+{result.expGained} EXP</span>
+          <span style={{ fontSize: "22px", fontWeight: 800, color: "var(--indigo-400)" }}>+{result.expGained} {result.expGained === 1 ? 'Point' : 'Points'}</span>
         </div>
 
         {/* Current Rank */}
@@ -240,7 +240,7 @@ function CelebrationModal({ result, onClose }: { result: FinishResult; onClose: 
             <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--fg-primary)" }}>{result.rank.name}</p>
           </div>
           <div style={{ marginLeft: "auto", textAlign: "right" }}>
-            <p style={{ fontSize: "11px", color: "var(--fg-muted)", fontWeight: 600, marginBottom: "2px" }}>TOTAL EXP</p>
+            <p style={{ fontSize: "11px", color: "var(--fg-muted)", fontWeight: 600, marginBottom: "2px" }}>TOTAL POINTS</p>
             <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--indigo-400)" }}>{result.newExp.toLocaleString("id-ID")}</p>
           </div>
         </div>
@@ -308,7 +308,7 @@ function TaskPageContent() {
           if (json.phases?.[0]?.id) setActivePhase(json.phases[0].id);
         }
       } catch {
-        setError("Koneksi ke server gagal.");
+        setError("Failed to connect to the server.");
       } finally {
         setIsLoading(false);
       }
@@ -345,7 +345,7 @@ function TaskPageContent() {
         setCelebration(json);
       }
     } catch {
-      setFinishError("Koneksi ke server gagal.");
+      setFinishError("Failed to connect to the server.");
     } finally {
       setIsFinishing(false);
     }
@@ -471,7 +471,7 @@ function TaskPageContent() {
                 }}
               >
                 <CheckCircle2 size={14} />
-                {isFinishing ? "Memproses..." : "Selesai & Klaim EXP"}
+                {isFinishing ? "Memproses..." : "Selesai & Klaim Points"}
               </button>
               {finishError && (
                 <p style={{ fontSize: "11px", color: "#f87171", marginTop: "6px", textAlign: "center" }}>{finishError}</p>
@@ -540,8 +540,8 @@ function TaskPageContent() {
               <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "linear-gradient(135deg, var(--indigo-500), var(--blue-500))", boxShadow: "0 0 28px rgba(99,102,241,0.5)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px", animation: "spin 1s linear infinite" }}>
                 <Loader2 size={24} color="white" strokeWidth={2.5} />
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--fg-primary)", marginBottom: "8px" }}>Membuat Task List...</h3>
-              <p style={{ fontSize: "14px", color: "var(--fg-secondary)" }}>AI sedang menganalisis PRD dan menyusun langkah-langkah pengerjaan</p>
+              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--fg-primary)", marginBottom: "8px" }}>Generating Task List...</h3>
+              <p style={{ fontSize: "14px", color: "var(--fg-secondary)" }}>AI is analyzing the PRD and structuring your tasks</p>
             </div>
           )}
 
@@ -551,7 +551,7 @@ function TaskPageContent() {
               <p style={{ color: "#f87171", marginBottom: "16px" }}>{error}</p>
               <button onClick={() => { setHasStarted(false); setError(null); }}
                 style={{ padding: "10px 24px", borderRadius: "10px", background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", color: "var(--fg-secondary)", cursor: "pointer", fontSize: "14px" }}>
-                Coba Lagi
+                Try Again
               </button>
             </div>
           )}
@@ -566,8 +566,8 @@ function TaskPageContent() {
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <CheckCircle2 size={20} style={{ color: "#4ade80", flexShrink: 0 }} />
                 <div>
-                  <p style={{ fontWeight: 700, fontSize: "14px", color: "#4ade80" }}>Semua task selesai!</p>
-                  <p style={{ fontSize: "12px", color: "var(--fg-muted)" }}>Klaim EXP kamu sekarang untuk menyelesaikan project ini.</p>
+                  <p style={{ fontWeight: 700, fontSize: "14px", color: "#4ade80" }}>All tasks completed!</p>
+                  <p style={{ fontSize: "12px", color: "var(--fg-muted)" }}>Claim your Points now for completing this project.</p>
                 </div>
               </div>
               <button
@@ -584,7 +584,7 @@ function TaskPageContent() {
                 }}
               >
                 <Award size={14} />
-                {isFinishing ? "Memproses..." : "Finish & Klaim +100 EXP"}
+                {isFinishing ? "Processing..." : "Finish & Claim +100 Points"}
               </button>
             </div>
           )}

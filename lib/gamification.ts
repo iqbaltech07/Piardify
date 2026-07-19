@@ -20,7 +20,7 @@ export const RANKS: Rank[] = [
     minExp: 0,
     color: "linear-gradient(135deg, #4ade80, #22c55e)",
     textColor: "#052e16",
-    description: "Baru memulai perjalanan membangun produk.",
+    description: "Just starting the journey of building products.",
   },
   {
     id: 2,
@@ -29,7 +29,7 @@ export const RANKS: Rank[] = [
     minExp: 100,
     color: "linear-gradient(135deg, #67e8f9, #06b6d4)",
     textColor: "#083344",
-    description: "Mulai menyusun fondasi untuk ide-ide besar.",
+    description: "Beginning to lay the foundation for big ideas.",
   },
   {
     id: 3,
@@ -38,7 +38,7 @@ export const RANKS: Rank[] = [
     minExp: 300,
     color: "linear-gradient(135deg, #93c5fd, #3b82f6)",
     textColor: "#1e3a5f",
-    description: "Mahir menulis spesifikasi yang jelas dan terstruktur.",
+    description: "Proficient in writing clear and structured specifications.",
   },
   {
     id: 4,
@@ -47,7 +47,7 @@ export const RANKS: Rank[] = [
     minExp: 600,
     color: "linear-gradient(135deg, #a78bfa, #7c3aed)",
     textColor: "#ede9fe",
-    description: "Paham cara memecah visi menjadi fitur-fitur nyata.",
+    description: "Understands how to break down a vision into tangible features.",
   },
   {
     id: 5,
@@ -56,7 +56,7 @@ export const RANKS: Rank[] = [
     minExp: 1000,
     color: "linear-gradient(135deg, #f0abfc, #c026d3)",
     textColor: "#fdf4ff",
-    description: "Berpikir seperti seorang product manager sejati.",
+    description: "Thinks like a true product manager.",
   },
   {
     id: 6,
@@ -65,7 +65,7 @@ export const RANKS: Rank[] = [
     minExp: 1600,
     color: "linear-gradient(135deg, #fb923c, #ea580c)",
     textColor: "#fff7ed",
-    description: "Membangun roadmap yang kompleks dengan mudah.",
+    description: "Builds complex roadmaps with ease.",
   },
   {
     id: 7,
@@ -74,7 +74,7 @@ export const RANKS: Rank[] = [
     minExp: 2500,
     color: "linear-gradient(135deg, #fbbf24, #d97706)",
     textColor: "#451a03",
-    description: "Menguasai kecepatan dan presisi dalam delivery.",
+    description: "Masters speed and precision in product delivery.",
   },
   {
     id: 8,
@@ -83,7 +83,7 @@ export const RANKS: Rank[] = [
     minExp: 4000,
     color: "linear-gradient(135deg, #f87171, #dc2626)",
     textColor: "#fef2f2",
-    description: "Melihat masa depan teknologi dan merencanakan dengan strategis.",
+    description: "Sees the future of technology and plans strategically.",
   },
   {
     id: 9,
@@ -92,7 +92,7 @@ export const RANKS: Rank[] = [
     minExp: 6000,
     color: "linear-gradient(135deg, #fde68a, #f59e0b)",
     textColor: "#422006",
-    description: "Legenda dalam dunia Product Requirement Document.",
+    description: "A legend in the world of Product Requirement Documents.",
   },
   {
     id: 10,
@@ -101,7 +101,7 @@ export const RANKS: Rank[] = [
     minExp: 10000,
     color: "linear-gradient(135deg, #c084fc, #818cf8, #38bdf8)",
     textColor: "#f8fafc",
-    description: "Puncak tertinggi — builder sejati yang telah melampaui segalanya.",
+    description: "The absolute pinnacle — a true builder who has surpassed it all.",
   },
 ];
 
