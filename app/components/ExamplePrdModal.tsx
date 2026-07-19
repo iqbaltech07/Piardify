@@ -3,12 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import { marked } from "marked";
 import { X, FileText } from "lucide-react";
+import mermaid from "mermaid";
 
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
-}
+import MarkdownRenderer, { TocItem } from "./MarkdownRenderer";
 
 const SAMPLE_PRD = `# PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
@@ -97,97 +94,50 @@ flowchart TD
 \`\`\`mermaid
 flowchart LR
     A[Next.js Client] -->|API Request| B[NestJS Server Gateway]
-    B -->|Voice File| C[OpenAI Whisper API]
-    B -->|Context Metadata| D[Gemini Engine]
-    C -->|Text Transcript| D
-    D -->|Structured Task JSON| B
-    B -->|Save Data| E[(PostgreSQL)]
-\`\`\``;
+    B --> C[AI Processing Service]
+    B --> D[(PostgreSQL)]
+    B --> E[(Redis Cache)]
+    C --> F[OpenAI API]
+\`\`\`
 
-/* ─── Build TOC statically from markdown source ─── */
-function buildTocFromSource(md: string): TocItem[] {
-  const items: TocItem[] = [];
-  let idx = 0;
-  for (const line of md.split("\n")) {
-    const m = line.match(/^## (\d+\.\s.+)$/);
-    if (m) {
-      items.push({ id: `exh-${idx}`, text: m[1], level: 2 });
-      idx++;
-    }
-  }
-  return items;
-}
+---
 
-const STATIC_TOC = buildTocFromSource(SAMPLE_PRD);
+## 8. Data Flow
 
-/* ─── Custom renderer: bake IDs into h2 tags ─── */
-function renderWithIds(md: string): string {
-  let idx = 0;
-  const renderer = new marked.Renderer();
-  renderer.heading = ({ text, depth }: { text: string; depth: number }) => {
-    if (depth === 2 && /^\d+\./.test(text)) {
-      const id = `exh-${idx}`;
-      idx++;
-      return `<h2 id="${id}">${text}</h2>\n`;
-    }
-    return `<h${depth}>${text}</h${depth}>\n`;
-  };
-  return marked(md, { renderer, gfm: true, breaks: true }) as string;
-}
+\`\`\`mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant AI
+    participant DB
+
+    User->>Frontend: Upload Voice Memo
+    Frontend->>Backend: POST /api/voice/process
+    Backend->>AI: Send Audio for Transcription & Action Items
+    AI-->>Backend: Return JSON (Action Items)
+    Backend->>DB: Save Draft Tasks
+    Backend-->>Frontend: Return Draft Tasks
+    Frontend-->>User: Display Task Checklist for Review
+\`\`\`
+`;
 
 export default function ExamplePrdModal({ onClose }: { onClose: () => void }) {
-  const [htmlContent, setHtmlContent] = useState<string>("");
-  const [activeTocId, setActiveTocId] = useState<string>(STATIC_TOC[0]?.id ?? "");
+  const [toc, setToc] = useState<TocItem[]>([]);
+  const [activeTocId, setActiveTocId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
-
-  /* Render markdown once */
-  useEffect(() => {
-    setHtmlContent(renderWithIds(SAMPLE_PRD));
-  }, []);
-
-  /* Mermaid diagrams */
-  useEffect(() => {
-    if (!htmlContent) return;
-
-    const renderMermaid = async () => {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      try {
-        const { default: mermaid } = await import("mermaid");
-        mermaid.initialize({ startOnLoad: false, theme: "dark" });
-
-        const nodes = document.querySelectorAll(".example-prd-modal .language-mermaid");
-        if (nodes.length === 0) return;
-
-        nodes.forEach((node) => node.removeAttribute("data-processed"));
-        await mermaid.run({ querySelector: ".example-prd-modal .language-mermaid", suppressErrors: true });
-
-        document.querySelectorAll(".example-prd-modal .language-mermaid").forEach((node: any) => {
-          const pre = node.parentElement;
-          if (pre && pre.tagName === "PRE") {
-            pre.style.background = "transparent";
-            pre.style.border = "none";
-            pre.style.display = "flex";
-            pre.style.justifyContent = "center";
-          }
-        });
-      } catch (err) {
-        console.error("Mermaid render error in modal", err);
-      }
-    };
-    renderMermaid();
-  }, [htmlContent]);
 
   /* Scroll spy */
   useEffect(() => {
     const container = contentRef.current;
-    if (!container || STATIC_TOC.length === 0) return;
+    if (!container || toc.length === 0) return;
 
     const onScroll = () => {
       const scrollTop = container.scrollTop;
       const containerRect = container.getBoundingClientRect();
-      let active = STATIC_TOC[0].id;
+      let active = toc[0].id;
 
-      for (const item of STATIC_TOC) {
+      for (const item of toc) {
         const el = container.querySelector<HTMLElement>(`#${item.id}`);
         if (!el) continue;
         const elRect = el.getBoundingClientRect();
@@ -200,7 +150,7 @@ export default function ExamplePrdModal({ onClose }: { onClose: () => void }) {
 
     container.addEventListener("scroll", onScroll, { passive: true });
     return () => container.removeEventListener("scroll", onScroll);
-  }, [htmlContent]);
+  }, [toc]);
 
   const scrollToHeading = (id: string) => {
     const container = contentRef.current;
@@ -283,59 +233,67 @@ export default function ExamplePrdModal({ onClose }: { onClose: () => void }) {
           {/* TOC Sidebar */}
           <aside 
             style={{
-              width: "240px",
+              width: "220px",
               flexShrink: 0,
-              borderRight: "1px solid #1e293b",
-              background: "#0b0f19",
+              borderRight: "1px solid rgba(30,41,59,0.8)",
+              background: "#080c14",
               overflowY: "auto",
-              padding: "20px 0",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <div style={{ padding: "0 20px 12px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#475569", textTransform: "uppercase" }}>
-              Table of Contents
+            <div style={{ padding: "20px 16px 8px" }}>
+              <p style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: "#475569", textTransform: "uppercase", margin: 0 }}>
+                Daftar Isi
+              </p>
             </div>
-            {STATIC_TOC.map((item) => {
-              const isActive = activeTocId === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToHeading(item.id)}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    textAlign: "left",
-                    padding: "8px 20px",
-                    fontSize: "12px",
-                    fontWeight: isActive ? 600 : 500,
-                    color: isActive ? "#818cf8" : "#64748b",
-                    background: isActive ? "rgba(99,102,241,0.08)" : "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                    borderLeft: isActive ? "3px solid #6366f1" : "3px solid transparent",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {item.text}
-                </button>
-              );
-            })}
+            <nav style={{ flex: 1, overflowY: "auto", padding: "8px 8px 20px" }}>
+              {toc.map((item) => {
+                const isActive = activeTocId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToHeading(item.id)}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      fontSize: "12.5px",
+                      lineHeight: "1.4",
+                      padding: "7px 12px",
+                      borderRadius: "7px",
+                      background: isActive ? "rgba(99,102,241,0.12)" : "transparent",
+                      color: isActive ? "#818cf8" : "#64748b",
+                      fontWeight: isActive ? 600 : 500,
+                      border: "none",
+                      borderLeft: isActive ? "3px solid #6366f1" : "3px solid transparent",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      marginBottom: "2px",
+                    }}
+                  >
+                    {item.text}
+                  </button>
+                );
+              })}
+            </nav>
           </aside>
 
-          {/* Content Area */}
-          <div 
-            ref={contentRef}
-            style={{
-              flex: 1,
-              padding: "40px",
-              overflowY: "auto",
-              color: "#cbd5e1",
-            }}
-            className="markdown-preview"
-          >
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          {/* Main Document Content */}
+          <div ref={contentRef} style={{ flex: 1, padding: "32px 48px", overflowY: "auto", background: "var(--bg-elevated)", position: "relative" }} className="custom-scroll">
+            <MarkdownRenderer 
+              content={SAMPLE_PRD}
+              onTocUpdate={(newToc) => {
+                const filteredToc = newToc.filter(item => /^\d+\./.test(item.text));
+                setToc(filteredToc);
+                if (filteredToc.length > 0 && !activeTocId) {
+                  setActiveTocId(filteredToc[0].id);
+                }
+              }}
+              idPrefix="exh-"
+              className="markdown-preview"
+            />
           </div>
-
         </div>
       </div>
       

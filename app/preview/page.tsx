@@ -4,14 +4,7 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { marked } from "marked";
-
-/* ─── Types ─── */
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
-}
+import MarkdownRenderer, { TocItem } from "../components/MarkdownRenderer";
 
 function StepNavbar({ currentStep, projectId }: { currentStep: "struktur" | "prd" | "task", projectId: string | null }) {
   const steps = [
@@ -78,13 +71,12 @@ function PreviewPageContent() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
   const [markdown, setMarkdown] = useState<string>("");
-  const [htmlContent, setHtmlContent] = useState<string>("");
   const [toc, setToc] = useState<TocItem[]>([]);
   const [activeTocId, setActiveTocId] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedMarkdown, setEditedMarkdown] = useState("");
+  const [editContent, setEditContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [appName, setAppName] = useState("PRD");
@@ -118,7 +110,7 @@ function PreviewPageContent() {
           setMarkdown(`# Error generating PRD\n\n${data.error}`);
         } else {
           setMarkdown(data.markdown || "");
-          setEditedMarkdown(data.markdown || "");
+          setEditContent(data.markdown || "");
         }
       } catch (err) {
         console.error("Generate error", err);
@@ -131,69 +123,6 @@ function PreviewPageContent() {
     generatePRD();
   }, [hasStarted, projectId]);
 
-  /* ─── Parse Markdown → HTML with baked heading IDs ─── */
-  useEffect(() => {
-    if (!markdown) return;
-
-    let idx = 0;
-    const tocItems: TocItem[] = [];
-    const renderer = new marked.Renderer();
-    renderer.heading = ({ text, depth }: { text: string; depth: number }) => {
-      if (depth === 2 || depth === 3) {
-        const id = `heading-${idx}`;
-        idx++;
-        tocItems.push({ id, text, level: depth });
-        return `<h${depth} id="${id}">${text}</h${depth}>\n`;
-      }
-      return `<h${depth}>${text}</h${depth}>\n`;
-    };
-
-    const html = marked(markdown, { renderer, gfm: true, breaks: true }) as string;
-    setHtmlContent(html);
-    if (!isEditing) {
-      setToc(tocItems);
-      if (tocItems.length > 0 && !activeTocId) {
-        setActiveTocId(tocItems[0].id);
-      }
-    }
-  }, [markdown, isEditing]);
-
-  /* ─── Mermaid rendering ─── */
-  useEffect(() => {
-    if (isGenerating || !htmlContent) return;
-
-    const renderMermaid = async () => {
-      // Beri sedikit waktu agar React selesai memanipulasi DOM (dangerouslySetInnerHTML)
-      await new Promise(resolve => setTimeout(resolve, 50));
-      try {
-        const { default: mermaid } = await import("mermaid");
-        mermaid.initialize({ startOnLoad: false, theme: "dark" });
-        
-        const nodes = document.querySelectorAll(".language-mermaid");
-        if (nodes.length === 0) return;
-
-        // Hapus atribut data-processed agar Mermaid memproses ulang node saat pergantian halaman (client-side navigation)
-        nodes.forEach((node) => node.removeAttribute("data-processed"));
-
-        await mermaid.run({ querySelector: ".language-mermaid", suppressErrors: true });
-
-        document.querySelectorAll(".language-mermaid").forEach((node: any) => {
-          const pre = node.parentElement;
-          if (pre && pre.tagName === "PRE" && pre.querySelector("svg")) {
-            pre.style.background = "transparent";
-            pre.style.border = "none";
-            pre.style.display = "flex";
-            pre.style.justifyContent = "center";
-            pre.style.padding = "8px 0";
-          }
-        });
-      } catch (e) {
-        console.warn("Mermaid rendering error", e);
-      }
-    };
-
-    renderMermaid();
-  }, [htmlContent, isGenerating]);
 
   /* ─── TOC scroll spy via scroll event listener ─── */
   useEffect(() => {
@@ -259,10 +188,10 @@ function PreviewPageContent() {
       const res = await fetch("/api/projects/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, prdData: editedMarkdown, tasksOutdated: true }),
+        body: JSON.stringify({ projectId, prdData: editContent, tasksOutdated: true }),
       });
       if (res.ok) {
-        setMarkdown(editedMarkdown);
+        setMarkdown(editContent);
         setIsEditing(false);
       } else {
         alert("Gagal menyimpan PRD.");
@@ -317,7 +246,7 @@ function PreviewPageContent() {
               </button>
             </>
           ) : (
-            <button onClick={() => { setEditedMarkdown(markdown); setIsEditing(true); }} style={{ ...btnBase, color: "#a78bfa", borderColor: "#a78bfa40", background: "rgba(167,139,250,0.1)" }}>
+            <button onClick={() => { setEditContent(markdown); setIsEditing(true); }} style={{ ...btnBase, color: "#a78bfa", borderColor: "#a78bfa40", background: "rgba(167,139,250,0.1)" }}>
               Edit Mode
             </button>
           )}
@@ -396,27 +325,14 @@ function PreviewPageContent() {
                 Use Markdown to edit the PRD. Saved changes will automatically sync with your Task list.
               </div>
               <textarea
-                value={editedMarkdown}
-                onChange={(e) => setEditedMarkdown(e.target.value)}
-                style={{
-                  flex: 1,
-                  width: "100%",
-                  background: "var(--bg-elevated)",
-                  color: "var(--fg-primary)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  fontFamily: "monospace",
-                  fontSize: "14px",
-                  lineHeight: "1.6",
-                  resize: "none",
-                  outline: "none",
-                }}
+                className="w-full h-full bg-[#1e212b] text-white p-6 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm leading-relaxed resize-none"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                spellCheck={false}
               />
             </div>
           ) : (
             <div
-              className="markdown-preview"
               style={{
                 maxWidth: "800px",
                 margin: "0 auto",
@@ -431,7 +347,16 @@ function PreviewPageContent() {
                   <div style={{ color: "var(--fg-muted)", fontSize: "14px" }}>Menulis Product Requirements Document...</div>
                 </div>
               ) : (
-                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                <MarkdownRenderer 
+                  content={markdown} 
+                  onTocUpdate={(newToc) => {
+                    setToc(newToc);
+                    if (newToc.length > 0 && !activeTocId) {
+                      setActiveTocId(newToc[0].id);
+                    }
+                  }}
+                  className="markdown-preview" 
+                />
               )}
             </div>
           )}
