@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
       updateData.checkedTasks = taskStatusStr;
       try {
         await redis.set(`project:${projectId}:taskStatus`, typeof body.taskStatus === 'string' ? JSON.parse(body.taskStatus) : body.taskStatus);
+        await redis.del(`project:${projectId}:tasks`);
       } catch (e) { console.warn("Redis TaskStatus update error", e); }
     }
 

@@ -355,35 +355,33 @@ function TaskPageContent() {
           setData(json);
           if (json.phases?.[0]?.id) setActivePhase(json.phases[0].id);
 
-          // Local-First Restoration: Check localStorage first for instant load, fallback to server savedStatus
-          const localKey = `kanban_status_${projectId}`;
+          // Server State Priority: Server DB (including MCP AI updates) takes priority
+          const serverSaved = json.savedStatus || {};
           let initialStatuses: Record<string, ColumnId> = {};
-          
+
+          const localKey = `kanban_status_${projectId}`;
+          let localStatuses: Record<string, ColumnId> = {};
           try {
             const localSaved = localStorage.getItem(localKey);
-            if (localSaved) {
-              initialStatuses = JSON.parse(localSaved);
-            }
+            if (localSaved) localStatuses = JSON.parse(localSaved);
           } catch (e) {
             console.warn("Failed to load local kanban status:", e);
           }
 
-          // Merge server savedStatus for any unassigned tasks
-          const serverSaved = json.savedStatus || {};
           json.phases.forEach((p: Phase) => {
             p.tasks.forEach((t: Task) => {
-              if (!initialStatuses[t.id]) {
-                if (serverSaved[t.id]) {
-                  initialStatuses[t.id] = typeof serverSaved[t.id] === "string" ? serverSaved[t.id] : (serverSaved[t.id] === true ? "done" : "todo");
-                } else {
-                  initialStatuses[t.id] = (t.status as ColumnId) || "todo";
-                }
+              if (serverSaved[t.id]) {
+                initialStatuses[t.id] = typeof serverSaved[t.id] === "string" ? serverSaved[t.id] : (serverSaved[t.id] === true ? "done" : "todo");
+              } else if (localStatuses[t.id]) {
+                initialStatuses[t.id] = localStatuses[t.id];
+              } else {
+                initialStatuses[t.id] = (t.status as ColumnId) || "todo";
               }
             });
           });
 
           setTaskStatus(initialStatuses);
-          // Persist merged initial state to localStorage
+          // Sync updated state to localStorage
           try { localStorage.setItem(localKey, JSON.stringify(initialStatuses)); } catch (e) {}
         }
       } catch { setError("Failed to connect to the server."); }

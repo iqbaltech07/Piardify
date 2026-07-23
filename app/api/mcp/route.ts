@@ -253,6 +253,7 @@ export async function POST(req: NextRequest) {
 
         try {
           await redis.set(`project:${projectId}:taskStatus`, savedStatus);
+          await redis.del(`project:${projectId}:tasks`);
         } catch (e) {}
 
         return NextResponse.json({
