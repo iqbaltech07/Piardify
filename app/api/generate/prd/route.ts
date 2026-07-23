@@ -54,10 +54,10 @@ export async function POST(req: NextRequest) {
     // Read the template file
     let template = "";
     try {
-      const templatePath = path.join(process.cwd(), "piardify_prd.md");
+      const templatePath = path.join(process.cwd(), "public", "contoh-prd.md");
       template = fs.readFileSync(templatePath, "utf-8");
     } catch (error) {
-      console.warn("Could not read piardify_prd.md, using fallback structure", error);
+      console.warn("Could not read public/contoh-prd.md, using fallback structure", error);
       template = "# PRODUCT REQUIREMENTS DOCUMENT (PRD)\n\n## 1. Overview\n\n## 2. Objectives\n\n...";
     }
 
@@ -70,65 +70,61 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
     }
 
-    const systemPrompt = `You are an expert Product Manager and System Architect.
-Your task is to generate a comprehensive, professional Product Requirements Document (PRD) strictly based on the user's inputs.
+    let baseSystemPrompt = "You are an expert Product Manager and System Architect.\nYour task is to generate a comprehensive, professional Product Requirements Document (PRD) strictly based on the user's inputs.";
+    try {
+      const promptPath = path.join(process.cwd(), "system-prompt.txt");
+      baseSystemPrompt = fs.readFileSync(promptPath, "utf-8");
+    } catch (error) {
+      console.warn("Could not read system-prompt.txt, using fallback base prompt", error);
+    }
 
-CRITICAL INSTRUCTIONS:
-1. You MUST use exactly the same structural format, headings, and numbering as the provided Template below.
-2. Replace the template content with the specific details from the user's inputs.
-3. Generate Mermaid diagrams exactly where they appear in the template (User Flow, System Architecture, Data Flow, Development Process Flow) but tailored to the user's app idea.
-
-MERMAID SYNTAX RULES (CRITICAL - MERMAID v11.16.0):
-- Use only 'flowchart TD' or 'flowchart LR'.
-- All node IDs MUST be simple alphanumeric strings (A, B, C, N1, etc.).
-- EVERY SINGLE node label MUST be wrapped in double quotes. No exceptions.
-  - Reason: characters like (, ), /, \, &, comma, colon break the parser.
-- DO NOT use reserved word 'end' as a bare label. Use: Z["Selesai"].
-- Shapes: A["process"] B{"decision"} C("start/end")
-- Arrows: only --> or -->|Label Text|
-- NEVER use ==> or -> or <-- inside flowchart
-- NEVER place bold (**text**) or italic (_text_) inside a mermaid block.
-
-CRITICAL REAL-WORLD ERRORS TO AVOID:
-BAD (will crash):  A[Frontend - Next.js] --> B[Backend API - Python (FastAPI/Django)]
-GOOD (correct):    A["Frontend - Next.js"] --> B["Backend API - Python (FastAPI/Django)"]
-
-BAD (will crash):  D[AI/ML Task Generation Engine]
-GOOD (correct):    D["AI/ML Task Generation Engine"]
-
-BAD (will crash):  E[Structured Task Data (JSON)]
-GOOD (correct):    E["Structured Task Data (JSON)"]
-
-BAD (will crash):  F[(PostgreSQL Instance)]
-GOOD (correct):    F[("PostgreSQL Instance")]
-
-The rule is simple: if it goes inside [], {}, or (), it must have double quotes inside.
-
-4. Respond ONLY with the raw Markdown. Do not include introductory or concluding conversational text.
-5. Write the content in Indonesian (Bahasa Indonesia) if the user's inputs are in Indonesian, otherwise match their language.
+    const systemPrompt = `${baseSystemPrompt}
 
 === TEMPLATE START ===
 ${template}
 === TEMPLATE END ===`;
 
-    const userPrompt = `Generate a PRD based on the following user inputs:
-    
-- App Name: ${project.appName || "N/A"}
-- App Idea: ${project.appIdea || "N/A"}
-- Target User: ${formInputs.targetUser || "N/A"}
+    let answersStr = "";
+    if (formInputs.dynamicQuestions && formInputs.dynamicAnswers) {
+      formInputs.dynamicQuestions.forEach((q: any) => {
+        const ans = formInputs.dynamicAnswers[q.key];
+        const ansStr = Array.isArray(ans) ? ans.join(", ") : ans || "N/A";
+        answersStr += `- ${q.title}: ${ansStr}\n`;
+      });
+    } else {
+      // Fallback for older projects
+      answersStr = `- Target User: ${formInputs.targetUser || "N/A"}
 - Platform: ${formInputs.platform || "N/A"}
 - Core Features: ${Array.isArray(formInputs.coreFeatures) ? formInputs.coreFeatures.join(", ") : "N/A"}
 - Monetization: ${formInputs.monetization || "N/A"}
 - App Scale: ${formInputs.appScale || "N/A"}
 - Integrations: ${Array.isArray(formInputs.integrations) ? formInputs.integrations.join(", ") : "N/A"}
+- Design Preference: ${formInputs.designPreference || "N/A"}`;
+    }
+
+    const userPrompt = `Generate a PRD based on the following user inputs:
+    
+- App Name: ${project.appName || "N/A"}
+- App Idea: ${project.appIdea || "N/A"}
 - Frontend Stack: ${formInputs.stacks?.frontend || "N/A"}
 - Backend Stack: ${formInputs.stacks?.backend || "N/A"}
 - Database Stack: ${formInputs.stacks?.database || "N/A"}
 - Deployment Stack: ${formInputs.stacks?.deployment || "N/A"}
-- Design Preference: ${formInputs.designPreference || "N/A"}
+${answersStr}
 `;
 
-    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+    const settings: any = (await redis.get("app:settings")) || {};
+    const geminiModel = settings.geminiModel || "gemini-3.6-flash";
+    const fallbackModels = [
+      "gemini-3.6-flash",
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-3.1-flash-lite",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite"
+    ];
+    // Pastikan model pilihan user dicoba pertama, lalu fallback urut ke bawah tanpa duplikat
+    const models = Array.from(new Set([geminiModel, ...fallbackModels]));
 
     let response: any;
     let success = false;

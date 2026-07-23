@@ -47,6 +47,14 @@ export async function POST(req: NextRequest) {
       } catch (e) { console.warn("Redis Struktur update error", e); }
     }
 
+    if (body.taskStatus !== undefined) {
+      const taskStatusStr = typeof body.taskStatus === 'string' ? body.taskStatus : JSON.stringify(body.taskStatus);
+      updateData.checkedTasks = taskStatusStr;
+      try {
+        await redis.set(`project:${projectId}:taskStatus`, typeof body.taskStatus === 'string' ? JSON.parse(body.taskStatus) : body.taskStatus);
+      } catch (e) { console.warn("Redis TaskStatus update error", e); }
+    }
+
     if (tasksOutdated) {
       // Inject _tasksOutdated flag into formInputs without needing Prisma schema migration
       let formInputsObj = project.formInputs ? JSON.parse(project.formInputs) : {};

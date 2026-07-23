@@ -1,101 +1,286 @@
 "use client";
 
 import Link from "next/link";
-import { motion, Variants } from "framer-motion";
-import { ArrowRight, Gauge, Target, FileText } from "lucide-react";
+import { motion } from "framer-motion";
+import { FileText, ArrowRight } from "lucide-react";
 
-/* A decorative mock PRD card shown on the hero */
-function MockPrdCard() {
+/* ── Registration / crop marks ─────────────── */
+function CropMark({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
+  const styles: Record<string, React.CSSProperties> = {
+    tl: { top: -10, left: -10 },
+    tr: { top: -10, right: -10 },
+    bl: { bottom: -10, left: -10 },
+    br: { bottom: -10, right: -10 },
+  };
+
+  const hStyles: Record<string, React.CSSProperties> = {
+    tl: { top: 10, left: 0 },
+    tr: { top: 10, right: 0 },
+    bl: { bottom: 10, left: 0 },
+    br: { bottom: 10, right: 0 },
+  };
+
+  const vStyles: Record<string, React.CSSProperties> = {
+    tl: { top: 0, left: 10 },
+    tr: { top: 0, right: 10 },
+    bl: { bottom: 0, left: 10 },
+    br: { bottom: 0, right: 10 },
+  };
+
+  return (
+    <span
+      aria-hidden="true"
+      style={{ position: "absolute", ...styles[corner], width: 20, height: 20 }}
+    >
+      {/* horizontal arm */}
+      <span
+        style={{
+          position: "absolute",
+          ...hStyles[corner],
+          width: 12,
+          height: 1,
+          background: "rgba(255,182,39,0.55)",
+        }}
+      />
+      {/* vertical arm */}
+      <span
+        style={{
+          position: "absolute",
+          ...vStyles[corner],
+          width: 1,
+          height: 12,
+          background: "rgba(255,182,39,0.55)",
+        }}
+      />
+    </span>
+  );
+}
+
+/* ── PRD Document card — the signature hero element ── */
+function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
+  const sections = [
+    { label: "01 / Overview", lines: [100, 100, 70] },
+    { label: "02 / Target Users", lines: [100, 55] },
+    { label: "03 / Core Features", lines: [100, 100, 100, 68] },
+    { label: "04 / Tech Stack", lines: [100, 48] },
+  ];
+
   return (
     <motion.div
-      animate={{ y: [0, -15, 0] }}
-      transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-      style={{
-        position: "relative",
-        width: "100%",
-        maxWidth: "420px",
-        borderRadius: "20px",
-        padding: "24px",
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-subtle)",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-      }}
+      initial={{ opacity: 0, y: 24, rotateX: 4 }}
+      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+      transition={{ duration: 0.7, type: "spring", stiffness: 80, delay: 0.35 }}
+      style={{ position: "relative", maxWidth: 400, width: "100%" }}
     >
-      {/* Window dots */}
-      <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
-        {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
-          <div key={c} style={{ width: "12px", height: "12px", borderRadius: "50%", background: c }} />
-        ))}
-      </div>
+      {/* Crop marks */}
+      <CropMark corner="tl" />
+      <CropMark corner="tr" />
+      <CropMark corner="bl" />
+      <CropMark corner="br" />
 
-      <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", color: "var(--indigo-400)", marginBottom: "4px", textTransform: "uppercase" }}>
-        Product Requirements Document
-      </div>
-      <div style={{ fontSize: "18px", fontWeight: 700, color: "var(--fg-primary)", marginBottom: "4px" }}>
-        TaskFlow — AI Task Manager
-      </div>
-      <div style={{ height: "1px", background: "var(--border-subtle)", margin: "12px 0 16px" }} />
-
-      {[
-        { label: "Overview", lines: 2 },
-        { label: "Target Users", lines: 1 },
-        { label: "Core Features", lines: 3 },
-        { label: "Tech Stack", lines: 1 },
-      ].map(({ label, lines }, idx) => (
-        <motion.div
-          key={label}
-          style={{ marginBottom: "16px" }}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.8 + idx * 0.15 }}
+      {/* Document card */}
+      <div
+        style={{
+          background: "var(--color-paper)",
+          border: "1px solid rgba(255,182,39,0.25)",
+          borderRadius: "var(--radius-lg)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Header bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            background: "rgba(29,35,51,0.06)",
+            borderBottom: "1px solid rgba(29,35,51,0.1)",
+          }}
         >
-          <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--indigo-300)", marginBottom: "6px" }}>{label}</div>
-          {Array.from({ length: lines }).map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ width: 0 }}
-              animate={{ width: i === lines - 1 ? "65%" : "100%" }}
-              transition={{ delay: 1 + idx * 0.15 + i * 0.1, duration: 0.8, type: "spring" }}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <FileText
+              size={13}
+              style={{ color: "var(--color-graphite)", opacity: 0.6 }}
+            />
+            <span
               style={{
-                height: "8px",
-                borderRadius: "4px",
-                background: "var(--bg-elevated)",
-                marginBottom: "6px",
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--color-graphite)",
+                opacity: 0.7,
+              }}
+            >
+              PRODUCT REQUIREMENTS DOCUMENT
+            </span>
+          </div>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "9px",
+              color: "var(--color-mist)",
+              letterSpacing: "0.06em",
+            }}
+          >
+            v1.0.0
+          </span>
+        </div>
+
+        {/* Document body */}
+        <div style={{ padding: "20px 20px 16px" }}>
+          {/* Title */}
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "9px",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--color-mist)",
+              marginBottom: 6,
+            }}
+          >
+            REF: PRD-2024-0042
+          </div>
+          <h3
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "20px",
+              fontWeight: 800,
+              color: "var(--color-graphite)",
+              lineHeight: 1.2,
+              marginBottom: 14,
+            }}
+          >
+            TaskFlow: AI Task Manager
+          </h3>
+
+          {/* Divider */}
+          <div
+            style={{
+              height: 1,
+              background: "rgba(29,35,51,0.12)",
+              marginBottom: 16,
+            }}
+          />
+
+          {/* Sections */}
+          {sections.map(({ label, lines }, si) => (
+            <motion.div
+              key={label}
+              style={{ marginBottom: 14 }}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 + si * 0.12 }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--color-circuit)",
+                  marginBottom: 6,
+                  opacity: 0.85,
+                }}
+              >
+                {label}
+              </div>
+              {lines.map((w, li) => (
+                <motion.div
+                  key={li}
+                  initial={{ scaleX: 0, originX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{
+                    delay: 0.75 + si * 0.12 + li * 0.06,
+                    duration: 0.5,
+                    type: "spring",
+                    stiffness: 120,
+                  }}
+                  style={{
+                    height: 7,
+                    borderRadius: 2,
+                    background: "rgba(29,35,51,0.1)",
+                    width: `${w}%`,
+                    marginBottom: 5,
+                  }}
+                />
+              ))}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Progress annotation strip — the signature mono edge label */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            background: "rgba(29,35,51,0.05)",
+            borderTop: "1px solid rgba(29,35,51,0.1)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <motion.span
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ repeat: Infinity, duration: 1.6 }}
+              style={{
+                display: "inline-block",
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#22c55e",
               }}
             />
-          ))}
-        </motion.div>
-      ))}
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.2 }}
-        style={{ display: "flex", alignItems: "center", gap: "8px", paddingTop: "12px", borderTop: "1px solid var(--border-subtle)" }}
-      >
-        <motion.div
-          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e" }}
-        />
-        <span style={{ fontSize: "11px", color: "var(--fg-muted)" }}>Generated in 1m 42s · 100% complete</span>
-      </motion.div>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "9px",
+                fontWeight: 500,
+                color: "var(--color-graphite)",
+                opacity: 0.65,
+                letterSpacing: "0.06em",
+              }}
+            >
+              Generated in 1m 42s · 100% complete
+            </span>
+          </div>
+          <button
+            onClick={onSeeExample}
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "9px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--color-circuit)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              opacity: 0.85,
+            }}
+          >
+            Preview →
+          </button>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
-
-
+/* ── Hero Section ─────────────────────────── */
 export default function HeroSection({ onSeeExample }: { onSeeExample: () => void }) {
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80, damping: 20 } }
-  };
+  const stats = [
+    { value: "< 3 MIN", label: "generation time" },
+    { value: "7-STEP", label: "wizard" },
+    { value: "1-CLICK", label: "MD export" },
+  ];
 
   return (
     <section
@@ -104,11 +289,11 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
-        paddingTop: "100px",
+        paddingTop: "96px",
         paddingBottom: "80px",
         overflow: "hidden",
       }}
-      className="bg-grid"
+      className="bg-grid-dense"
     >
       <div
         style={{
@@ -118,164 +303,214 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
           width: "100%",
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: "64px",
+          gap: "72px",
           alignItems: "center",
         }}
+        className="hero-grid"
       >
-        {/* Left: Text */}
+        {/* ── Left: copy ── */}
         <motion.div
-          variants={containerVariants}
           initial="hidden"
           animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
         >
-          {/* Badge */}
+          {/* Category annotation */}
           <motion.div
-            variants={itemVariants}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "4px 14px",
-              borderRadius: "100px",
-              background: "rgba(99,102,241,0.12)",
-              border: "1px solid var(--border-subtle)",
-              marginBottom: "24px",
-            }}
+            variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+            style={{ marginBottom: 20 }}
           >
-            <motion.span
-              animate={{ scale: [1, 1.4, 1], opacity: [0.8, 1, 0.8] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--indigo-500)", display: "inline-block" }}
-            />
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--indigo-300)", letterSpacing: "0.02em" }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "5px 12px",
+                border: "1px solid var(--border-hairline)",
+                borderRadius: "var(--radius-sm)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--color-signal)",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "var(--color-signal)",
+                }}
+              />
               AI-Powered · Anti-Hallucination · Structured
             </span>
           </motion.div>
 
           {/* Headline */}
           <motion.h1
-            variants={itemVariants}
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
             style={{
-              fontSize: "clamp(2.5rem, 4vw, 3.75rem)",
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2.6rem, 4.5vw, 4rem)",
               fontWeight: 800,
-              lineHeight: 1.1,
-              marginBottom: "24px",
+              lineHeight: 1.08,
               color: "var(--fg-primary)",
+              letterSpacing: "-0.02em",
+              marginBottom: 24,
             }}
           >
             Generate a{" "}
-            <span className="gradient-text">professional PRD</span>{" "}
+            <span style={{ color: "var(--color-signal)" }}>
+              professional PRD
+            </span>{" "}
             in minutes
           </motion.h1>
 
           {/* Sub-headline */}
           <motion.p
-            variants={itemVariants}
+            variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
             style={{
-              fontSize: "1.125rem",
+              fontFamily: "var(--font-body)",
+              fontSize: "1.05rem",
               lineHeight: 1.7,
-              color: "var(--fg-secondary)",
-              marginBottom: "36px",
-              maxWidth: "520px",
+              color: "var(--color-mist)",
+              marginBottom: 36,
+              maxWidth: 480,
             }}
           >
             Piardify turns your product idea into a complete, structured Product
-            Requirements Document — with AI that actually understands your vision.
+            Requirements Document, with AI that actually understands your vision.
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={itemVariants} style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginBottom: "40px" }}>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/generate"
-                id="hero-cta-primary"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "14px 28px",
-                  borderRadius: "12px",
-                  background: "linear-gradient(135deg, var(--indigo-500), var(--blue-500))",
-                  color: "white",
-                  fontWeight: 600,
-                  fontSize: "15px",
-                  textDecoration: "none",
-                  boxShadow: "0 0 32px rgba(99,102,241,0.35)",
-                }}
-              >
-                <FileText size={18} strokeWidth={2.5} />
-                Generate My PRD
-              </Link>
-            </motion.div>
+          <motion.div
+            variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+            style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 48 }}
+          >
+            <Link
+              href="/generate"
+              id="hero-cta-primary"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 24px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--color-signal)",
+                background: "var(--color-signal)",
+                color: "var(--color-graphite)",
+                fontFamily: "var(--font-mono)",
+                fontWeight: 700,
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                textDecoration: "none",
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.opacity = "0.88")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.opacity = "1")
+              }
+            >
+              <FileText size={14} strokeWidth={2.5} />
+              Generate My PRD
+            </Link>
 
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <button
-                onClick={onSeeExample}
-                id="hero-cta-secondary"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "14px 28px",
-                  borderRadius: "12px",
-                  color: "var(--fg-primary)",
-                  fontWeight: 600,
-                  fontSize: "15px",
-                  border: "1px solid var(--border-default)",
-                  background: "rgba(255,255,255,0.03)",
-                  cursor: "pointer",
-                }}
-              >
-                See Example
-                <ArrowRight size={16} strokeWidth={2} />
-              </button>
-            </motion.div>
+            <button
+              onClick={onSeeExample}
+              id="hero-cta-secondary"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 24px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-strong)",
+                background: "transparent",
+                color: "var(--fg-secondary)",
+                fontFamily: "var(--font-mono)",
+                fontWeight: 600,
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "border-color 0.15s, color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = "var(--color-mist)";
+                el.style.color = "var(--fg-primary)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = "var(--border-strong)";
+                el.style.color = "var(--fg-secondary)";
+              }}
+            >
+              See Example
+              <ArrowRight size={13} strokeWidth={2} />
+            </button>
           </motion.div>
 
-          {/* Social proof */}
-          <motion.div variants={itemVariants} style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
-            {[
-              { icon: <Gauge size={16} className="text-amber-500" />, text: "< 3 min generation" },
-              { icon: <Target size={16} className="text-emerald-500" />, text: "7-step personalization" },
-              { icon: <FileText size={16} className="text-blue-500" />, text: "Export to Markdown" },
-            ].map((item, idxx) => (
-              <motion.div
-                key={item.text}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1 + idxx * 0.1 }}
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+          {/* Stat strip */}
+          <motion.div
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+            style={{
+              display: "flex",
+              gap: 0,
+              borderTop: "1px solid var(--border-hairline)",
+              paddingTop: 24,
+            }}
+          >
+            {stats.map(({ value, label }, i) => (
+              <div
+                key={value}
+                style={{
+                  flex: 1,
+                  paddingRight: 24,
+                  borderRight: i < stats.length - 1 ? "1px solid var(--border-hairline)" : "none",
+                  paddingLeft: i > 0 ? 24 : 0,
+                }}
               >
-                <span style={{ display: "flex", alignItems: "center" }}>{item.icon}</span>
-                <span style={{ fontSize: "13px", color: "var(--fg-secondary)" }}>{item.text}</span>
-              </motion.div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "22px",
+                    fontWeight: 700,
+                    color: "var(--fg-primary)",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  {value}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "9px",
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "var(--color-mist)",
+                  }}
+                >
+                  {label}
+                </div>
+              </div>
             ))}
           </motion.div>
         </motion.div>
 
-        {/* Right: PRD Card mockup */}
-        <motion.div
-          initial={{ opacity: 0, x: 50, rotateY: -15, scale: 0.9 }}
-          animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-          transition={{ duration: 0.8, type: "spring", delay: 0.3 }}
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            perspective: "1000px"
-          }}
-        >
-          <div style={{ position: "relative" }}>
-            <MockPrdCard />
-          </div>
-        </motion.div>
+        {/* ── Right: document card ── */}
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+          <MockPrdCard onSeeExample={onSeeExample} />
+        </div>
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .hero-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </section>
   );
 }

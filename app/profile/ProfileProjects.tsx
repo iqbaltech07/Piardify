@@ -2,183 +2,270 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FolderOpen, ChevronRight, CheckCircle2, Calendar, Award } from "lucide-react";
+import { FolderOpen, CheckCircle2, Calendar, Award, Trash2, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-type Project = {
-  id: string;
-  appName: string;
-  appIdea: string;
-  status: string;
-  createdAt: Date;
-};
+type Project = { id: string; appName: string; appIdea: string; status: string; createdAt: Date; };
 
 export default function ProfileProjects({ projects }: { projects: Project[] }) {
-  const [filter, setFilter] = useState("all");
+  const router  = useRouter();
+  const [filter,   setFilter]  = useState("all");
+  const [deleting, setDeleting] = useState<string | null>(null);
 
-  const finishedProjects = projects.filter((p) => p.status === "FINISHED");
-  const inProgressProjects = projects.filter((p) => p.status !== "FINISHED");
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!confirm("Delete this project?")) return;
+    setDeleting(id);
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast.success("Project deleted");
+      router.refresh();
+    } catch (err: any) { toast.error(err.message); }
+    finally { setDeleting(null); }
+  };
 
-  const displayedProjects = filter === "all"
-    ? projects
-    : filter === "finished" ? finishedProjects : inProgressProjects;
+  const finished   = projects.filter(p => p.status === "FINISHED");
+  const inProgress = projects.filter(p => p.status !== "FINISHED");
+  const displayed  = filter === "all" ? projects : filter === "finished" ? finished : inProgress;
+
+  const tabs = [
+    { id: "all",         label: `All (${projects.length})` },
+    { id: "finished",    label: `Finished (${finished.length})` },
+    { id: "in_progress", label: `In Progress (${inProgress.length})` },
+  ];
 
   return (
-    <>
-      {/* ══════════════════════════════════════════════════
-          PROJECTS SECTION
-      ══════════════════════════════════════════════════ */}
+    <div>
+      {/* ── Section header ── */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        marginBottom: "20px",
+        marginBottom: 14,
       }}>
-        <h2 style={{ fontSize: "20px", fontWeight: 700, color: "var(--fg-primary)", margin: 0 }}>
+        <span style={{
+          fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700,
+          letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--fg-muted)",
+        }}>
           My Projects
-        </h2>
+        </span>
         <Link href="/generate" style={{
-          display: "inline-flex", alignItems: "center", gap: "6px",
-          padding: "10px 20px", borderRadius: "12px", fontSize: "13px", fontWeight: 700,
-          background: "linear-gradient(135deg, var(--indigo-500), var(--blue-500))",
-          color: "white", textDecoration: "none",
-          boxShadow: "0 0 20px rgba(99,102,241,0.25)",
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "7px 14px",
+          borderRadius: "var(--radius-md)",
+          border: "1px solid var(--color-signal)",
+          background: "var(--color-signal)",
+          color: "var(--color-graphite)",
+          fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700,
+          letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none",
         }}>
           + New Project
         </Link>
       </div>
 
-      {/* Filter Tabs */}
+      {/* ── Filter tabs ── */}
       {projects.length > 0 && (
-        <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-          {[
-            { label: `All (${projects.length})`, id: "all" },
-            { label: `Finished (${finishedProjects.length})`, id: "finished" },
-            { label: `In Progress (${inProgressProjects.length})`, id: "in_progress" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilter(tab.id)}
-              style={{
-                padding: "6px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 600,
-                background: filter === tab.id ? "rgba(99,102,241,0.15)" : "var(--bg-surface)",
-                border: filter === tab.id ? "1px solid rgba(99,102,241,0.4)" : "1px solid var(--border-subtle)",
-                color: filter === tab.id ? "var(--fg-primary)" : "var(--fg-muted)",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
+        <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+          {tabs.map(tab => (
+            <button key={tab.id} onClick={() => setFilter(tab.id)} style={{
+              padding: "5px 13px",
+              borderRadius: "var(--radius-xs)",
+              fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              border: filter === tab.id
+                ? "1px solid var(--color-signal)"
+                : "1px solid var(--border-hairline)",
+              background: filter === tab.id ? "rgba(255,182,39,0.08)" : "var(--bg-elevated)",
+              color: filter === tab.id ? "var(--color-signal)" : "var(--fg-muted)",
+              cursor: "pointer", transition: "all 0.12s",
+            }}>
               {tab.label}
             </button>
           ))}
         </div>
       )}
 
-      {/* Projects Grid */}
-      {displayedProjects.length === 0 ? (
+      {/* ── Empty state ── */}
+      {displayed.length === 0 && (
         <div style={{
-          background: "var(--bg-surface)", border: "1px dashed var(--border-subtle)",
-          borderRadius: "20px", padding: "64px", textAlign: "center",
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-hairline)",
+          borderRadius: "var(--radius-lg)",
+          padding: "56px 32px",
+          textAlign: "center",
         }}>
           <div style={{
-            width: "64px", height: "64px", borderRadius: "16px",
-            background: "var(--bg-elevated)", display: "flex", alignItems: "center",
-            justifyContent: "center", margin: "0 auto 16px",
+            width: 48, height: 48, borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-hairline)", background: "var(--bg-elevated)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 14px",
           }}>
-            <FolderOpen size={28} color="var(--fg-muted)" />
+            <FolderOpen size={22} style={{ color: "var(--fg-muted)" }} />
           </div>
-          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>No Projects Yet</h3>
-          <p style={{ color: "var(--fg-muted)", fontSize: "14px", maxWidth: "360px", margin: "0 auto 24px" }}>
+          <p style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: "var(--fg-primary)", marginBottom: 6 }}>
+            No Projects Yet
+          </p>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--color-mist)", maxWidth: 320, margin: "0 auto 20px", lineHeight: 1.6 }}>
             Start planning your first app and earn your first Points!
           </p>
           <Link href="/generate" style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            padding: "12px 24px", borderRadius: "12px", fontSize: "14px", fontWeight: 700,
-            background: "linear-gradient(135deg, var(--indigo-500), var(--blue-500))",
-            color: "white", textDecoration: "none",
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "9px 18px", borderRadius: "var(--radius-md)",
+            border: "1px solid var(--color-signal)", background: "var(--color-signal)",
+            color: "var(--color-graphite)", fontFamily: "var(--font-mono)", fontSize: 10,
+            fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none",
           }}>
-            Generate PRD Now <ChevronRight size={16} />
+            Generate PRD Now <ChevronRight size={11} />
           </Link>
         </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
-          {displayedProjects.map((project) => {
+      )}
+
+      {/* ── Project grid ── */}
+      {displayed.length > 0 && (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: 12,
+        }}>
+          {displayed.map((project) => {
             const isFinished = project.status === "FINISHED";
-            const ideaPreview = project.appIdea.length > 100
-              ? project.appIdea.substring(0, 100) + "..."
+            const preview    = project.appIdea.length > 110
+              ? project.appIdea.slice(0, 110) + "…"
               : project.appIdea;
 
             return (
               <Link
                 key={project.id}
-                href={`/struktur?projectId=${project.id}`}
-                className="group"
-                style={{ textDecoration: "none", display: "block" }}
+                href={`/structure?projectId=${project.id}`}
+                style={{ textDecoration: "none", display: "flex" }}
               >
-                <div
-                  style={{
-                    background: "var(--bg-surface)",
-                    borderRadius: "18px",
-                    padding: "24px",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                  className={`transition-all duration-200 border group-hover:-translate-y-[2px] group-hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.4)] ${isFinished
-                      ? "border-[#4ade80]/20 group-hover:border-[#4ade80]/50"
-                      : "border-[#6366f1]/20 group-hover:border-[#6366f1]/40"
-                    }`}
+                <div style={{
+                  flex: 1,
+                  display: "flex", flexDirection: "column",
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-hairline)",
+                  borderRadius: "var(--radius-lg)",
+                  padding: "18px 20px",
+                  position: "relative",
+                  transition: "background 0.12s, border-color 0.12s",
+                  /* left accent */
+                  borderLeft: `3px solid ${isFinished ? "var(--color-circuit)" : "var(--border-hairline)"}`,
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "var(--bg-elevated)";
+                  el.style.borderColor = isFinished ? "var(--color-circuit)" : "var(--color-mist)";
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "var(--bg-surface)";
+                  el.style.borderColor = isFinished ? "var(--color-circuit)" : "var(--border-hairline)";
+                }}
                 >
-                  {/* Finished overlay glow */}
-                  {isFinished && (
-                    <div style={{
-                      position: "absolute", top: 0, right: 0, bottom: 0, left: 0,
-                      background: "linear-gradient(135deg, rgba(74,222,128,0.03), transparent 60%)",
-                      pointerEvents: "none",
-                    }} />
-                  )}
-
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "12px" }}>
-                    <div style={{
-                      width: "40px", height: "40px", borderRadius: "11px",
-                      background: isFinished ? "rgba(74,222,128,0.12)" : "rgba(99,102,241,0.1)",
-                      border: isFinished ? "1px solid rgba(74,222,128,0.2)" : "1px solid rgba(99,102,241,0.2)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {isFinished
-                        ? <CheckCircle2 size={20} color="#4ade80" />
-                        : <FolderOpen size={20} color="var(--indigo-400)" />
-                      }
+                  {/* ── Top row: icon + status + delete ── */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {/* Status icon */}
+                      <div style={{
+                        width: 30, height: 30,
+                        borderRadius: "var(--radius-md)",
+                        border: "1px solid var(--border-hairline)",
+                        background: "var(--bg-elevated)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: isFinished ? "var(--color-circuit)" : "var(--color-mist)",
+                        flexShrink: 0,
+                      }}>
+                        {isFinished
+                          ? <CheckCircle2 size={14} strokeWidth={2} />
+                          : <FolderOpen size={14} strokeWidth={2} />
+                        }
+                      </div>
+                      {/* Status label */}
+                      <span style={{
+                        fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700,
+                        letterSpacing: "0.1em", textTransform: "uppercase",
+                        padding: "3px 8px",
+                        borderRadius: "var(--radius-xs)",
+                        border: "1px solid var(--border-hairline)",
+                        color: isFinished ? "var(--color-circuit)" : "var(--color-mist)",
+                      }}>
+                        {isFinished ? "Finished" : "In Progress"}
+                      </span>
                     </div>
 
-                    {/* Status badge */}
-                    <span style={{
-                      padding: "3px 10px", borderRadius: "999px", fontSize: "10px", fontWeight: 700,
-                      background: isFinished ? "rgba(74,222,128,0.1)" : "rgba(99,102,241,0.1)",
-                      color: isFinished ? "#4ade80" : "var(--indigo-400)",
-                      border: isFinished ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(99,102,241,0.25)",
-                    }}>
-                      {isFinished ? "✓ Finished" : "In Progress"}
-                    </span>
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => handleDelete(e, project.id)}
+                      disabled={deleting === project.id}
+                      aria-label="Delete project"
+                      style={{
+                        width: 26, height: 26,
+                        borderRadius: "var(--radius-md)",
+                        border: "1px solid var(--border-hairline)",
+                        background: "transparent",
+                        color: "var(--fg-muted)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: deleting === project.id ? "not-allowed" : "pointer",
+                        opacity: deleting === project.id ? 0.4 : 1,
+                        transition: "all 0.12s",
+                        flexShrink: 0,
+                      }}
+                      onMouseEnter={e => {
+                        const el = e.currentTarget;
+                        el.style.color = "#f87171";
+                        el.style.borderColor = "rgba(248,113,113,0.45)";
+                        el.style.background = "rgba(248,113,113,0.07)";
+                      }}
+                      onMouseLeave={e => {
+                        const el = e.currentTarget;
+                        el.style.color = "var(--fg-muted)";
+                        el.style.borderColor = "var(--border-hairline)";
+                        el.style.background = "transparent";
+                      }}
+                    >
+                      <Trash2 size={12} strokeWidth={2} />
+                    </button>
                   </div>
 
-                  <h3 style={{ fontSize: "16px", fontWeight: 700, color: "var(--fg-primary)", marginBottom: "6px" }}>
-                    {project.appName}
-                  </h3>
-                  <p style={{ fontSize: "13px", color: "var(--fg-muted)", lineHeight: 1.5, marginBottom: "16px" }}>
-                    {ideaPreview}
-                  </p>
+                  {/* ── Body: title + description ── */}
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 700,
+                      color: "var(--fg-primary)", marginBottom: 6, lineHeight: 1.3,
+                    }}>
+                      {project.appName}
+                    </h3>
+                    <p style={{
+                      fontFamily: "var(--font-body)", fontSize: 12,
+                      color: "var(--color-mist)", lineHeight: 1.6,
+                    }}>
+                      {preview}
+                    </p>
+                  </div>
 
+                  {/* ── Footer: date + points ── */}
                   <div style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    borderTop: "1px solid var(--border-subtle)", paddingTop: "14px",
+                    borderTop: "1px solid var(--border-hairline)", paddingTop: 12, marginTop: 14,
                   }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Calendar size={12} color="var(--fg-muted)" />
-                      <span style={{ fontSize: "11px", color: "var(--fg-muted)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <Calendar size={11} style={{ color: "var(--fg-muted)" }} />
+                      <span style={{
+                        fontFamily: "var(--font-mono)", fontSize: 9,
+                        color: "var(--fg-muted)", letterSpacing: "0.04em",
+                      }}>
                         {new Date(project.createdAt).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
                     </div>
                     {isFinished && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <Award size={12} color="#fbbf24" />
-                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#fbbf24" }}>+100 Points</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <Award size={11} style={{ color: "var(--color-signal)" }} />
+                        <span style={{
+                          fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700,
+                          color: "var(--color-signal)", letterSpacing: "0.06em",
+                        }}>
+                          +100 pts
+                        </span>
                       </div>
                     )}
                   </div>
@@ -188,6 +275,6 @@ export default function ProfileProjects({ projects }: { projects: Project[] }) {
           })}
         </div>
       )}
-    </>
+    </div>
   );
 }

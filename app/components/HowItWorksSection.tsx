@@ -10,24 +10,21 @@ export default function HowItWorksSection() {
       {/* Header */}
       <div className="hiw-header">
         <div className="hiw-header-pill">
-          <span className="hiw-pulse-dot" />
+          <span className="hiw-pulse-dot" aria-hidden="true" />
           How It Works
         </div>
         <h2 className="hiw-heading">
-          From raw idea to
-          <br />
-          <span className="gradient-text">shipped PRD in 4 steps</span>
+          From raw idea to{" "}
+          <span className="hiw-heading-accent">shipped PRD in 4 steps</span>
         </h2>
         <p className="hiw-subheading">
           A guided, AI-powered workflow — no guesswork, no blank-page anxiety.
         </p>
       </div>
 
-      {/* Steps */}
+      {/* Steps track */}
       <div className="hiw-track">
-        {/* Central vertical line */}
-        <div className="hiw-spine" />
-
+        <div className="hiw-spine" aria-hidden="true" />
         {STEPS.map((step, i) => (
           <StepCard key={step.number} step={step} index={i} />
         ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check } from "lucide-react";
 import { StepType } from "./HowItWorksData";
 
 export function StepCard({ step, index }: { step: StepType; index: number }) {
@@ -12,7 +13,7 @@ export function StepCard({ step, index }: { step: StepType; index: number }) {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.2 }
+      { threshold: 0.15 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -24,38 +25,58 @@ export function StepCard({ step, index }: { step: StepType; index: number }) {
     <div
       ref={ref}
       className={`hiw-step ${visible ? "hiw-step--visible" : ""} ${isEven ? "hiw-step--flip" : ""}`}
-      style={{ "--hiw-accent": step.accent, "--hiw-accent-rgb": step.accentRgb, "--hiw-delay": `${index * 120}ms` } as React.CSSProperties}
+      style={{
+        "--hiw-accent": step.accentVar,
+        "--hiw-delay": `${index * 100}ms`,
+      } as React.CSSProperties}
     >
-      {/* Step number — large background */}
-      <div className="hiw-step-num">{step.number}</div>
+      {/* Large background number */}
+      <div className="hiw-step-num" aria-hidden="true">{step.number}</div>
 
-      {/* Card body */}
+      {/* Card */}
       <div className="hiw-card">
-        {/* Glow */}
-        <div className="hiw-card-glow" />
-
-        {/* Icon + header */}
+        {/* Step header */}
         <div className="hiw-card-header">
-          <div className="hiw-card-icon">{step.icon}</div>
+          <div className="hiw-card-icon" aria-hidden="true">{step.icon}</div>
           <div className="hiw-card-meta">
             <span className="hiw-card-badge">{step.number}</span>
             <span className="hiw-card-detail">{step.detail}</span>
           </div>
         </div>
 
-        {/* Text */}
         <h3 className="hiw-card-title">{step.title}</h3>
         <p className="hiw-card-desc">{step.desc}</p>
 
-        {/* Mockup visual */}
-        <div className="hiw-card-mockup">{step.mockup}</div>
+        {/* Inline mockup visuals */}
+        {step.chips && (
+          <div className="hiw-mockup hiw-mockup--chips">
+            {step.chips.map((t) => (
+              <span key={t} className="hiw-chip">{t}</span>
+            ))}
+          </div>
+        )}
 
-        {/* Accent line */}
-        <div className="hiw-card-line" />
+        {step.progress !== undefined && (
+          <div className="hiw-mockup hiw-mockup--progress" aria-label={`Step ${step.progress} of 7 complete`}>
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+              <div
+                key={n}
+                className={`hiw-progress-dot ${n <= step.progress! ? "hiw-progress-dot--done" : ""}`}
+              >
+                {n <= step.progress! ? (
+                  <Check size={9} strokeWidth={3} />
+                ) : n}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom accent rule */}
+        <div className="hiw-card-line" aria-hidden="true" />
       </div>
 
-      {/* Connector dot for timeline */}
-      <div className="hiw-connector-dot" />
+      {/* Timeline connector dot */}
+      <div className="hiw-connector-dot" aria-hidden="true" />
     </div>
   );
 }

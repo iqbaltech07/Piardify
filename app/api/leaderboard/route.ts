@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getRank } from '@/lib/gamification';
 
-export const revalidate = 60; // Cache for 60 seconds
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

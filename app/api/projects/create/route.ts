@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const prdLimit = user.tier === "PRO" ? 3 : 1;
+    const isUnlimited = user.email === "dev.iqbal007@gmail.com";
+    const prdLimit = isUnlimited ? Infinity : (user.tier === "PRO" ? 3 : 1);
 
     if (projectsThisMonth >= prdLimit) {
       return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit} project per bulan.` }, { status: 403 });

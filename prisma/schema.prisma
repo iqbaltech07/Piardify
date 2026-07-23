@@ -22,6 +22,7 @@ model User {
   // Custom fields
   tier          String    @default("FREE") // "FREE" or "PRO"
   prdCount      Int       @default(0)
+  apiKey        String?   @unique
 
   // Gamification
   exp           Int       @default(0)

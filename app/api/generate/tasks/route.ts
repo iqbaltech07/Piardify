@@ -4,6 +4,7 @@ import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { incrementUsage } from "@/lib/usageTracker";
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,8 +48,13 @@ export async function POST(req: NextRequest) {
 
     if (project.taskData && !isOutdated) {
       const data = JSON.parse(project.taskData);
-      try { await redis.set(cacheKey, data); } catch {}
-      return NextResponse.json(data);
+      let savedStatus = {};
+      if (project.checkedTasks) {
+        try { savedStatus = JSON.parse(project.checkedTasks); } catch {}
+      }
+      const responseData = { ...data, savedStatus };
+      try { await redis.set(cacheKey, responseData); } catch {}
+      return NextResponse.json(responseData);
     }
 
     const prdMarkdown = project.prdData || "";
@@ -131,31 +137,110 @@ ${project.taskData}
 Please return the fully synchronized Task List in JSON format.`;
     }
 
-    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+    const settings: any = (await redis.get("app:settings")) || {};
+    const geminiModel = settings.geminiModel || "gemini-3.6-flash";
+    const openRouterModel = settings.openRouterModel || "nvidia/nemotron-3-ultra-550b-a55b:free";
+
+    const fallbackModels = [
+      "gemini-3.6-flash",
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-3.1-flash-lite",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite"
+    ];
+    // Pastikan model pilihan user dicoba pertama, lalu fallback urut ke bawah tanpa duplikat
+    const models = Array.from(new Set([geminiModel, ...fallbackModels]));
     let response: any;
     let success = false;
     let lastError = null;
 
-    for (const apiKey of keys) {
-      const ai = new GoogleGenAI({ apiKey });
-      for (const model of models) {
+    // Priority 1: OpenRouter (using configured openRouterModel)
+    if (process.env.OPENROUTER_API_KEY) {
+      console.log(`Generating tasks via OpenRouter (${openRouterModel})`);
+      try {
+        const { default: OpenAI } = await import("openai");
+        const openai = new OpenAI({
+          baseURL: "https://openrouter.ai/api/v1",
+          apiKey: process.env.OPENROUTER_API_KEY,
+        });
+
+        const sysPromptWithFormat = `${systemPrompt}\n\nYou MUST return ONLY valid JSON matching the format exactly. Do NOT wrap in markdown code blocks, just raw JSON.`;
+
+        let completion;
         try {
-          response = await ai.models.generateContent({
-            model,
-            contents: userPrompt,
-            config: { systemInstruction: systemPrompt },
+          completion = await openai.chat.completions.create({
+            model: openRouterModel,
+            response_format: { type: "json_object" },
+            messages: [
+              { role: "system", content: sysPromptWithFormat },
+              { role: "user", content: userPrompt }
+            ]
           });
-          success = true;
-          break;
-        } catch (err: any) {
-          lastError = err;
-          console.warn(`[Tasks Fallback] ${model}:`, err.message);
+        } catch (e: any) {
+          if (e.status === 400 || e.message?.includes("json_object")) {
+            console.log("Model doesn't support json_object, retrying without it...");
+            completion = await openai.chat.completions.create({
+              model: openRouterModel,
+              messages: [
+                { role: "system", content: sysPromptWithFormat },
+                { role: "user", content: userPrompt }
+              ]
+            });
+          } else {
+            throw e;
+          }
         }
+
+        const text = completion.choices[0].message.content?.trim() || "";
+        if (!text) throw new Error("Empty response from OpenRouter");
+
+        const cleanText = text.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
+        const match = cleanText.match(/\{[\s\S]*\}/);
+        const jsonText = match ? match[0] : cleanText;
+
+        // Validate JSON parsing before declaring success
+        const parsed = JSON.parse(jsonText);
+        if (!parsed.phases || !Array.isArray(parsed.phases)) {
+          throw new Error("Invalid task phases JSON structure from OpenRouter");
+        }
+
+        response = { text: jsonText };
+        success = true;
+        await incrementUsage("openrouter");
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[OpenRouter Tasks] Failed or invalid JSON, will fallback:`, err.message);
       }
-      if (success) break;
+    }
+
+    // Priority 2: Gemini Fallback if OpenRouter failed or not configured
+    if (!success && keys.length > 0) {
+      console.log(`OpenRouter unavailable or failed, falling back to Gemini (${geminiModel})`);
+      for (const apiKey of keys) {
+        const ai = new GoogleGenAI({ apiKey });
+        for (const model of models) {
+          try {
+            response = await ai.models.generateContent({
+              model,
+              contents: userPrompt,
+              config: { systemInstruction: systemPrompt },
+            });
+            success = true;
+            const provider = apiKey === process.env.GEMINI_API_KEY ? "gemini_key_1" : "gemini_key_2";
+            await incrementUsage(provider);
+            break;
+          } catch (err: any) {
+            lastError = err;
+            console.warn(`[Tasks Gemini Fallback] ${model}:`, err.message);
+          }
+        }
+        if (success) break;
+      }
     }
 
     if (!success || !response) {
+      console.error("All fallback combinations (Gemini & OpenRouter) failed:", lastError);
       return NextResponse.json({ error: "Failed to generate tasks" }, { status: 500 });
     }
 

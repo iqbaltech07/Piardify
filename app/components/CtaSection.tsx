@@ -1,148 +1,237 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { FileText } from "lucide-react";
 
 export default function CtaSection({ onSeeExample }: { onSeeExample: () => void }) {
+  const stats = [
+    { value: "< 3 MIN", label: "Avg. generation time" },
+    { value: "90%+",    label: "PRDs completed first try" },
+    { value: "FREE",    label: "No credit card required" },
+  ];
+
   return (
-    <section id="about" style={{ padding: "112px 32px", overflow: "hidden" }}>
-      <div style={{ maxWidth: "960px", margin: "0 auto" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 80, damping: 20 }}
+    <section
+      id="about"
+      style={{
+        padding: "112px 32px 128px",
+        position: "relative",
+        background: "var(--bg-surface)",
+        overflow: "hidden",
+      }}
+    >
+      {/* Grid background */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage:
+            "linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div style={{ maxWidth: "900px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+        {/* Card */}
+        <div
           style={{
-            position: "relative",
-            borderRadius: "28px",
-            padding: "72px 64px",
+            border: "1px solid var(--border-hairline)",
+            borderRadius: "var(--radius-lg)",
+            padding: "64px 56px",
             textAlign: "center",
+            background: "var(--bg-base)",
+            position: "relative",
             overflow: "hidden",
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-default)",
           }}
         >
+          {/* Top signal accent */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 2,
+              background: "var(--color-signal)",
+            }}
+          />
 
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <motion.span
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+          {/* Annotation label */}
+          <div
+            style={{
+              display: "inline-block",
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--color-signal)",
+              border: "1px solid var(--border-hairline)",
+              borderRadius: "var(--radius-xs)",
+              padding: "3px 10px",
+              marginBottom: 22,
+            }}
+          >
+            Get Started Free
+          </div>
+
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+              fontWeight: 800,
+              lineHeight: 1.1,
+              color: "var(--fg-primary)",
+              letterSpacing: "-0.02em",
+              marginBottom: 16,
+            }}
+          >
+            Ready to write your{" "}
+            <span style={{ color: "var(--color-signal)" }}>first PRD?</span>
+          </h2>
+
+          <p
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "15px",
+              color: "var(--color-mist)",
+              marginBottom: 36,
+              maxWidth: 460,
+              margin: "0 auto 36px",
+              lineHeight: 1.7,
+            }}
+          >
+            Join developers, product managers, and students who generate professional PRDs in under 3 minutes.
+          </p>
+
+          {/* CTAs */}
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginBottom: 48,
+            }}
+          >
+            <Link
+              href="/generate"
+              id="cta-generate"
               style={{
-                display: "inline-block",
-                padding: "4px 14px",
-                borderRadius: "100px",
-                fontSize: "11px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 24px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--color-signal)",
+                background: "var(--color-signal)",
+                color: "var(--color-graphite)",
+                fontFamily: "var(--font-mono)",
                 fontWeight: 700,
-                letterSpacing: "0.12em",
+                fontSize: "12px",
+                letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                background: "rgba(99,102,241,0.15)",
-                color: "var(--indigo-300)",
-                border: "1px solid var(--border-subtle)",
-                marginBottom: "24px",
+                textDecoration: "none",
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.opacity = "0.88")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.opacity = "1")
+              }
+            >
+              <FileText size={14} strokeWidth={2.5} />
+              Start Generating Free
+            </Link>
+
+            <button
+              onClick={onSeeExample}
+              id="cta-preview"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 24px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-strong)",
+                background: "transparent",
+                color: "var(--fg-secondary)",
+                fontFamily: "var(--font-mono)",
+                fontWeight: 600,
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "border-color 0.15s, color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = "var(--color-mist)";
+                el.style.color = "var(--fg-primary)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = "var(--border-strong)";
+                el.style.color = "var(--fg-secondary)";
               }}
             >
-              Get Started Free
-            </motion.span>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, marginBottom: "16px", lineHeight: 1.15, color: "var(--fg-primary)" }}
-            >
-              Ready to write your{" "}
-              <span className="gradient-text">first PRD?</span>
-            </motion.h2>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              style={{ fontSize: "17px", color: "var(--fg-secondary)", marginBottom: "40px", maxWidth: "520px", margin: "0 auto 40px", lineHeight: 1.7 }}
-            >
-              Join developers, product managers, and students who generate professional PRDs in under 3 minutes.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-              style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap", marginBottom: "48px" }}
-            >
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/generate"
-                  id="cta-generate"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "15px 32px",
-                    borderRadius: "12px",
-                    background: "linear-gradient(135deg, var(--indigo-500), var(--blue-500))",
-                    color: "white",
-                    fontWeight: 600,
-                    fontSize: "15px",
-                    textDecoration: "none",
-                    boxShadow: "0 0 32px rgba(99,102,241,0.3)",
-                  }}
-                >
-                  <FileText size={18} strokeWidth={2.5} />
-                  Start Generating — Free
-                </Link>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <button
-                  onClick={onSeeExample}
-                  id="cta-preview"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "15px 32px",
-                    borderRadius: "12px",
-                    color: "var(--fg-primary)",
-                    fontWeight: 600,
-                    fontSize: "15px",
-                    border: "1px solid var(--border-default)",
-                    background: "rgba(255,255,255,0.03)",
-                    cursor: "pointer",
-                  }}
-                >
-                  See Example PRD
-                </button>
-              </motion.div>
-            </motion.div>
-
-            {/* Stats */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "64px", flexWrap: "wrap", paddingTop: "32px", borderTop: "1px solid var(--border-subtle)" }}>
-              {[
-                { value: "< 3 min", label: "Average generation time" },
-                { value: "90%+", label: "PRDs completed first try" },
-                { value: "Free", label: "No credit card required" },
-              ].map((stat, idx) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 + idx * 0.1, type: "spring", stiffness: 100 }}
-                  style={{ textAlign: "center" }}
-                >
-                  <div style={{ fontSize: "24px", fontWeight: 700 }} className="gradient-text">{stat.value}</div>
-                  <div style={{ fontSize: "12px", color: "var(--fg-muted)", marginTop: "4px" }}>{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
+              See Example PRD
+            </button>
           </div>
-        </motion.div>
+
+          {/* Stats strip */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 0,
+              paddingTop: 32,
+              borderTop: "1px solid var(--border-hairline)",
+            }}
+          >
+            {stats.map(({ value, label }, i) => (
+              <div
+                key={label}
+                style={{
+                  flex: 1,
+                  textAlign: "center",
+                  maxWidth: 180,
+                  borderRight: i < stats.length - 1 ? "1px solid var(--border-hairline)" : "none",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "22px",
+                    fontWeight: 700,
+                    color: "var(--color-signal)",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1,
+                    marginBottom: 5,
+                  }}
+                >
+                  {value}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "9px",
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "var(--fg-muted)",
+                  }}
+                >
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
