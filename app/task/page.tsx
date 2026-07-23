@@ -395,6 +395,53 @@ function TaskPageContent() {
   const isDirtyRef = useRef(false);
   latestTaskStatusRef.current = taskStatus;
 
+  // 🔄 Real-Time Auto-Sync: Poll MCP/Server status every 3s without page reload
+  useEffect(() => {
+    if (!projectId || !data) return;
+
+    const intervalId = setInterval(async () => {
+      // Don't poll/update if user is on another tab or actively dragging tasks
+      if (document.visibilityState !== "visible" || isDirtyRef.current) return;
+
+      try {
+        const res = await fetch(`/api/projects/status?projectId=${projectId}`, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          const serverStatuses: Record<string, ColumnId> = json.taskStatus || {};
+
+          let hasChange = false;
+          const updated = { ...latestTaskStatusRef.current };
+
+          Object.keys(serverStatuses).forEach((taskId) => {
+            const rawStatus = serverStatuses[taskId];
+            const normStatus: ColumnId =
+              typeof rawStatus === "string"
+                ? (rawStatus as ColumnId)
+                : rawStatus === true
+                ? "done"
+                : "todo";
+
+            if (updated[taskId] !== normStatus) {
+              updated[taskId] = normStatus;
+              hasChange = true;
+            }
+          });
+
+          if (hasChange) {
+            setTaskStatus(updated);
+            try {
+              localStorage.setItem(`kanban_status_${projectId}`, JSON.stringify(updated));
+            } catch (e) {}
+          }
+        }
+      } catch (err) {
+        // Silent error handling for background polling
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [projectId, data]);
+
   // Sync to database only when user leaves page or closes tab
   const syncToDatabase = () => {
     if (!projectId || !isDirtyRef.current || Object.keys(latestTaskStatusRef.current).length === 0) return;
