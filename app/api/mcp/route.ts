@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
+import { SYSTEM_DIRECTIVES } from "@/lib/systemDirectives";
 
 export async function POST(req: NextRequest) {
   try {
@@ -176,7 +177,8 @@ export async function POST(req: NextRequest) {
           prd: project.prdData || "",
           structure,
           tasks,
-          taskStatuses: savedStatus
+          taskStatuses: savedStatus,
+          ...SYSTEM_DIRECTIVES
         }, null, 2);
 
         return NextResponse.json({
