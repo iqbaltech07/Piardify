@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
     }
 
-    let systemPrompt = `You are a senior software project manager. Based on the PRD and app info, generate a comprehensive, actionable task list for building this project.
+    let systemPrompt = `You are a senior software project manager. Based on the PRD, project structure, and app info, generate a comprehensive, actionable task list for building this project.
 
 RESPONSE FORMAT (strict JSON only, no markdown):
 {
@@ -91,30 +91,59 @@ RESPONSE FORMAT (strict JSON only, no markdown):
   ]
 }
 
-PHASE STRUCTURE (use exactly these 5 phases in order, DO NOT include numbers or emojis in the names):
-1. Perencanaan & Desain (Planning & Design)
-2. Setup & Infrastruktur (Setup & Infrastructure)  
-3. Pengembangan Backend (Backend Development)
-4. Pengembangan Frontend (Frontend Development)
-5. Testing & Deployment (Testing & Deployment)
+PHASE STRUCTURE — YOU MUST GENERATE ALL 5 PHASES, NO EXCEPTIONS:
+1. Perencanaan & Desain
+2. Setup & Infrastruktur
+3. Pengembangan Backend
+4. Pengembangan Frontend
+5. Testing & Deployment
 
-RULES:
-- Generate 4-8 specific, actionable tasks per phase
+CRITICAL RULES:
+- You MUST output ALL 5 phases. A response with fewer than 5 phases is INVALID and will be rejected.
+- Phase 5 (Testing & Deployment) MUST include tasks such as: unit testing, integration testing, UAT, CI/CD pipeline setup, staging deployment, production deployment, monitoring setup.
+- Generate 4-8 specific, actionable tasks per phase based on the PRD features and project structure.
+- Each task MUST be directly traceable to a feature or requirement in the PRD or project structure.
 - Priority: high = must have for MVP, medium = important but not blocking, low = nice to have
 - Estimasi must be realistic time estimates in Bahasa Indonesia
-- Tags should be short tech labels (e.g. "React", "API", "Database", "UI/UX")
-- Base tasks on the actual PRD content and tech stack
-- Return ONLY valid JSON`;
+- Tags should be short tech labels (e.g. "React", "API", "Database", "UI/UX", "Testing", "DevOps")
+- Return ONLY valid JSON. Do NOT wrap in markdown code blocks.`;
 
-    let userPrompt = `Generate a task list for this project:
+    const integrations = Array.isArray(form?.integrations)
+      ? form.integrations.filter((i: string) => i !== "None").join(", ")
+      : "N/A";
+
+    const strukturSummary = project.strukturData
+      ? (() => {
+          try {
+            const s = JSON.parse(project.strukturData);
+            if (s.nodes && Array.isArray(s.nodes)) {
+              return s.nodes.map((n: any) => {
+                const children = Array.isArray(n.children)
+                  ? n.children.map((c: any) => `  - ${c.label}`).join("\n")
+                  : "";
+                return `• ${n.label} (Phase ${n.phase})${children ? "\n" + children : ""}`;
+              }).join("\n");
+            }
+          } catch {}
+          return "";
+        })()
+      : "";
+
+    let userPrompt = `Generate a complete 5-phase task list for this project:
 
 App Name: ${form?.appName || "N/A"}
 App Idea: ${form?.appIdea || "N/A"}
 Tech Stack: Frontend=${form?.stacks?.frontend || "N/A"}, Backend=${form?.stacks?.backend || "N/A"}, Database=${form?.stacks?.database || "N/A"}, Deployment=${form?.stacks?.deployment || "N/A"}
 Core Features: ${Array.isArray(form?.coreFeatures) ? form.coreFeatures.join(", ") : "N/A"}
+Integrations: ${integrations}
 
-PRD Summary (first 2000 chars):
-${(prdMarkdown || "").substring(0, 2000)}`;
+${strukturSummary ? `Project Structure (Feature Mindmap):
+${strukturSummary}
+
+` : ""}PRD Content (first 4000 chars):
+${(prdMarkdown || "").substring(0, 4000)}
+
+REMINDER: You MUST output all 5 phases including Phase 5 (Testing & Deployment). Tasks must align with the PRD content and project structure above.`;
 
     if (project.taskData && isOutdated) {
       systemPrompt = `You are a senior software project manager. The user has manually updated their PRD and/or Project Structure. Your task is to intelligently sync the EXISTING task list with the new requirements.
@@ -155,9 +184,43 @@ Please return the fully synchronized Task List in JSON format.`;
     let success = false;
     let lastError = null;
 
-    // Priority 1: OpenRouter (using configured openRouterModel)
-    if (process.env.OPENROUTER_API_KEY) {
-      console.log(`Generating tasks via OpenRouter (${openRouterModel})`);
+    // Priority 1: Gemini (using API Keys & fallback models)
+    if (keys.length > 0) {
+      console.log(`Generating tasks via Gemini (${geminiModel})`);
+      for (const apiKey of keys) {
+        const ai = new GoogleGenAI({ apiKey });
+        for (const model of models) {
+          try {
+            response = await ai.models.generateContent({
+              model,
+              contents: userPrompt,
+              config: { systemInstruction: systemPrompt },
+            });
+            const rawText = response.text?.trim() || "";
+            const cleaned = rawText.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
+            const match = cleaned.match(/\{[\s\S]*\}/);
+            const jsonText = match ? match[0] : cleaned;
+            const parsed = JSON.parse(jsonText);
+            if (!parsed.phases || !Array.isArray(parsed.phases)) {
+              throw new Error("Invalid task phases JSON structure from Gemini");
+            }
+            response = { text: jsonText };
+            success = true;
+            const provider = apiKey === process.env.GEMINI_API_KEY ? "gemini_key_1" : "gemini_key_2";
+            await incrementUsage(provider);
+            break;
+          } catch (err: any) {
+            lastError = err;
+            console.warn(`[Tasks Gemini] ${model}:`, err.message);
+          }
+        }
+        if (success) break;
+      }
+    }
+
+    // Priority 2: OpenRouter Fallback if Gemini failed or not configured
+    if (!success && process.env.OPENROUTER_API_KEY) {
+      console.log(`Gemini unavailable or failed, falling back to OpenRouter (${openRouterModel})`);
       try {
         const { default: OpenAI } = await import("openai");
         const openai = new OpenAI({
@@ -210,32 +273,7 @@ Please return the fully synchronized Task List in JSON format.`;
         await incrementUsage("openrouter");
       } catch (err: any) {
         lastError = err;
-        console.warn(`[OpenRouter Tasks] Failed or invalid JSON, will fallback:`, err.message);
-      }
-    }
-
-    // Priority 2: Gemini Fallback if OpenRouter failed or not configured
-    if (!success && keys.length > 0) {
-      console.log(`OpenRouter unavailable or failed, falling back to Gemini (${geminiModel})`);
-      for (const apiKey of keys) {
-        const ai = new GoogleGenAI({ apiKey });
-        for (const model of models) {
-          try {
-            response = await ai.models.generateContent({
-              model,
-              contents: userPrompt,
-              config: { systemInstruction: systemPrompt },
-            });
-            success = true;
-            const provider = apiKey === process.env.GEMINI_API_KEY ? "gemini_key_1" : "gemini_key_2";
-            await incrementUsage(provider);
-            break;
-          } catch (err: any) {
-            lastError = err;
-            console.warn(`[Tasks Gemini Fallback] ${model}:`, err.message);
-          }
-        }
-        if (success) break;
+        console.warn(`[OpenRouter Tasks Fallback] Failed or invalid JSON:`, err.message);
       }
     }
 
@@ -247,33 +285,117 @@ Please return the fully synchronized Task List in JSON format.`;
     let text: string = response.text?.trim() || "";
     text = text.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
 
-    try {
-      const parsed = JSON.parse(text);
-      
-      // Save to Database
-      let updateData: any = { taskData: JSON.stringify(parsed) };
-      if (isOutdated) {
-        delete form._tasksOutdated;
-        updateData.formInputs = JSON.stringify(form);
-      }
-
-      await prisma.project.update({
-        where: { id: projectId },
-        data: updateData,
-      });
-
-      // Save to Redis Cache
+    // Helper to parse and validate task JSON — returns parsed object or null
+    const parseAndValidateTasks = (raw: string): { phases: any[] } | null => {
       try {
-        await redis.set(cacheKey, parsed);
-      } catch (err) {
-        console.warn("Redis set error:", err);
+        const cleaned = raw.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        const jsonStr = match ? match[0] : cleaned;
+        const parsed = JSON.parse(jsonStr);
+        if (!parsed.phases || !Array.isArray(parsed.phases)) return null;
+        return parsed;
+      } catch {
+        return null;
+      }
+    };
+
+    let parsed = parseAndValidateTasks(text);
+
+    // Auto-retry if fewer than 5 phases returned
+    if (!parsed || parsed.phases.length < 5) {
+      console.warn(`[Tasks] Got ${parsed?.phases?.length ?? 0} phases, expected 5. Auto-retrying...`);
+
+      const retryPrompt = `${userPrompt}\n\nIMPORTANT: Your previous response was incomplete — it only had ${parsed?.phases?.length ?? 0} phases. You MUST return ALL 5 phases. Do NOT stop after phase 1 or phase 2. Generate the complete JSON with all 5 phases now.`;
+
+      let retryText = "";
+      let retrySuccess = false;
+
+      // Retry with Gemini first
+      if (keys.length > 0) {
+        for (const apiKey of keys) {
+          const ai = new GoogleGenAI({ apiKey });
+          for (const model of models) {
+            try {
+              const retryResponse = await ai.models.generateContent({
+                model,
+                contents: retryPrompt,
+                config: { systemInstruction: systemPrompt },
+              });
+              retryText = retryResponse.text?.trim() || "";
+              retrySuccess = true;
+              break;
+            } catch (err: any) {
+              console.warn(`[Tasks Retry Gemini] ${model}:`, err.message);
+            }
+          }
+          if (retrySuccess) break;
+        }
       }
 
-      return NextResponse.json(parsed);
-    } catch {
+      // Retry with OpenRouter if Gemini failed
+      if (!retrySuccess && process.env.OPENROUTER_API_KEY) {
+        try {
+          const { default: OpenAI } = await import("openai");
+          const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_API_KEY,
+          });
+          const settings2: any = (await redis.get("app:settings")) || {};
+          const retryModel = settings2.openRouterModel || "nvidia/nemotron-3-ultra-550b-a55b:free";
+          const completion = await openai.chat.completions.create({
+            model: retryModel,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: retryPrompt }
+            ]
+          });
+          retryText = completion.choices[0].message.content?.trim() || "";
+          retrySuccess = true;
+        } catch (err: any) {
+          console.warn(`[Tasks Retry OpenRouter]:`, err.message);
+        }
+      }
+
+      if (retrySuccess && retryText) {
+        const retryParsed = parseAndValidateTasks(retryText);
+        if (retryParsed && retryParsed.phases.length >= 5) {
+          parsed = retryParsed;
+          console.log(`[Tasks] Retry succeeded with ${retryParsed.phases.length} phases.`);
+        } else {
+          console.warn(`[Tasks] Retry still incomplete (${retryParsed?.phases?.length ?? 0} phases). Using best available result.`);
+          // Use retry result if it has more phases than original
+          if (retryParsed && (!parsed || retryParsed.phases.length > parsed.phases.length)) {
+            parsed = retryParsed;
+          }
+        }
+      }
+    }
+
+    if (!parsed) {
       console.error("Failed to parse tasks JSON:", text);
       return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
     }
+
+    // Save to Database
+    let updateData: any = { taskData: JSON.stringify(parsed) };
+    if (isOutdated) {
+      delete form._tasksOutdated;
+      updateData.formInputs = JSON.stringify(form);
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: updateData,
+    });
+
+    // Save to Redis Cache
+    try {
+      await redis.set(cacheKey, parsed);
+    } catch (err) {
+      console.warn("Redis set error:", err);
+    }
+
+    return NextResponse.json(parsed);
   } catch (error) {
     console.error("Tasks generation error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -182,6 +182,10 @@ ${template}
 - Design Preference: ${formInputs.designPreference || "N/A"}`;
     }
 
+    const integrationsList = Array.isArray(formInputs.integrations) && formInputs.integrations.length > 0
+      ? formInputs.integrations.filter((i: string) => i !== "None").join(", ")
+      : "None";
+
     const prdUserPrompt = `Generate a PRD based on the following user inputs:
     
 - App Name: ${project.appName || "N/A"}
@@ -191,6 +195,12 @@ ${template}
 - Database Stack: ${formInputs.stacks?.database || "N/A"}
 - Deployment Stack: ${formInputs.stacks?.deployment || "N/A"}
 ${answersStr}
+
+[SELECTED INTEGRATIONS - CRITICAL]
+The following third-party integrations have been selected by the user and MUST be explicitly described inside the corresponding feature section of the PRD (not just listed in tech stack):
+${integrationsList}
+
+For each integration above, include a dedicated sub-section or detailed bullet inside the relevant feature section explaining HOW it is used (e.g. OAuth flow, API calls, webhook handling, SDK usage, etc.).
 `;
 
     // ==========================================

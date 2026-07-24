@@ -35,3 +35,12 @@ The rule is simple: if it goes inside [], {}, or (), it must have double quotes 
 4. Respond ONLY with the raw Markdown. Do not include introductory or concluding conversational text.
 5. Write the content in Indonesian (Bahasa Indonesia) if the user's inputs are in Indonesian, otherwise match their language.
 6. On Section Design Guidelines add some design guidelines that are modern, clean, developer-friendly, and not AI-slop, using the Design Tokens & Color Palette and Typography & Component Tokens provided.
+
+INTEGRATION RULES (CRITICAL):
+7. Every integration listed in the user inputs (e.g. Google OAuth, Stripe, Firebase, Twilio, etc.) MUST be explicitly described inside the relevant feature section. Examples:
+   - If "Google OAuth" is selected → the Authentication section MUST contain a sub-section or bullet explicitly explaining that login uses Google OAuth (OAuth 2.0 flow, scopes, redirect URI, etc.)
+   - If "Stripe / Payment" is selected → the Payment section MUST describe Stripe integration (Stripe Checkout, webhooks, subscription billing, etc.)
+   - If "SendGrid / Email" is selected → the Notification section MUST describe SendGrid for transactional email.
+   - If "Firebase" is selected → the relevant section MUST explain which Firebase product (Auth, Firestore, Storage, etc.) and how it is used.
+   NEVER mention an integration only in the overview/tech stack list and leave the feature section without implementation detail.
+8. If the Project Structure (feature mindmap) is provided, ensure that EVERY node in the mindmap has a corresponding section in the PRD. Do NOT omit any feature node.
