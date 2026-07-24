@@ -70,7 +70,7 @@ export const SYSTEM_DIRECTIVES = {
           "LAYOUT PROPERTY ANIMATION: Animasi width/height/padding/margin yang memicu reflow. Gunakan transform + opacity.",
           "IMAGE HOVER TRANSFORM: Scale atau rotate gambar saat hover tanpa tujuan fungsional.",
           "EM-DASH OVERUSE: Lebih dari 2 em-dash dalam body copy. Gunakan koma, titik dua, atau kurung.",
-          "MARKETING BUZZWORD: Supercharge, world-class, enterprise-grade, next-gen, streamline, empower, dsb.",
+          "MARKETING BUZZWORD: Supercharge, world-class, enterprise-grade, next-gen, streamline, empower, seamless, robust, cutting-edge, innovative, leverage.",
           "APHORISTIC CADENCE: Frasa pendek kontras berulang yang terasa kaku ('Not a feature. A platform.')",
           "THEATER FRAMING: Menyebut sesuatu sebagai 'theater' atau 'performative' secara generik.",
           "SHADCN/UI DEFAULT FINGERPRINT: Palet dan gaya CSS identik dengan shadcn/ui default tanpa customisasi brand.",
@@ -97,7 +97,11 @@ export const SYSTEM_DIRECTIVES = {
           "TIGHT LINE HEIGHT: Line-height di bawah 1.3x untuk multi-line text.",
           "TINY BODY TEXT: Body text di bawah 12px. Minimum 14px, ideal 16px.",
           "WIDE LETTER SPACING BODY: Letter-spacing di atas 0.05em pada body text. Reserve untuk short uppercase label.",
-          "AMATEURISH HAND-DRAWN SVG: Ilustrasi SVG yang di-code manual terlihat seperti doodle, bukan whimsy."
+          "AMATEURISH HAND-DRAWN SVG: Ilustrasi SVG yang di-code manual terlihat seperti doodle, bukan whimsy.",
+          "CENTERED LAYOUTS EVERYWHERE: Semua section menggunakan text-align center dan mx-auto tanpa variasi. Mix alignment — left-align body text, center hanya untuk hero singkat atau elemen spesifik yang memang pantas.", // [NEW]
+          "MEANINGLESS ABSTRACT BLOBS: Blob atau bentuk abstrak sebagai dekorasi background tanpa tujuan desain yang jelas.", // [NEW]
+          "DECORATIVE SEPARATORS: Menggunakan divider/line/separator dekoratif sebagai pengganti whitespace untuk memisahkan section. Gunakan whitespace.", // [NEW]
+          "SINGLE COMPONENT PATTERN LOOP: Menggunakan satu pola komponen yang sama diulang-ulang di seluruh halaman (bukan hanya card — termasuk semua section menggunakan layout identik)." // [NEW]
         ],
         "ALLOWED_WITH_PURPOSE": [
           "Glassmorphism: HANYA untuk elemen yang memang perlu efek transparansi (modal overlay, floating card di atas gambar).",
@@ -343,6 +347,53 @@ export const SYSTEM_DIRECTIVES = {
           "Heading harus spesifik, bukan generik"
         ]
       },
+
+      // ========== [NEW] SECTION START ==========
+      "visualHierarchy": { // [NEW]
+        "rules": [
+          "Setiap section HARUS punya satu focal point yang jelas — elemen yang paling pertama menarik perhatian saat user scroll ke section tersebut.",
+          "Gunakan whitespace sebagai pemisah antar section, BUKAN decorative divider/line/separator.",
+          "Vary ukuran komponen antar section untuk menciptakan ritme visual. Jangan semua section sama besar dan sama padat.",
+          "Heading HARUS mengkomunikasikan value secara langsung dan spesifik. User harus tahu apa yang akan didapat dalam 2 detik membaca heading."
+        ]
+      },
+      "componentVariety": { // [NEW]
+        "rule": "Jangan gunakan satu pola komponen yang sama diulang-ulang di seluruh halaman. Pilih pola yang paling cocok untuk jenis konten:",
+        "availablePatterns": [
+          "cards (untuk fitur yang setara)",
+          "timelines (untuk proses/chronology)",
+          "comparison tables (untuk perbandingan pakah/fitur)",
+          "dashboards (untuk data/metrics yang real-time)",
+          "expandable/accordion sections (untuk FAQ atau detail yang bisa dilipat)",
+          "tabs (untuk konten yang kategorinya setara)",
+          "callouts/alerts (untuk peringatan, tips, atau highlight penting)",
+          "feature highlights (untuk 1-2 fitur utama dengan detail mendalam)",
+          "testimonials (untuk social proof)",
+          "screenshots (untuk menunjukkan produk nyata)",
+          "interactive previews (untuk demo langsung di halaman)"
+        ],
+        "guideline": "Halaman yang baik memilih 3-5 pola berbeda yang masing-masing cocok dengan kontennya, bukan 1 pola yang diulang 8 kali."
+      },
+      "authenticProductFeel": { // [NEW]
+        "rules": [
+          "Halaman harus terasa seperti produk nyata yang dibangun oleh startup, bukan template demo. Sertakan navigasi yang realistis, konten yang believable.",
+          "Jika menggunakan statistik/angka, gunakan angka yang masuk akal dan realistis untuk ukuran produk — bukan '10M+ users' untuk produk yang baru launch.",
+          "Setiap interaksi (klik, hover, toggle) HARUS punya tujuan fungsional. Jangan tambahkan interaksi hanya untuk terlihat 'interaktif'."
+        ]
+      },
+      "designPhilosophy": { // [NEW]
+        "principle": "Setiap halaman harus terasa handcrafted oleh senior product designer, bukan generated oleh AI.",
+        "check": [
+          "Apakah spacing ini terlihat intentional?",
+          "Apakah typography ini terlihat intentional?",
+          "Apakah color ini terlihat intentional?",
+          "Apakah animation ini terlihat intentional?",
+          "Apakah composition keseluruhan terlihat intentional?"
+        ],
+        "rule": "Jika jawaban 'ini terlihat generated' muncul di salah satu aspek di atas, ulangi desain bagian tersebut."
+      },
+      // ========== [NEW] SECTION END ==========
+
       "stateHandling": {
         "required": [
           {
@@ -417,7 +468,9 @@ export const SYSTEM_DIRECTIVES = {
           "Navigation: hamburger menu di mobile, horizontal nav di desktop (kecuali PRD specify lain)",
           "Table: horizontal scroll di mobile, full width di desktop",
           "Modal: full-screen atau bottom sheet di mobile, centered dialog di desktop",
-          "Grid: single column mobile, multi-column desktop sesuai konteks"
+          "Grid: single column mobile, multi-column desktop sesuai konteks",
+          "Buttons, cards, tables, dan code blocks TIDAK PERNAH boleh overflow horizontal di mobile. Gunakan overflow-x-auto, max-w-full, atau layout yang wrap secara natural.", // [NEW]
+          "Typography HARUS scale secara proporsional di setiap breakpoint. Heading 4xl/5xl di desktop harus turun ke 2xl/3xl di mobile. Jangan biarkan heading besar pecah layout di layar kecil." // [NEW]
         ]
       },
       "imageryRules": {
@@ -442,10 +495,10 @@ export const SYSTEM_DIRECTIVES = {
           "// @ts-ignore tanpa penjelasan"
         ],
         "REQUIRED": [
-          "Strict typing untuk semua function parameters dan return types",
+          "Strict typing untuk semua function parameters and return types",
           "Interface/Type untuk API response, form data, dan complex objects",
           "Enum atau union type untuk status/state yang terbatas",
-          "Generic types untuk reusable components dan utilities"
+          "Generic types untuk reusable components and utilities"
         ],
         "example": "```typescript\n// ❌ FORBIDDEN\nfunction handleSubmit(data: any) { ... }\n\n// ✅ REQUIRED\ninterface FormData {\n  email: string;\n  password: string;\n  rememberMe: boolean;\n}\n\nfunction handleSubmit(data: FormData): Promise<AuthResponse> { ... }\n```"
       },
@@ -522,7 +575,15 @@ export const SYSTEM_DIRECTIVES = {
           "☐ Apakah ada loading/empty/error state untuk setiap data display?",
           "☐ Apakah semua interactive element keyboard-accessible?",
           "☐ Apakah ada 'any' type yang bisa dihindari?",
-          "☐ Apakah status task Piardify sudah diupdate?"
+          "☐ Apakah status task Piardify sudah diupdate?",
+          "☐ Apakah ada centered layout di semua section tanpa variasi alignment?", // [NEW]
+          "☐ Apakah ada abstract blob dekoratif tanpa tujuan?", // [NEW]
+          "☐ Apakah ada decorative separator menggantikan whitespace?", // [NEW]
+          "☐ Apakah satu pola komponen diulang di seluruh halaman?", // [NEW]
+          "☐ Apakah setiap section punya focal point yang jelas?", // [NEW]
+          "☐ Apakah ada elemen yang terlihat 'generated'而非 'intentional'?", // [NEW]
+          "☐ Apakah ada elemen yang overflow horizontal di mobile?", // [NEW]
+          "☐ Apakah typography tidak scale dengan proporsional di mobile?" // [NEW]
         ],
         "ifAnyFail": "Perbaiki sebelum mengirim output. Jangan compromise."
       }
@@ -546,7 +607,13 @@ export const SYSTEM_DIRECTIVES = {
         "darkmode_good": "```css\n/* ✅ GOOD: Dark + subtle elevation + high contrast text */\nbackground: hsl(240, 10%, 8%);\ncolor: hsl(0, 0%, 92%); /* ~14:1 contrast — passes AAA */\nbox-shadow: 0 1px 3px rgb(0 0 0 / 0.3);\nborder: 1px solid hsl(0, 0%, 18%);\n```",
 
         "copy_slop": "```html\n<!-- ❌ AI SLOP: Buzzword + em-dash + aphoristic cadence -->\n<h1>Supercharge Your Workflow — World-Class Tools for Enterprise-Grade Teams</h1>\n<p>Not a feature. A platform. Built for speed — designed for scale — engineered for impact.</p>\n```",
-        "copy_good": "```html\n<!-- ✅ GOOD: Specific, no buzzword, direct -->\n<h1>Ship deploys in under 30 seconds</h1>\n<p>Push to main and your changes are live. Zero config, no migration scripts, no downtime.</p>\n```"
+        "copy_good": "```html\n<!-- ✅ GOOD: Specific, no buzzword, direct -->\n<h1>Ship deploys in under 30 seconds</h1>\n<p>Push to main and your changes are live. Zero config, no migration scripts, no downtime.</p>\n```",
+
+        // [NEW] examples for the new rules
+        "variety_slop": "```tsx\n// ❌ AI SLOP: Same card pattern repeated 6 times\n{sections.map(s => (\n  <div className='bg-white rounded-xl border p-6'>\n    <Icon className='mb-3' /><h3>{s.title}</h3><p>{s.desc}</p>\n  </div>\n))}\n```", // [NEW]
+        "variety_good": "```tsx\n// ✅ GOOD: Different component patterns for different content types\n{/* Feature highlight with screenshot */}\n<div className='grid md:grid-cols-2 gap-8'>\n  <div><h3>Real-time sync</h3><p>...</p></div>\n  <img src='screenshot.png' className='rounded-lg border' />\n</div>\n{/* Comparison table */}\n<table><thead>...</thead><tbody>...</tbody></table>\n{/* Testimonial */}\n<blockquote className='border-l-2 border-primary pl-4'>\"...\"</blockquote>\n```", // [NEW]
+        "centered_slop": "```tsx\n// ❌ AI SLOP: Every section centered\n<section className='text-center'>\n  <h2>Features</h2>\n  <p className='mx-auto max-w-2xl'>...</p>\n</section>\n<section className='text-center'>\n  <h2>Pricing</h2>\n  <p className='mx-auto max-w-2xl'>...</p>\n</section>\n```", // [NEW]
+        "centered_good": "```tsx\n// ✅ GOOD: Mixed alignment — hero centered, features left-aligned\n<section className='text-center'>\n  <h1>Short punchy hero</h1>\n</section>\n<section className='max-w-4xl'>\n  <h2 className='text-left'>Features</h2>\n  <p className='text-left'>Detailed explanation that's easier to read left-aligned...</p>\n</section>\n```" // [NEW]
       }
     }
 
