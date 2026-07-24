@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { SYSTEM_DIRECTIVES } from "@/lib/systemDirectives";
+import { TASTE_SKILL_DIRECTIVES } from "@/lib/tasteSkill";
 
 export async function POST(req: NextRequest) {
   try {
@@ -114,6 +115,17 @@ export async function POST(req: NextRequest) {
               }
             },
             {
+              name: "get_taste_skill",
+              description: "Mengambil instruksi Taste Skill v2 (Anti-Slop Frontend Engineering Framework) untuk panduan desain modern, tidak kaku, dan eye catching.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  projectId: { type: "string", description: "ID unik proyek Piardify" }
+                },
+                required: ["projectId"]
+              }
+            },
+            {
               name: "update_task_status",
               description: "Memperbarui status tugas pada Kanban Board proyek Piardify.",
               inputSchema: {
@@ -161,14 +173,14 @@ export async function POST(req: NextRequest) {
         let tasks = [];
         let savedStatus = {};
         if (project.taskData) {
-          try { tasks = JSON.parse(project.taskData); } catch {}
+          try { tasks = JSON.parse(project.taskData); } catch { }
         }
         if (project.checkedTasks) {
-          try { savedStatus = JSON.parse(project.checkedTasks); } catch {}
+          try { savedStatus = JSON.parse(project.checkedTasks); } catch { }
         }
         let structure = null;
         if (project.strukturData) {
-          try { structure = JSON.parse(project.strukturData); } catch {}
+          try { structure = JSON.parse(project.strukturData); } catch { }
         }
 
         const contentText = JSON.stringify({
@@ -193,7 +205,7 @@ export async function POST(req: NextRequest) {
       if (name === "get_project_structure") {
         let structure = null;
         if (project.strukturData) {
-          try { structure = JSON.parse(project.strukturData); } catch {}
+          try { structure = JSON.parse(project.strukturData); } catch { }
         }
         return NextResponse.json({
           jsonrpc: "2.0",
@@ -218,15 +230,25 @@ export async function POST(req: NextRequest) {
         let tasks = [];
         let savedStatus = {};
         if (project.taskData) {
-          try { tasks = JSON.parse(project.taskData); } catch {}
+          try { tasks = JSON.parse(project.taskData); } catch { }
         }
         if (project.checkedTasks) {
-          try { savedStatus = JSON.parse(project.checkedTasks); } catch {}
+          try { savedStatus = JSON.parse(project.checkedTasks); } catch { }
         }
         return NextResponse.json({
           jsonrpc: "2.0",
           result: {
             content: [{ type: "text", text: JSON.stringify({ tasks, savedStatus }, null, 2) }]
+          },
+          id
+        });
+      }
+
+      if (name === "get_taste_skill") {
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          result: {
+            content: [{ type: "text", text: JSON.stringify(TASTE_SKILL_DIRECTIVES, null, 2) }]
           },
           id
         });
@@ -244,7 +266,7 @@ export async function POST(req: NextRequest) {
 
         let savedStatus: Record<string, string> = {};
         if (project.checkedTasks) {
-          try { savedStatus = JSON.parse(project.checkedTasks); } catch {}
+          try { savedStatus = JSON.parse(project.checkedTasks); } catch { }
         }
         savedStatus[taskId] = status;
 
@@ -256,7 +278,7 @@ export async function POST(req: NextRequest) {
         try {
           await redis.set(`project:${projectId}:taskStatus`, savedStatus);
           await redis.del(`project:${projectId}:tasks`);
-        } catch (e) {}
+        } catch (e) { }
 
         return NextResponse.json({
           jsonrpc: "2.0",

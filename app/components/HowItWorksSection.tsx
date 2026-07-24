@@ -18,7 +18,7 @@ export default function HowItWorksSection() {
           <span className="hiw-heading-accent">shipped PRD in 4 steps</span>
         </h2>
         <p className="hiw-subheading">
-          A guided, AI-powered workflow — no guesswork, no blank-page anxiety.
+          A guided, AI-powered workflow: zero guesswork, zero blank-page anxiety.
         </p>
       </div>
 

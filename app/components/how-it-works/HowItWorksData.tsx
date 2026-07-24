@@ -5,7 +5,7 @@ export const STEPS = [
   {
     number: "01",
     title: "Describe Your Idea",
-    desc: "Give Piardify a short description of your app concept — a few sentences is all it takes to kick off the process.",
+    desc: "Give Piardify a short description of your app concept (a few sentences is all it takes to kick off the process).",
     detail: "No lengthy briefs. Just your raw idea.",
     accentVar: "var(--color-signal)",
     icon: <MessageSquare size={20} strokeWidth={1.5} />,
@@ -13,7 +13,7 @@ export const STEPS = [
   {
     number: "02",
     title: "Choose Your Stack",
-    desc: "Pick your frontend, backend, database, and deployment tech — or let the AI recommend the perfect combination.",
+    desc: "Pick your frontend, backend, database, and deployment tech, or let the AI recommend the perfect combination.",
     detail: "4 categories. Infinite combinations.",
     accentVar: "var(--color-circuit)",
     icon: <Layers size={20} strokeWidth={1.5} />,

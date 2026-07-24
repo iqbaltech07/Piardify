@@ -179,8 +179,8 @@ export default function LeaderboardSection() {
           z-index: 1;
         }
         .lb-header {
-          text-align: center;
-          margin-bottom: 52px;
+          text-align: left;
+          margin-bottom: 48px;
         }
         .lb-header-pill {
           display: inline-flex;
@@ -210,8 +210,7 @@ export default function LeaderboardSection() {
           font-family: var(--font-body);
           font-size: 15px;
           color: var(--color-mist);
-          max-width: 480px;
-          margin: 0 auto;
+          max-width: 520px;
           line-height: 1.6;
         }
 
@@ -222,6 +221,8 @@ export default function LeaderboardSection() {
           border: 1px solid var(--border-hairline);
           border-radius: var(--radius-lg);
           overflow: hidden;
+          max-width: 100%;
+          overflow-x: auto;
         }
 
         /* Row */

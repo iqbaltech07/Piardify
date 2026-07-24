@@ -22,8 +22,8 @@ export default function FeaturesStyles() {
 
       /* ── Header ── */
       .feat-header {
-        text-align: center;
-        margin-bottom: 64px;
+        max-width: 1200px;
+        margin: 0 auto 48px;
         position: relative;
         z-index: 1;
       }
@@ -63,8 +63,7 @@ export default function FeaturesStyles() {
         font-family: var(--font-body);
         font-size: 15px;
         color: var(--color-mist);
-        max-width: 480px;
-        margin: 0 auto;
+        max-width: 560px;
         line-height: 1.7;
       }
 

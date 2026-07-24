@@ -18,7 +18,7 @@ export default function FeaturesSection() {
           <span className="feat-heading-accent">refuse to slow down</span>
         </h2>
         <p className="feat-subheading">
-          Every tool you need, from ideation to export, wired into one seamless AI workflow.
+          Every tool you need, from ideation to export, wired into one integrated AI workflow.
         </p>
       </div>
 
