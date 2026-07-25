@@ -56,9 +56,15 @@ export const SYSTEM_DIRECTIVES = {
           "rule": "AST & DEPENDENCY CHECK [CRITICAL]: DILARANG KERAS menghapus, mengganti nama, atau memodifikasi sebuah komponen/fungsi yang di-export tanpa menjalankan tool pencarian lokal (seperti `grep_search`) terlebih dahulu untuk melacak SEMUA file yang bergantung padanya.",
           "validation": "Selalu lakukan pencarian menyeluruh (cross-file reference check) sebelum melakukan refactor atau perubahan argumen Props.",
           "failure_consequence": "Dependency terputus (broken import), halaman lain menjadi blank atau error tanpa disadari."
+        },
+        {
+          "id": "AH-010",
+          "rule": "PIARDIFY BLACKBOX [CRITICAL]: Mengeksplorasi folder proyek target sangat disarankan, TETAPI jika Anda melihat folder bernama `piardify` atau *source code* dari Piardify MCP itu sendiri di lokal komputer pengguna, DILARANG KERAS melakukan `list_dir`, `read_file`, atau menganalisis isinya. SEMUA tasks, instruksi, dan aturan PURE (100%) didapatkan dari pemanggilan tool MCP Piardify, BUKAN dari membaca folder lokal piardify. Piardify adalah mesin server, bukan subjek tugas Anda.",
+          "validation": "Pastikan direktori yang sedang Anda eksplorasi dan kerjakan BUKAN folder `piardify`. Ambil aturan murni dari tool MCP.",
+          "failure_consequence": "AI membuang waktu dan token (context limits) menganalisis server MCP alih-alih mengerjakan proyek target pengguna."
         }
       ],
-      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya mengasumsikan sesuatu? Apakah saya sudah menanyakan preferensi Design System? Apakah ada rahasia yang perlu dimasukkan ke .env? Apakah saya SUDAH menjalankan linter lokal? Apakah saya SUDAH mengecek dependensi sebelum mengubah komponen? Dan apakah tindakan saya MELANGGAR instruksi ketat dari MCP ini?'"
+      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya mengasumsikan sesuatu? Apakah saya sudah menanyakan preferensi Design System? Apakah ada rahasia yang perlu dimasukkan ke .env? Apakah saya SUDAH menjalankan linter lokal? Apakah saya SUDAH mengecek dependensi sebelum mengubah komponen? Apakah saya mengeksplorasi folder Piardify (yang dilarang)? Dan apakah tindakan saya MELANGGAR instruksi ketat dari MCP ini?'"
     },
 
     "codeQuality": {
