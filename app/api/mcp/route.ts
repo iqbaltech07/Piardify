@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
           tools: [
             {
               name: "get_project_blueprint",
-              description: "Mengambil data lengkap PRD (Product Requirements Document), Mindmap Structure, dan Kanban Task List dari proyek Piardify untuk konteks koding anti-halusinasi.",
+              description: "Mengambil data ringkas PRD, Struktur, dan Task List. Info: Aturan koding tidak dilampirkan otomatis, gunakan get_system_directives.",
               inputSchema: {
                 type: "object",
                 properties: {
@@ -105,13 +105,26 @@ export async function POST(req: NextRequest) {
             },
             {
               name: "get_task_list",
-              description: "Mengambil daftar seluruh task dan statusnya saat ini.",
+              description: "Mengambil daftar seluruh task dan statusnya. Opsional: filter status untuk hemat token.",
               inputSchema: {
                 type: "object",
                 properties: {
-                  projectId: { type: "string", description: "ID unik proyek Piardify" }
+                  projectId: { type: "string", description: "ID unik proyek Piardify" },
+                  status: { type: "string", enum: ["todo", "in_progress", "done"], description: "Opsional filter status task" }
                 },
                 required: ["projectId"]
+              }
+            },
+            {
+              name: "get_system_directives",
+              description: "Mengambil aturan koding spesifik. Gunakan parameter 'context' untuk memfilter (backend/frontend) agar hemat token.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  projectId: { type: "string", description: "ID unik proyek Piardify" },
+                  context: { type: "string", enum: ["backend", "frontend", "all"], description: "Konteks instruksi yang dibutuhkan" }
+                },
+                required: ["projectId", "context"]
               }
             },
             {
@@ -190,8 +203,8 @@ export async function POST(req: NextRequest) {
           structure,
           tasks,
           taskStatuses: savedStatus,
-          ...SYSTEM_DIRECTIVES
-        }, null, 2);
+          notice: "Untuk menghemat token, aturan koding (system directives) tidak dilampirkan. Silakan panggil tool 'get_system_directives' dengan parameter context 'backend' atau 'frontend'."
+        }); // Minified JSON without formatting
 
         return NextResponse.json({
           jsonrpc: "2.0",
@@ -210,7 +223,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           jsonrpc: "2.0",
           result: {
-            content: [{ type: "text", text: JSON.stringify(structure, null, 2) }]
+            content: [{ type: "text", text: JSON.stringify(structure) }]
           },
           id
         });
@@ -227,18 +240,50 @@ export async function POST(req: NextRequest) {
       }
 
       if (name === "get_task_list") {
-        let tasks = [];
-        let savedStatus = {};
+        const { status } = args;
+        let tasks: any[] = [];
+        let savedStatus: any = {};
         if (project.taskData) {
           try { tasks = JSON.parse(project.taskData); } catch { }
         }
         if (project.checkedTasks) {
           try { savedStatus = JSON.parse(project.checkedTasks); } catch { }
         }
+        
+        if (status) {
+          tasks = tasks.filter(t => (savedStatus[t.id] || "todo") === status);
+        }
+
         return NextResponse.json({
           jsonrpc: "2.0",
           result: {
-            content: [{ type: "text", text: JSON.stringify({ tasks, savedStatus }, null, 2) }]
+            content: [{ type: "text", text: JSON.stringify({ tasks, savedStatus }) }]
+          },
+          id
+        });
+      }
+
+      if (name === "get_system_directives") {
+        const { context } = args;
+        if (!context) {
+          return NextResponse.json({ jsonrpc: "2.0", error: { code: -32602, message: "Missing context argument" }, id }, { status: 400 });
+        }
+        
+        const sd = SYSTEM_DIRECTIVES.systemDirectives;
+        let result: any = {
+          antiHallucinationRules: sd.antiHallucinationRules,
+          codeQuality: sd.codeQuality,
+          outputValidation: sd.outputValidation
+        };
+        
+        if (context === "frontend" || context === "all") {
+          result.tasteSkill = TASTE_SKILL_DIRECTIVES;
+        }
+
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          result: {
+            content: [{ type: "text", text: JSON.stringify(result) }]
           },
           id
         });
@@ -248,7 +293,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           jsonrpc: "2.0",
           result: {
-            content: [{ type: "text", text: JSON.stringify(TASTE_SKILL_DIRECTIVES, null, 2) }]
+            content: [{ type: "text", text: JSON.stringify(TASTE_SKILL_DIRECTIVES) }]
           },
           id
         });
