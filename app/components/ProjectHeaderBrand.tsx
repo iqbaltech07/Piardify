@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { FolderGit2, Lightbulb, Pencil, X, Check, Loader2 } from "lucide-react";
@@ -21,6 +22,7 @@ export default function ProjectHeaderBrand({
   const [project, setProject] = useState<ProjectInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Edit Modal State
   const [isEditingModalOpen, setIsEditingModalOpen] = useState(false);
@@ -30,6 +32,10 @@ export default function ProjectHeaderBrand({
 
   const displayName = project?.appName || project?.title || "Untitled Project";
   const ideaText = project?.appIdea || "";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!projectId) {
@@ -400,248 +406,255 @@ export default function ProjectHeaderBrand({
         )}
       </div>
 
-      {/* Edit Project Info Modal */}
-      {isEditingModalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(10, 16, 30, 0.85)",
-            backdropFilter: "blur(8px)",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            padding: "24px 16px",
-            overflowY: "auto",
-          }}
-          onClick={() => setIsEditingModalOpen(false)}
-        >
+      {/* Edit Project Info Modal (Rendered via Portal to document.body for highest z-index) */}
+      {isEditingModalOpen &&
+        mounted &&
+        createPortal(
           <div
             style={{
-              width: "100%",
-              maxWidth: 500,
-              margin: "auto 0",
-              background: "var(--bg-elevated)",
-              border: "1px solid var(--border-strong)",
-              borderRadius: "var(--radius-lg)",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 182, 39, 0.3)",
-              padding: 20,
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999999,
+              background: "rgba(10, 16, 30, 0.85)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
               display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              maxHeight: "calc(100vh - 48px)",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              padding: "32px 16px",
               overflowY: "auto",
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setIsEditingModalOpen(false)}
           >
-            {/* Modal Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 500,
+                margin: "auto 0",
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: "var(--radius-lg)",
+                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 182, 39, 0.35)",
+                padding: 24,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                maxHeight: "calc(100vh - 64px)",
+                overflowY: "auto",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: "var(--radius-md)",
+                      background: "rgba(255, 182, 39, 0.12)",
+                      border: "1px solid rgba(255, 182, 39, 0.35)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--color-signal)",
+                    }}
+                  >
+                    <Pencil size={16} />
+                  </div>
+                  <div>
+                    <h3
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "16px",
+                        fontWeight: 700,
+                        color: "var(--fg-primary)",
+                        margin: 0,
+                      }}
+                    >
+                      Edit Project Information
+                    </h3>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        color: "var(--fg-muted)",
+                        margin: 0,
+                        marginTop: 2,
+                      }}
+                    >
+                      Update project name & core idea description
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsEditingModalOpen(false)}
                   style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "var(--radius-md)",
-                    background: "rgba(255, 182, 39, 0.12)",
-                    border: "1px solid rgba(255, 182, 39, 0.35)",
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--fg-muted)",
+                    cursor: "pointer",
+                    padding: 4,
+                    borderRadius: 4,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--color-signal)",
                   }}
                 >
-                  <Pencil size={16} />
-                </div>
-                <div>
-                  <h3
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontSize: "16px",
-                      fontWeight: 700,
-                      color: "var(--fg-primary)",
-                      margin: 0,
-                    }}
-                  >
-                    Edit Project Information
-                  </h3>
-                  <p
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSaveProjectInfo} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {/* Field 1: Project Name */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label
                     style={{
                       fontFamily: "var(--font-mono)",
-                      fontSize: "10px",
-                      color: "var(--fg-muted)",
-                      margin: 0,
-                      marginTop: 2,
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      color: "var(--color-signal)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
                     }}
                   >
-                    Update project name & core idea description
-                  </p>
+                    <FolderGit2 size={12} />
+                    Project / App Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Enter Project Name (e.g. Piardify)"
+                    required
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "var(--radius-md)",
+                      background: "var(--bg-base)",
+                      border: "1px solid var(--border-hairline)",
+                      color: "var(--fg-primary)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
                 </div>
-              </div>
 
-              <button
-                onClick={() => setIsEditingModalOpen(false)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--fg-muted)",
-                  cursor: "pointer",
-                  padding: 4,
-                  borderRadius: 4,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <X size={18} />
-              </button>
+                {/* Field 2: Project Idea Description */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      color: "var(--color-circuit)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <Lightbulb size={12} />
+                    Project Idea Description
+                  </label>
+                  <textarea
+                    value={editIdea}
+                    onChange={(e) => setEditIdea(e.target.value)}
+                    placeholder="Describe your project idea..."
+                    rows={3}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "var(--radius-md)",
+                      background: "var(--bg-base)",
+                      border: "1px solid var(--border-hairline)",
+                      color: "var(--fg-primary)",
+                      fontFamily: "var(--font-body)",
+                      fontSize: "13px",
+                      lineHeight: 1.5,
+                      outline: "none",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                      minHeight: "70px",
+                      maxHeight: "140px",
+                    }}
+                  />
+                </div>
+
+                {/* Form Actions */}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingModalOpen(false)}
+                    disabled={isSaving}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "var(--radius-md)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                      border: "1px solid var(--border-hairline)",
+                      background: "var(--bg-elevated)",
+                      color: "var(--fg-secondary)",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving || !editName.trim()}
+                    style={{
+                      padding: "8px 18px",
+                      borderRadius: "var(--radius-md)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      cursor: isSaving || !editName.trim() ? "not-allowed" : "pointer",
+                      border: "1px solid var(--color-signal)",
+                      background: "var(--color-signal)",
+                      color: "var(--color-graphite)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      opacity: isSaving || !editName.trim() ? 0.5 : 1,
+                    }}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} />
+                        Saving…
+                      </>
+                    ) : (
+                      <>
+                        <Check size={13} strokeWidth={2.5} />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
-
-            {/* Form */}
-            <form onSubmit={handleSaveProjectInfo} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Field 1: Project Name */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    color: "var(--color-signal)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <FolderGit2 size={12} />
-                  Project / App Name
-                </label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  placeholder="Enter Project Name (e.g. Piardify)"
-                  required
-                  autoFocus
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: "var(--radius-md)",
-                    background: "var(--bg-base)",
-                    border: "1px solid var(--border-hairline)",
-                    color: "var(--fg-primary)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
-                />
-              </div>
-
-              {/* Field 2: Project Idea Description */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    color: "var(--color-circuit)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <Lightbulb size={12} />
-                  Project Idea Description
-                </label>
-                <textarea
-                  value={editIdea}
-                  onChange={(e) => setEditIdea(e.target.value)}
-                  placeholder="Describe your project idea..."
-                  rows={3}
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: "var(--radius-md)",
-                    background: "var(--bg-base)",
-                    border: "1px solid var(--border-hairline)",
-                    color: "var(--fg-primary)",
-                    fontFamily: "var(--font-body)",
-                    fontSize: "13px",
-                    lineHeight: 1.5,
-                    outline: "none",
-                    resize: "vertical",
-                    boxSizing: "border-box",
-                    minHeight: "70px",
-                    maxHeight: "140px",
-                  }}
-                />
-              </div>
-
-              {/* Form Actions */}
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingModalOpen(false)}
-                  disabled={isSaving}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "var(--radius-md)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    border: "1px solid var(--border-hairline)",
-                    background: "var(--bg-elevated)",
-                    color: "var(--fg-secondary)",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving || !editName.trim()}
-                  style={{
-                    padding: "8px 18px",
-                    borderRadius: "var(--radius-md)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    cursor: isSaving || !editName.trim() ? "not-allowed" : "pointer",
-                    border: "1px solid var(--color-signal)",
-                    background: "var(--color-signal)",
-                    color: "var(--color-graphite)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    opacity: isSaving || !editName.trim() ? 0.5 : 1,
-                  }}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} />
-                      Saving…
-                    </>
-                  ) : (
-                    <>
-                      <Check size={13} strokeWidth={2.5} />
-                      Save Changes
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
