@@ -98,6 +98,12 @@ export default function ProjectHeaderBrand({
       );
       setIsEditingModalOpen(false);
       toast.success("Project info updated successfully!");
+
+      window.dispatchEvent(
+        new CustomEvent("projectUpdated", {
+          detail: { appName: editName.trim(), appIdea: editIdea.trim() },
+        })
+      );
     } catch {
       toast.error("Connection error while updating project info");
     } finally {

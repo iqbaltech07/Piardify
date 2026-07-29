@@ -47,13 +47,7 @@ export async function GET(
       return NextResponse.json({ error: "Project not found or unauthorized" }, { status: 404 });
     }
 
-    let title = project.appName;
-    if (project.strukturData) {
-      try {
-        const parsed = JSON.parse(project.strukturData);
-        if (parsed.title) title = parsed.title;
-      } catch {}
-    }
+    const title = project.appName || "Untitled Project";
 
     const result = {
       id: project.id,

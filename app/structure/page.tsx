@@ -315,6 +315,25 @@ function StrukturPageContent() {
     generate();
   }, [hasStarted, setNodes, setEdges, projectId]);
 
+  useEffect(() => {
+    const handleProjectUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.appName) {
+        const newName = customEvent.detail.appName;
+        setNodes((prevNodes) =>
+          prevNodes.map((node) =>
+            node.type === "root"
+              ? { ...node, data: { ...node.data, label: newName } }
+              : node
+          )
+        );
+        setRawData((prev) => (prev ? { ...prev, title: newName } : prev));
+      }
+    };
+    window.addEventListener("projectUpdated", handleProjectUpdate);
+    return () => window.removeEventListener("projectUpdated", handleProjectUpdate);
+  }, [setNodes]);
+
   const handleSave = async () => {
     if (!projectId) return;
     const rootNode = nodes.find((n) => n.type === "root");

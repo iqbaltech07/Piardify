@@ -33,9 +33,37 @@ export async function POST(req: NextRequest) {
     const updateData: any = {};
     if (appName !== undefined) {
       updateData.appName = appName;
+
+      // Update formInputs.appName if exists
+      if (project.formInputs) {
+        try {
+          const formInputsObj = JSON.parse(project.formInputs);
+          formInputsObj.appName = appName;
+          updateData.formInputs = JSON.stringify(formInputsObj);
+        } catch {}
+      }
+
+      // Update title in strukturData if exists and not explicitly passed
+      if (project.strukturData && strukturData === undefined) {
+        try {
+          const strukturObj = JSON.parse(project.strukturData);
+          strukturObj.title = appName;
+          updateData.strukturData = JSON.stringify(strukturObj);
+        } catch {}
+      }
     }
+
     if (appIdea !== undefined) {
       updateData.appIdea = appIdea;
+
+      // Update appIdea in formInputs if exists
+      if (project.formInputs && appName === undefined) {
+        try {
+          const formInputsObj = JSON.parse(updateData.formInputs || project.formInputs);
+          formInputsObj.appIdea = appIdea;
+          updateData.formInputs = JSON.stringify(formInputsObj);
+        } catch {}
+      }
     }
 
     if (prdData !== undefined) {
@@ -75,9 +103,12 @@ export async function POST(req: NextRequest) {
         where: { id: projectId },
         data: updateData,
       });
-      // Invalidate project info cache in Redis
+      // Invalidate project info and structure cache in Redis
       try {
         await redis.del(`project:${projectId}:info`);
+        if (appName !== undefined) {
+          await redis.del(`project:${projectId}:struktur`);
+        }
       } catch {}
     }
 
