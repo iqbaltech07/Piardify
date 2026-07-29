@@ -28,6 +28,9 @@ export default function ProjectHeaderBrand({
   const [editIdea, setEditIdea] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  const displayName = project?.appName || project?.title || "Untitled Project";
+  const ideaText = project?.appIdea || "";
+
   useEffect(() => {
     if (!projectId) {
       setProject(null);
@@ -41,8 +44,12 @@ export default function ProjectHeaderBrand({
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (isMounted && data && !data.error) {
-          setProject(data);
-          setEditName(data.appName || data.title || "");
+          const resolvedName = data.appName || data.title || "Untitled Project";
+          setProject({
+            ...data,
+            appName: resolvedName,
+          });
+          setEditName(resolvedName);
           setEditIdea(data.appIdea || "");
         }
       })
@@ -58,9 +65,9 @@ export default function ProjectHeaderBrand({
 
   const openEditModal = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!project) return;
-    setEditName(project.appName || project.title || "");
-    setEditIdea(project.appIdea || "");
+    const currentName = project?.appName || project?.title || displayName || "";
+    setEditName(currentName === "Untitled Project" ? "" : currentName);
+    setEditIdea(project?.appIdea || "");
     setShowTooltip(false);
     setIsEditingModalOpen(true);
   };
@@ -69,6 +76,9 @@ export default function ProjectHeaderBrand({
     e.preventDefault();
     if (!projectId || !editName.trim() || isSaving) return;
 
+    const finalName = editName.trim();
+    const finalIdea = editIdea.trim();
+
     setIsSaving(true);
     try {
       const res = await fetch("/api/projects/update", {
@@ -76,8 +86,8 @@ export default function ProjectHeaderBrand({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
-          appName: editName.trim(),
-          appIdea: editIdea.trim(),
+          appName: finalName,
+          appIdea: finalIdea,
         }),
       });
 
@@ -90,18 +100,23 @@ export default function ProjectHeaderBrand({
         prev
           ? {
               ...prev,
-              appName: editName.trim(),
-              title: editName.trim(),
-              appIdea: editIdea.trim(),
+              appName: finalName,
+              title: finalName,
+              appIdea: finalIdea,
             }
-          : null
+          : {
+              id: projectId,
+              appName: finalName,
+              title: finalName,
+              appIdea: finalIdea,
+            }
       );
       setIsEditingModalOpen(false);
       toast.success("Project info updated successfully!");
 
       window.dispatchEvent(
         new CustomEvent("projectUpdated", {
-          detail: { appName: editName.trim(), appIdea: editIdea.trim() },
+          detail: { appName: finalName, appIdea: finalIdea },
         })
       );
     } catch {
@@ -110,9 +125,6 @@ export default function ProjectHeaderBrand({
       setIsSaving(false);
     }
   };
-
-  const displayName = project?.appName || project?.title || "Untitled Project";
-  const ideaText = project?.appIdea || "";
 
   return (
     <>
@@ -290,59 +302,98 @@ export default function ProjectHeaderBrand({
               </div>
             )}
 
-            {/* Hover Card / Tooltip for Idea Details */}
-            {showTooltip && ideaText && !isEditingModalOpen && (
+            {/* Hover Card / Tooltip displaying BOTH Project Name & Idea */}
+            {showTooltip && !isEditingModalOpen && (
               <div
                 style={{
                   position: "absolute",
                   top: "calc(100% + 8px)",
                   left: 0,
                   width: 320,
-                  padding: "12px 14px",
+                  padding: "14px 16px",
                   borderRadius: "var(--radius-lg)",
-                  background: "rgba(20,28,48,0.96)",
+                  background: "rgba(20,28,48,0.98)",
                   border: "1px solid var(--border-strong)",
-                  boxShadow: "0 12px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 182, 39, 0.2)",
+                  boxShadow: "0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 182, 39, 0.25)",
                   backdropFilter: "blur(12px)",
                   zIndex: 100,
                   pointerEvents: "none",
                   animation: "fadeIn 0.15s ease-out",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    marginBottom: 6,
-                  }}
-                >
-                  <Lightbulb size={13} style={{ color: "var(--color-signal)" }} />
-                  <span
+                {/* Section 1: Project Name */}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <FolderGit2 size={13} style={{ color: "var(--color-signal)" }} />
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        color: "var(--color-signal)",
+                      }}
+                    >
+                      Project Name
+                    </span>
+                  </div>
+                  <p
                     style={{
                       fontFamily: "var(--font-mono)",
-                      fontSize: "10px",
+                      fontSize: "13px",
                       fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      color: "var(--color-signal)",
+                      color: "var(--fg-primary)",
+                      margin: 0,
                     }}
                   >
-                    Project Idea (Click to edit)
+                    {displayName}
+                  </p>
+                </div>
+
+                {/* Section 2: Idea Description */}
+                {ideaText && (
+                  <div style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <Lightbulb size={13} style={{ color: "var(--color-circuit)" }} />
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          color: "var(--color-circuit)",
+                        }}
+                      >
+                        Idea Description
+                      </span>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-body)",
+                        fontSize: "12px",
+                        color: "var(--fg-secondary)",
+                        lineHeight: 1.45,
+                        margin: 0,
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {ideaText}
+                    </p>
+                  </div>
+                )}
+
+                {/* Hint Footer */}
+                <div style={{ borderTop: "1px dashed var(--border-hairline)", paddingTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Pencil size={11} style={{ color: "var(--color-signal)" }} />
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", color: "var(--fg-muted)", letterSpacing: "0.04em" }}>
+                    Click to edit name & idea
                   </span>
                 </div>
-                <p
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "12px",
-                    color: "var(--fg-primary)",
-                    lineHeight: 1.45,
-                    margin: 0,
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {ideaText}
-                </p>
               </div>
             )}
           </div>
@@ -356,7 +407,7 @@ export default function ProjectHeaderBrand({
             position: "fixed",
             inset: 0,
             zIndex: 9999,
-            background: "rgba(10, 16, 30, 0.75)",
+            background: "rgba(10, 16, 30, 0.8)",
             backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
@@ -372,7 +423,7 @@ export default function ProjectHeaderBrand({
               background: "var(--bg-elevated)",
               border: "1px solid var(--border-strong)",
               borderRadius: "var(--radius-lg)",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 182, 39, 0.25)",
+              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 182, 39, 0.3)",
               padding: 24,
               display: "flex",
               flexDirection: "column",
@@ -385,18 +436,18 @@ export default function ProjectHeaderBrand({
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div
                   style={{
-                    width: 32,
-                    height: 32,
+                    width: 34,
+                    height: 34,
                     borderRadius: "var(--radius-md)",
                     background: "rgba(255, 182, 39, 0.12)",
-                    border: "1px solid rgba(255, 182, 39, 0.3)",
+                    border: "1px solid rgba(255, 182, 39, 0.35)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     color: "var(--color-signal)",
                   }}
                 >
-                  <Pencil size={15} />
+                  <Pencil size={16} />
                 </div>
                 <div>
                   <h3
@@ -444,7 +495,7 @@ export default function ProjectHeaderBrand({
 
             {/* Form */}
             <form onSubmit={handleSaveProjectInfo} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Project Name Field */}
+              {/* Field 1: Project Name */}
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label
                   style={{
@@ -453,17 +504,22 @@ export default function ProjectHeaderBrand({
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
-                    color: "var(--fg-secondary)",
+                    color: "var(--color-signal)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
+                  <FolderGit2 size={12} />
                   Project / App Name
                 </label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  placeholder="e.g. Piardify"
+                  placeholder="Enter Project Name (e.g. Piardify)"
                   required
+                  autoFocus
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -471,15 +527,16 @@ export default function ProjectHeaderBrand({
                     background: "var(--bg-base)",
                     border: "1px solid var(--border-hairline)",
                     color: "var(--fg-primary)",
-                    fontFamily: "var(--font-body)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "13px",
+                    fontWeight: 600,
                     outline: "none",
                     boxSizing: "border-box",
                   }}
                 />
               </div>
 
-              {/* Project Idea Field */}
+              {/* Field 2: Project Idea Description */}
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label
                   style={{
@@ -488,15 +545,19 @@ export default function ProjectHeaderBrand({
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
-                    color: "var(--fg-secondary)",
+                    color: "var(--color-circuit)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
+                  <Lightbulb size={12} />
                   Project Idea Description
                 </label>
                 <textarea
                   value={editIdea}
                   onChange={(e) => setEditIdea(e.target.value)}
-                  placeholder="Describe what your app does..."
+                  placeholder="Describe your project idea..."
                   rows={4}
                   style={{
                     width: "100%",
@@ -515,7 +576,7 @@ export default function ProjectHeaderBrand({
                 />
               </div>
 
-              {/* Actions */}
+              {/* Form Actions */}
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
                 <button
                   type="button"
