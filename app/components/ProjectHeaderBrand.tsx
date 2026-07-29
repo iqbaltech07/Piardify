@@ -407,27 +407,31 @@ export default function ProjectHeaderBrand({
             position: "fixed",
             inset: 0,
             zIndex: 9999,
-            background: "rgba(10, 16, 30, 0.8)",
+            background: "rgba(10, 16, 30, 0.85)",
             backdropFilter: "blur(8px)",
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: 20,
+            padding: "24px 16px",
+            overflowY: "auto",
           }}
           onClick={() => setIsEditingModalOpen(false)}
         >
           <div
             style={{
               width: "100%",
-              maxWidth: 480,
+              maxWidth: 500,
+              margin: "auto 0",
               background: "var(--bg-elevated)",
               border: "1px solid var(--border-strong)",
               borderRadius: "var(--radius-lg)",
               boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 182, 39, 0.3)",
-              padding: 24,
+              padding: 20,
               display: "flex",
               flexDirection: "column",
-              gap: 18,
+              gap: 14,
+              maxHeight: "calc(100vh - 48px)",
+              overflowY: "auto",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -558,7 +562,7 @@ export default function ProjectHeaderBrand({
                   value={editIdea}
                   onChange={(e) => setEditIdea(e.target.value)}
                   placeholder="Describe your project idea..."
-                  rows={4}
+                  rows={3}
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -572,6 +576,8 @@ export default function ProjectHeaderBrand({
                     outline: "none",
                     resize: "vertical",
                     boxSizing: "border-box",
+                    minHeight: "70px",
+                    maxHeight: "140px",
                   }}
                 />
               </div>
