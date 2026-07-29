@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import StepNavbar from "../components/StepNavbar";
+import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 import McpConnectModal from "../components/McpConnectModal";
 
 /* ─── Types ─── */
@@ -593,11 +594,7 @@ function TaskPageContent() {
 
       {/* ── Topbar ── */}
       <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", height: 52, borderBottom: "1px solid var(--border-hairline)", background: "rgba(16,24,43,0.96)", backdropFilter: "blur(12px)" }}>
-        <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <Image src="/piardify-logo.svg" alt="Piardify" width={800} height={200} style={{ height: 28, width: "auto" }} />
-          </Link>
-        </div>
+        <ProjectHeaderBrand projectId={projectId} />
         <StepNavbar currentStep="task" projectId={projectId} />
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
           {!isLoading && data && (

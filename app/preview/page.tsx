@@ -7,6 +7,7 @@ import Image from "next/image";
 import MarkdownRenderer, { TocItem } from "../components/MarkdownRenderer";
 import { MessageRenderer } from "../components/ai/MessageRenderer";
 import StepNavbar from "../components/StepNavbar";
+import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 import { Sparkles, Send, Bot, Loader2, Lightbulb, Scale, PenLine, Database } from "lucide-react";
 import { toast } from "sonner";
 
@@ -139,11 +140,7 @@ function PreviewPageContent() {
         background: "rgba(16,24,43,0.96)", backdropFilter: "blur(12px)",
         position: "relative", zIndex: 50,
       }}>
-        <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <Image src="/piardify-logo.svg" alt="Piardify" width={800} height={200} style={{ height: 28, width: "auto" }} />
-          </Link>
-        </div>
+        <ProjectHeaderBrand projectId={projectId} />
 
         <StepNavbar currentStep="prd" projectId={projectId} />
 

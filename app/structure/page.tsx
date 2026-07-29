@@ -25,6 +25,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import StepNavbar from "../components/StepNavbar";
+import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 
 /* ─── Types ─── */
 interface StrukturChild { id: string; label: string; }
@@ -360,12 +361,8 @@ function StrukturPageContent() {
         backdropFilter: "blur(12px)",
         zIndex: 50, position: "relative",
       }}>
-        {/* Logo */}
-        <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <Image src="/piardify-logo.svg" alt="Piardify" width={800} height={200} style={{ height: 28, width: "auto" }} />
-          </Link>
-        </div>
+        {/* Left: Brand & Project Name */}
+        <ProjectHeaderBrand projectId={projectId} />
 
         {/* Step nav */}
         <StepNavbar currentStep="struktur" projectId={projectId} />

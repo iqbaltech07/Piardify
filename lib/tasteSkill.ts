@@ -26,7 +26,7 @@ export const TASTE_SKILL_DIRECTIVES = {
     definition: "AI SLOP adalah pola desain klise yang model pakai karena pola paling sering muncul di training data, bukan karena pilihan brand yang disengaja. Sumber referensi: Impeccable Slop Catalog (46 pola), Adrian Krebs 16-Pattern Audit (1.590 halaman Show HN), dan konsensus praktisi desain 2025-2026.",
     slopPatterns: {
       FORBIDDEN: [
-        "MINIMUM VIABLE SLOP (MVS): Desain yang terlalu kosong, sepi, kaku, atau membosankan (boring). AI sering mencari aman dengan membuat UI yang terlalu 'simple' (misal: hanya teks di tengah layar berlatar belakang gelap polos). WAJIB buat desain yang kaya (rich), eye-catching, dinamis, dan premium.",
+        "MINIMUM VIABLE SLOP (MVS): Desain yang terlalu sepi, kaku, minimalis berlebihan, atau membosankan (boring). Dilarang membuat landing page yang terlalu sedikit (misal 4-5 section sederhana: Hero -> Features -> Pricing -> Footer) karena tidak membawa pengunjung ke dalam alur perjalanan. WAJIB buat desain landing page kaya (rich), eye-catching, dinamis, dan mengikuti alur storytelling (10–15 section).",
         "PURPLE-BLUE GRADIENT: Gradient ungu–biru, violet–cyan, atau 'VibeCode Purple' (lavender spesifik) di mana-mana — hero, card, background, button, orbs. Ini tell #1 AI slop.",
         "GRADIENT TEXT: Teks dengan gradient warna di heading, metric, atau CTA. Gunakan solid color untuk teks.",
         "DARK MODE + NEON GLOW: Dark background + colored box-shadow glow / neon accent tanpa alasan brand yang kuat. Bukan 'cyberpunk by default'.",
@@ -42,7 +42,7 @@ export const TASTE_SKILL_DIRECTIVES = {
         "OVERUSED FONT STACK: Inter, Geist, Space Grotesk, Instrument Serif sebagai default tanpa pertimbangan brand. Jika PRD tidak specify, pilih yang tidak termasuk daftar ini.",
         "ICON TILE ABOVE HEADING: Kotak icon rounded di atas heading (template fitur-card AI universal). Coba side-by-side atau icon tanpa container.",
         "ITALIC SERIF HERO: Italic serif sebagai hero headline utama — sudah jadi klise AI-startup landing page.",
-        "HERO EYEBROW/PILL: Label kecil uppercase letter-spaced ('Introducing...', 'New') langsung di atas hero H1. AI SaaS hero default.",
+        "MINDLESS HERO BADGE/EYEBROW: Memasang badge/pill di atas hero section secara asal/tanpa pertimbangan visual. Badge diizinkan HANYA jika hero section terasa sepi/banyak space kosong dan butuh visual anchor agar eye-catching.",
         "REPEATED SECTION KICKERS: Uppercase tracked labels kecil di atas SETIAP section heading. AI editorial scaffold.",
         "OVERSIZED HERO SENTENCE: Kalimat panjang full-sentence di display size yang mendominasi viewport. Perpendek atau perkecil.",
         "CRUSHED LETTER SPACING: Letter-spacing terlalu ketat sehingga huruf kehilangan bentuknya.",
@@ -51,7 +51,7 @@ export const TASTE_SKILL_DIRECTIVES = {
         "IDENTICAL CARD GRIDS: Card sama persis (icon + heading + text) diulang tanpa variasi visual weight.",
         "MONOTONOUS SPACING: Satu nilai gap digunakan di semua tempatan tanpa ritme. Tight group untuk related items, generous separation antar section.",
         "NUMBERED SECTION MARKERS: 01/02/03 sebagai section label jika bukan sequence nyata.",
-        "BADGE ABOVE HERO H1: Badge/pill tepat di atas hero H1 sebagai kombo default.",
+        "MINIMALIST / EMPTY LANDING PAGE: Landing page tanpa alur cerita, tanpa visual pendukung/mockup, atau terlalu pendek (kurang dari 8-10 section) sehingga terasa sepi dan membosankan.",
         "COLORED CARD BORDERS: Border berwarna di top/left edge card — hampir se-reliable em-dash sebagai AI tell.",
         "STAT BANNER ROWS: Baris statistik angka besar di bawah hero tanpa konteks yang kuat.",
         "SIDEBAR/NAV EMOJI ICONS: Emoji sebagai icon navigasi/sidebar.",
@@ -106,6 +106,7 @@ export const TASTE_SKILL_DIRECTIVES = {
         "UNRESTRICTED SCROLL LISTENERS: Dilarang menggunakan window.addEventListener('scroll') di React state. Gunakan Motion useScroll, GSAP ScrollTrigger, atau CSS scroll-driven animations."
       ],
       ALLOWED_WITH_PURPOSE: [
+        "Hero Badge/Pill: BOLEH dan direkomendasikan jika hero section memiliki space kosong berlebih atau terasa sepi, untuk memberi aksen visual yang memikat dan eye-catching. DILARANG jika dipasang secara asal tanpa analisis space.",
         "Glassmorphism: HANYA untuk elemen yang memang perlu efek transparansi (modal overlay, floating card di atas gambar).",
         "Gradient: HANYA untuk accent kecil (button hover, small badge, icon background) BUKAN background utama atau teks.",
         "Animation: HANYA untuk state transition (hover, focus, page enter) dengan durasi 150-300ms.",
@@ -316,22 +317,48 @@ export const TASTE_SKILL_DIRECTIVES = {
         "Hero metric row template: big number + small label + 3 stats + gradient accent",
         "Identical card grids: card sama persis (icon + heading + text) diulang tanpa variasi",
         "Numbered section markers 01/02/03 jika bukan sequence nyata",
-        "Badge/pill langsung di atas hero H1 sebagai kombo default",
+        "Mindless hero badge/pill dipasang tanpa analisis space kosong / eye-catching",
         "Colored left-border atau top-border pada card (side-tab accent)",
         "Stat banner rows tanpa konteks kuat",
         "Sidebar/nav dengan emoji sebagai icon",
         "All-caps headings tanpa variasi",
         "Classic AI hero: centered text + 2 buttons + abstract shape background",
-        "Copy-paste layout: hero -> metrics -> 3 feature cards -> testimonials -> pricing -> CFA tanpa variasi struktur",
+        "Minimalist / generic 4-section layout: hero -> features -> pricing -> footer tanpa storytelling flow",
         "Nested cards: card dalam card dalam card",
         "Setiap section terlihat sama — tidak ada section yang standout"
       ],
       rules: [
-        "Setiap section HARUS punya tujuan visual yang berbeda, bukan salinan struktur",
-        "Gunakan SATU layout primitive yang kuat dan repeat sampai jadi signature visual, bukan 7 template berbeda",
-        "Jika pakai card grid, berikan VARIASI visual weight (1 card besar + 2 kecil, atau highlight card, dsb)",
+        "Setiap section HARUS punya tujuan visual & narasi yang berbeda, bukan salinan struktur",
+        "Gunakan alur Storytelling (10–15 section) untuk membawa pengunjung dalam sebuah perjalanan",
+        "Jika pakai card grid, berikan VARIASI visual weight (gaya bento: 1 card besar + 2 kecil, atau highlight card, dsb)",
         "Content yang butuh scroll + 3 kolom di modal -> pindahkan ke page sendiri, bukan modal abuse"
       ]
+    },
+    storytellingLandingPage: {
+      rule: "Landing page modern & premium TIDAK BOLEH minimalis atau berhenti di 4–6 section sederhana. Gunakan alur Storytelling (10–15 section) untuk membawa calon pengguna dalam sebuah perjalanan visual & emosional.",
+      narrativeFlow: [
+        "1. Hero (Product Value Proposition & Primary CTA)",
+        "2. Masalah yang dirasakan pengguna (User Pain Points & Frustrations)",
+        "3. Kenapa solusi lama gagal (Why Existing/Traditional Solutions Fail)",
+        "4. Perkenalkan produk (Product Reveal & Core Promise)",
+        "5. Cara kerja (Step-by-Step Interactive/Visual Process)",
+        "6. Demo / Preview (Live Interactive Demo, Large Product Screenshots & Mockups)",
+        "7. Manfaat utama (Key Outcomes & Value Impact)",
+        "8. Bukti & Credibility (Testimonials, Metrics/Statistics, Customer Logos)",
+        "9. Fitur detail (Detailed Features & Bento Grid Layout)",
+        "10. FAQ (Frequently Asked Questions with Accordions)",
+        "11. CTA terakhir (High-Impact Final Conversion Call-to-Action)"
+      ],
+      characteristics: [
+        "Variasi layout tinggi (bento grid, side-by-side, full-bleed showcase, accordion, split screen) — hindari bentuk section yang monoton.",
+        "Screenshot/mockup produk besar & jelas di hampir setiap section, bukan hanya sekadar teks.",
+        "Whitespace berimbang (lapang dan bernapas, tetapi tidak boleh sampai terasa kosong/sepi).",
+        "Tipografi dengan hierarki kontras yang kuat.",
+        "Mikro-animasi halus untuk memberikan kesan hidup dan dinamis tanpa mengganggu user.",
+        "Pergantian latar belakang (light/dark accent/subtle surface) antarsection untuk menjaga ritme membaca.",
+        "Gaya Bento Grid dengan ukuran card bervariasi untuk memecah kebosanan grid simetris."
+      ],
+      heroBadgeGuideline: "Badge di atas hero section BOLEH dan SANGAT BERGUNA jika hero section terasa sepi/punya banyak space kosong dan butuh visual anchor agar eye-catching. Dilarang keras menaruh badge secara asal (mindless default)."
     },
     copyAntiPatterns: {
       FORBIDDEN: [
@@ -496,12 +523,12 @@ export const TASTE_SKILL_DIRECTIVES = {
         "☐ Apakah ada nested cards (card dalam card)?",
         "☐ Apakah ada hairline border + wide shadow bersamaan?",
         "☐ Apakah ada icon tile kotak di atas heading?",
-        "☐ Apakah ada hero eyebrow/pill chip di atas H1?",
+        "☐ Apakah badge di atas hero H1 dipasang secara asal tanpa analisis space kosong / eye-catching?",
         "☐ Apakah ada repeated section kickers (uppercase label di tiap section)?",
         "☐ Apakah ada hero metric row template?",
         "☐ Apakah ada identical card grids tanpa variasi?",
         "☐ Apakah ada numbered section markers 01/02/03 yang bukan sequence?",
-        "☐ Apakah ada badge langsung di atas hero H1?",
+        "☐ Apakah landing page terlalu minimalist / terlalu sedikit section (<8-10 section / tanpa alur storytelling)?",
         "☐ Apakah spacing monotonous (satu angka di semua tempat)?",
         "☐ Apakah ada bounce/elastic easing?",
         "☐ Apakah ada image hover scale/rotate?",

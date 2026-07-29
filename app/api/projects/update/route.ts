@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { projectId, prdData, strukturData, tasksOutdated } = body;
+    const { projectId, prdData, strukturData, tasksOutdated, appName, appIdea } = body;
 
     if (!projectId) {
       return NextResponse.json({ error: "Missing projectId" }, { status: 400 });
@@ -31,6 +31,13 @@ export async function POST(req: NextRequest) {
     }
 
     const updateData: any = {};
+    if (appName !== undefined) {
+      updateData.appName = appName;
+    }
+    if (appIdea !== undefined) {
+      updateData.appIdea = appIdea;
+    }
+
     if (prdData !== undefined) {
       updateData.prdData = prdData;
       // Update redis cache for PRD
@@ -64,10 +71,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (Object.keys(updateData).length > 0) {
-      await prisma.project.update({
+      const updatedProject = await prisma.project.update({
         where: { id: projectId },
         data: updateData,
       });
+      // Invalidate project info cache in Redis
+      try {
+        await redis.del(`project:${projectId}:info`);
+      } catch {}
     }
 
     return NextResponse.json({ success: true });
