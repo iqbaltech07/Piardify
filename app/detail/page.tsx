@@ -104,8 +104,8 @@ function parseMarkdownSections(mdText: string) {
   let currentContentLines: string[] = [];
 
   lines.forEach((line) => {
-    // Detect any markdown heading: #, ##, or ###
-    const headingMatch = line.match(/^#{1,3}\s+(.+)$/);
+    // Detect top-level markdown heading: # or ##
+    const headingMatch = line.match(/^#{1,2}\s+(.+)$/);
     if (headingMatch) {
       if (currentTitle && currentContentLines.join("").trim()) {
         sections.push({
@@ -232,13 +232,13 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
   const rawLines = content.split("\n");
   const blocks: Array<
     | { type: "subheader"; text: string; isDo?: boolean; isDont?: boolean }
-    | { type: "list"; items: { title: string; token: string; desc: string }[] }
+    | { type: "list"; items: { title: string; token: string; desc: string; subItems?: { title: string; desc: string }[] }[] }
     | { type: "properties"; items: { key: string; val: string }[] }
     | { type: "table"; headers: string[]; rows: string[][] }
     | { type: "paragraph"; text: string }
   > = [];
 
-  let currentListItems: { title: string; token: string; desc: string }[] = [];
+  let currentListItems: { title: string; token: string; desc: string; subItems?: { title: string; desc: string }[] }[] = [];
   let currentKvItems: { key: string; val: string }[] = [];
   let currentTableRows: string[][] = [];
 
@@ -277,6 +277,8 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
       flushAll();
       return;
     }
+
+    const indent = line.search(/\S/);
 
     // 1. Check Subheader line e.g. ### Do or ### Don't or ### Section
     if (trimmed.startsWith("### ") || trimmed.startsWith("## ")) {
@@ -335,7 +337,13 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
 
       desc = desc.replace(/^[:—–]\s*/, "");
 
-      currentListItems.push({ title, token, desc });
+      if (indent >= 2 && currentListItems.length > 0) {
+        const parent = currentListItems[currentListItems.length - 1];
+        if (!parent.subItems) parent.subItems = [];
+        parent.subItems.push({ title, desc });
+      } else {
+        currentListItems.push({ title, token, desc, subItems: [] });
+      }
       return;
     }
 
@@ -362,48 +370,59 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
     <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}>
       {blocks.map((block, bIdx) => {
         if (block.type === "subheader") {
+          if (block.isDo || block.isDont) {
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "6px 14px",
+                  borderRadius: "var(--radius-sm)",
+                  background: block.isDo
+                    ? "rgba(34,197,94,0.1)"
+                    : "rgba(239,68,68,0.1)",
+                  border: `1px solid ${block.isDo ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
+                  color: block.isDo ? "#4ade80" : "#f87171",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginTop: 8,
+                  alignSelf: "flex-start",
+                }}
+              >
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: block.isDo ? "#22c55e" : "#ef4444",
+                  }}
+                />
+                {block.text}
+              </div>
+            );
+          }
+
           return (
             <div
               key={bIdx}
               style={{
-                display: "inline-flex",
+                fontFamily: "var(--font-body)",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--fg-primary)",
+                marginTop: 10,
+                marginBottom: 2,
+                display: "flex",
                 alignItems: "center",
                 gap: 8,
-                padding: "6px 14px",
-                borderRadius: "var(--radius-sm)",
-                background: block.isDo
-                  ? "rgba(34,197,94,0.1)"
-                  : block.isDont
-                    ? "rgba(239,68,68,0.1)"
-                    : "rgba(255,182,39,0.08)",
-                border: `1px solid ${block.isDo
-                    ? "rgba(34,197,94,0.3)"
-                    : block.isDont
-                      ? "rgba(239,68,68,0.3)"
-                      : "rgba(255,182,39,0.25)"
-                  }`,
-                color: block.isDo
-                  ? "#4ade80"
-                  : block.isDont
-                    ? "#f87171"
-                    : "var(--color-signal)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                marginTop: 8,
-                alignSelf: "flex-start",
               }}
             >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: block.isDo ? "#22c55e" : block.isDont ? "#ef4444" : "var(--color-signal)",
-                }}
-              />
+              <div style={{ width: 3, height: 12, borderRadius: 2, background: "var(--color-signal)" }} />
               {block.text}
             </div>
           );
@@ -441,11 +460,22 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
                       dangerouslySetInnerHTML={{ __html: formatMarkdownText(item.desc, colorMap) }}
                     />
                   )}
+                  {item.subItems && item.subItems.length > 0 && (
+                    <div style={{ marginLeft: 14, marginTop: 6, paddingLeft: 10, borderLeft: "2px solid var(--border-hairline)", display: "flex", flexDirection: "column", gap: 6 }}>
+                      {item.subItems.map((sub, sIdx) => (
+                        <div key={sIdx} style={{ fontSize: 12, color: "var(--fg-secondary)", lineHeight: 1.5 }}>
+                          <strong style={{ color: "var(--fg-primary)", fontWeight: 600 }}>{sub.title}</strong>
+                          {sub.desc ? `: ${sub.desc}` : ""}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           );
         }
+
 
         if (block.type === "properties") {
           return (

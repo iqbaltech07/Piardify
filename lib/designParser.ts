@@ -27,7 +27,7 @@ export function parseDesignMarkdown(mdText: string): StructuredDesignData {
   let currentContentLines: string[] = [];
 
   lines.forEach((line) => {
-    const headingMatch = line.match(/^#{1,3}\s+(.+)$/);
+    const headingMatch = line.match(/^#{1,2}\s+(.+)$/);
     if (headingMatch) {
       if (currentTitle && currentContentLines.join("").trim()) {
         rawSections.push({

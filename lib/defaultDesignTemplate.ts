@@ -10,16 +10,20 @@ export function generateDefaultDesignMarkdown(
   return `# Design Guidelines & System Specifications: ${appName}
 
 ## 1. Aesthetic Direction & Brief Inference
+
+### Overview & Read
 - **Design Read**: Reading as a ${pref} for end-users, with a visual-first, high-contrast, and intuitive user interface.
 - **Product Context**: ${appIdea}
-- **The Three Dials Configuration**:
-  - \`DESIGN_VARIANCE: 8\` (Asymmetric Bento Grid rhythm & high visual distinction)
-  - \`MOTION_INTENSITY: 6\` (Tactile 150-200ms cubic-bezier state transitions)
-  - \`VISUAL_DENSITY: 4\` (Airy 4px-grid spacing with max-width container bounds)
-- **Design Locks**:
-  - \`Color Consistency Lock\`: Single primary accent color system across all page surfaces.
-  - \`Shape Consistency Lock\`: Uniform 8px (\`rounded.md\`) for inputs/buttons, 12-16px (\`rounded.lg\`) for cards.
-  - \`Page Theme Lock\`: Locked root Light Mode surface (\`#f8fafc\`), crisp dark slate text (\`#0f172a\`), zero theme glare.
+
+### The Three Dials Configuration
+- **DESIGN_VARIANCE (8)**: Asymmetric Bento Grid rhythm & high visual distinction.
+- **MOTION_INTENSITY (6)**: Tactile 150-200ms cubic-bezier state transitions.
+- **VISUAL_DENSITY (4)**: Airy 4px-grid spacing with max-width container bounds.
+
+### Design Locks
+- **Color Consistency Lock**: Single primary accent color system across all page surfaces.
+- **Shape Consistency Lock**: Uniform 8px (\`rounded.md\`) for inputs/buttons, 12-16px (\`rounded.lg\`) for cards.
+- **Page Theme Lock**: Locked root Light Mode surface (\`#f8fafc\`), crisp dark slate text (\`#0f172a\`), zero theme glare.
 
 ## 2. Design Tokens & Color System (HSL / HEX)
 
