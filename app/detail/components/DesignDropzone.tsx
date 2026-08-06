@@ -1,0 +1,91 @@
+import React from "react";
+import { Upload } from "lucide-react";
+
+interface DesignDropzoneProps {
+  isDragging: boolean;
+  isUploading: boolean;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export default function DesignDropzone({
+  isDragging,
+  isUploading,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onFileUpload,
+}: DesignDropzoneProps) {
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      style={{
+        background: isDragging ? "rgba(255,182,39,0.06)" : "var(--bg-surface)",
+        border: `2px dashed ${isDragging ? "var(--color-signal)" : "var(--border-hairline)"}`,
+        borderRadius: "var(--radius-lg)",
+        padding: "56px 32px",
+        textAlign: "center",
+        transition: "all 0.2s ease",
+        marginTop: 24,
+        boxShadow: isDragging ? "0 0 24px rgba(255,182,39,0.15)" : "none",
+      }}
+    >
+      <div
+        style={{
+          width: 60,
+          height: 60,
+          borderRadius: "50%",
+          background: "rgba(255,182,39,0.08)",
+          border: "1px solid rgba(255,182,39,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          margin: "0 auto 16px",
+        }}
+      >
+        <Upload size={26} style={{ color: "var(--color-signal)" }} />
+      </div>
+
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 19, fontWeight: 700, color: "var(--fg-primary)", marginBottom: 8 }}>
+        Belum Ada File design.md yang Diunggah
+      </h3>
+
+      <p style={{ fontFamily: "var(--font-body)", fontSize: 13.5, color: "var(--color-mist)", maxWidth: 560, margin: "0 auto 24px", lineHeight: 1.6 }}>
+        Unggah file <code style={{ color: "var(--color-signal)", fontFamily: "var(--font-mono)" }}>design.md</code> milik project ini agar AI Agent (Antigravity/Cursor/Windsurf) dapat membaca token warna, typography, layout, dan aturan komponen UI secara otomatis via MCP Server.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+        <label
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "11px 24px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--color-signal)",
+            background: "var(--color-signal)",
+            color: "var(--color-graphite)",
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(255,182,39,0.2)",
+          }}
+        >
+          <Upload size={14} /> {isUploading ? "Uploading..." : "Pilih File design.md (.md, .txt)"}
+          <input type="file" accept=".md,.txt" onChange={onFileUpload} style={{ display: "none" }} />
+        </label>
+
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-muted)" }}>
+          atau tarik & lepas file ke dalam area kotak di atas
+        </span>
+      </div>
+    </div>
+  );
+}
