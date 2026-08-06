@@ -85,21 +85,38 @@ export function parseDesignMarkdown(mdText: string): StructuredDesignData {
   const colorTokens: ColorToken[] = [];
   const seen = new Set<string>();
 
-  // 1. Table format: | token | #hex | role |
-  const tableRegex = /\|?\s*`?([\w-]+)`?\s*\|?\s*`?(#[0-9a-fA-F]{3,8})`?\s*\|?\s*([^|\n]+)/g;
-  let match;
-  while ((match = tableRegex.exec(mdText)) !== null) {
-    const token = match[1].trim();
-    const hex = match[2].trim();
-    const role = match[3].trim();
-    if (token && hex && hex.startsWith("#") && !token.toLowerCase().includes("token")) {
-      colorTokens.push({ token, hex, role });
-      seen.add(token);
-    }
-  }
+  const mdLines = mdText.split("\n");
+  mdLines.forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((c) => c.trim().replace(/^`|`$/g, ""))
+        .filter((c, idx, arr) => !(idx === 0 && c === "") && !(idx === arr.length - 1 && c === ""));
 
-  // 2. Key-value format: token: "#hex"
+      if (cells.length >= 3) {
+        const rawToken = cells[0].trim();
+        const hexMatch = cells[1].match(/#(?:[0-9a-fA-F]{3,4}){1,2}\b/);
+        const role = cells[2].trim();
+
+        if (
+          rawToken &&
+          hexMatch &&
+          !rawToken.toLowerCase().includes("token") &&
+          !rawToken.toLowerCase().includes("name") &&
+          !seen.has(rawToken)
+        ) {
+          const hex = hexMatch[0];
+          colorTokens.push({ token: rawToken, hex, role });
+          seen.add(rawToken);
+        }
+      }
+    }
+  });
+
+  // Key-value format: token: "#hex" or token: #hex
   const kvRegex = /^\s*([\w-]+):\s*["']?(#[0-9a-fA-F]{3,8})["']?/gm;
+  let match;
   while ((match = kvRegex.exec(mdText)) !== null) {
     const token = match[1].trim();
     const hex = match[2].trim();
@@ -108,6 +125,7 @@ export function parseDesignMarkdown(mdText: string): StructuredDesignData {
       seen.add(token);
     }
   }
+
 
   return {
     rawMarkdown: mdText,

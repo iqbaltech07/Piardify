@@ -162,21 +162,38 @@ function parseColorTokens(mdText: string): ColorToken[] {
   const tokens: ColorToken[] = [];
   const seen = new Set<string>();
 
-  // 1. Table format: | token | #hex | role |
-  const tableRegex = /\|?\s*`?([\w-]+)`?\s*\|?\s*`?(#[0-9a-fA-F]{3,8})`?\s*\|?\s*([^|\n]+)/g;
-  let match;
-  while ((match = tableRegex.exec(mdText)) !== null) {
-    const token = match[1].trim();
-    const hex = match[2].trim();
-    const role = match[3].trim();
-    if (token && hex && hex.startsWith("#") && !token.toLowerCase().includes("token")) {
-      tokens.push({ token, hex, role });
-      seen.add(token);
-    }
-  }
+  const lines = mdText.split("\n");
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("|")) {
+      const cells = trimmed
+        .split("|")
+        .map((c) => c.trim().replace(/^`|`$/g, ""))
+        .filter((c, idx, arr) => !(idx === 0 && c === "") && !(idx === arr.length - 1 && c === ""));
 
-  // 2. Key-value format:  token: "#hex" or token: #hex
+      if (cells.length >= 3) {
+        const rawToken = cells[0].trim();
+        const hexMatch = cells[1].match(/#(?:[0-9a-fA-F]{3,4}){1,2}\b/);
+        const role = cells[2].trim();
+
+        if (
+          rawToken &&
+          hexMatch &&
+          !rawToken.toLowerCase().includes("token") &&
+          !rawToken.toLowerCase().includes("name") &&
+          !seen.has(rawToken)
+        ) {
+          const hex = hexMatch[0];
+          tokens.push({ token: rawToken, hex, role });
+          seen.add(rawToken);
+        }
+      }
+    }
+  });
+
+  // Key-value format: token: "#hex" or token: #hex
   const kvRegex = /^\s*([\w-]+):\s*["']?(#[0-9a-fA-F]{3,8})["']?/gm;
+  let match;
   while ((match = kvRegex.exec(mdText)) !== null) {
     const token = match[1].trim();
     const hex = match[2].trim();
@@ -189,26 +206,7 @@ function parseColorTokens(mdText: string): ColorToken[] {
   return tokens;
 }
 
-// Inline line renderer with live visual color swatches
-function formatLineWithColorSwatches(line: string, colorMap: Record<string, string>) {
-  if (!line) return "";
-
-  return line.replace(/\{([^}]+)\}/g, (fullMatch, tokenInner) => {
-    const cleanToken = tokenInner.replace(/^colors\./, "").trim();
-    const hex = colorMap[cleanToken] || colorMap[tokenInner];
-
-    if (hex && hex.startsWith("#")) {
-      return `<span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); vertical-align: middle; margin: 0 2px;">
-        <span style="width: 12px; height: 12px; border-radius: 3px; background: ${hex}; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 6px ${hex}; display: inline-block;"></span>
-        <code style="font-family: var(--font-mono); font-size: 11px; color: #4FD1C5; font-weight: 600;">${tokenInner}</code>
-      </span>`;
-    }
-
-    return `<code style="background: rgba(255,182,39,0.1); color: #FFB627; border: 1px solid rgba(255,182,39,0.3); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px;">${tokenInner}</code>`;
-  });
-}
-
-// Format bold (**text**), italic (*text*), and live color swatches
+// Format bold (**text**), italic (*text*), backtick code (`code`), and live visual color swatches
 function formatMarkdownText(text: string, colorMap: Record<string, string>) {
   if (!text) return "";
   let html = text;
@@ -219,11 +217,37 @@ function formatMarkdownText(text: string, colorMap: Record<string, string>) {
   // Convert *italic* -> <em>italic</em>
   html = html.replace(/\*([^*]+)\*/g, '<em style="color: var(--color-mist);">$1</em>');
 
-  // Convert inline color tokens/code swatches
-  html = formatLineWithColorSwatches(html, colorMap);
+  // Convert backtick code (`code`) or `{token}` into live color swatches or styled code pills
+  html = html.replace(/(`([^`]+)`|\{([^}]+)\})/g, (fullMatch, _g1, codeInside, braceInside) => {
+    const rawContent = (codeInside || braceInside || "").trim();
+
+    // Check if rawContent is an explicit Hex Color Code e.g. #f8fafc or #4f46e5
+    const hexMatch = rawContent.match(/^#(?:[0-9a-fA-F]{3,4}){1,2}$/);
+    if (hexMatch) {
+      const hex = hexMatch[0];
+      return `<span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-hairline); vertical-align: middle; margin: 0 2px;">
+        <span style="width: 12px; height: 12px; border-radius: 3px; background: ${hex}; border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 1px 3px rgba(0,0,0,0.12); display: inline-block;"></span>
+        <code style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-primary); font-weight: 700;">${hex}</code>
+      </span>`;
+    }
+
+    // Check if rawContent matches a known Color Token e.g. bg-base or accent-primary
+    const cleanToken = rawContent.replace(/^colors\./, "").trim();
+    const tokenHex = colorMap[cleanToken] || colorMap[rawContent];
+    if (tokenHex && tokenHex.startsWith("#")) {
+      return `<span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-hairline); vertical-align: middle; margin: 0 2px;">
+        <span style="width: 12px; height: 12px; border-radius: 3px; background: ${tokenHex}; border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 1px 3px rgba(0,0,0,0.12); display: inline-block;"></span>
+        <code style="font-family: var(--font-mono); font-size: 11px; color: #4f46e5; font-weight: 700;">${rawContent}</code>
+      </span>`;
+    }
+
+    // Default code pill
+    return `<code style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1px solid rgba(99,102,241,0.2); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">${rawContent}</code>`;
+  });
 
   return html;
 }
+
 
 // Block-based Hybrid Renderer for Accordion Content (Cards, Tables, & Badges)
 function renderStructuredAccordionContent(content: string, colorMap: Record<string, string>) {
