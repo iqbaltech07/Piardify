@@ -187,6 +187,14 @@ export function parseColorTokens(mdText: string): ColorToken[] {
   return tokens;
 }
 
+function escapeHtml(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // Format bold (**text**), italic (*text*), backtick code (`code`), and live visual color swatches
 export function formatMarkdownText(text: string, colorMap: Record<string, string>): string {
   if (!text) return "";
@@ -218,16 +226,17 @@ export function formatMarkdownText(text: string, colorMap: Record<string, string
     if (tokenHex && tokenHex.startsWith("#")) {
       return `<span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: 4px; background: var(--bg-surface); border: 1px solid var(--border-hairline); vertical-align: middle; margin: 0 2px;">
         <span style="width: 12px; height: 12px; border-radius: 3px; background: ${tokenHex}; border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 1px 3px rgba(0,0,0,0.12); display: inline-block;"></span>
-        <code style="font-family: var(--font-mono); font-size: 11px; color: #4f46e5; font-weight: 700;">${rawContent}</code>
+        <code style="font-family: var(--font-mono); font-size: 11px; color: #4f46e5; font-weight: 700;">${escapeHtml(rawContent)}</code>
       </span>`;
     }
 
-    // Default code pill
-    return `<code style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1px solid rgba(99,102,241,0.2); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">${rawContent}</code>`;
+    // Default code pill with escaped HTML for tags like <header>, <main>, <section>, <article>
+    return `<code style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1px solid rgba(99,102,241,0.2); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">${escapeHtml(rawContent)}</code>`;
   });
 
   return html;
 }
+
 
 // Block-based Hybrid Renderer for Accordion Content (Cards, Tables, & Badges)
 export function renderStructuredAccordionContent(content: string, colorMap: Record<string, string>) {
