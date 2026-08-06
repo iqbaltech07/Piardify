@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { parseDesignMarkdown } from "@/lib/designParser";
+import { generateDefaultDesignData } from "@/lib/defaultDesignTemplate";
 
 export async function GET(req: NextRequest) {
   try {
@@ -48,6 +49,22 @@ export async function GET(req: NextRequest) {
     const proj = project as any;
     let designText = proj.designData || "";
 
+    // If designData is completely empty, auto-populate with default AI template
+    if (!designText || !designText.trim()) {
+      try {
+        const formInputs = proj.formInputs ? JSON.parse(proj.formInputs) : {};
+        const designPref = formInputs.dynamicAnswers?.designPreference || formInputs.designPreference;
+        const defaultData = generateDefaultDesignData(proj.appName, proj.appIdea, designPref);
+        await prisma.project.update({
+          where: { id: projectId },
+          data: { designData: defaultData },
+        });
+        designText = defaultData;
+      } catch (err) {
+        console.warn("Failed to auto-populate designData in detail route:", err);
+      }
+    }
+
     // If designData is stored as a JSON string from parseDesignMarkdown
     if (designText.startsWith("{") && designText.includes("rawMarkdown")) {
       try {
@@ -62,6 +79,7 @@ export async function GET(req: NextRequest) {
         designData: designText,
       },
     });
+
   } catch (error: any) {
     console.error("Error fetching project detail:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

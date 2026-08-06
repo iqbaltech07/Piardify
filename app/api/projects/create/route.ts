@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { generateDefaultDesignData } from "@/lib/defaultDesignTemplate";
+import { parseDesignMarkdown } from "@/lib/designParser";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { appName, appIdea, ...rest } = body;
+    const { appName, appIdea } = body;
 
     if (!appName || !appIdea) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -47,16 +49,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit} project per bulan.` }, { status: 403 });
     }
 
+    let finalDesignData = "";
+    if (body.designData && typeof body.designData === "string" && body.designData.trim()) {
+      if (body.designData.startsWith("{") && body.designData.includes("rawMarkdown")) {
+        finalDesignData = body.designData;
+      } else {
+        const structured = parseDesignMarkdown(body.designData);
+        finalDesignData = JSON.stringify(structured);
+      }
+    } else {
+      const designPref = body.dynamicAnswers?.designPreference || body.designPreference;
+      finalDesignData = generateDefaultDesignData(appName, appIdea, designPref);
+    }
+
     const project = await prisma.project.create({
       data: {
         userId: session.user.id,
         appName: appName,
         appIdea: appIdea,
         formInputs: JSON.stringify(body),
-        ...(body.designData ? { designData: body.designData } : {}),
+        designData: finalDesignData,
       },
       select: { id: true },
     });
+
 
     return NextResponse.json({ projectId: project.id });
   } catch (error: any) {
