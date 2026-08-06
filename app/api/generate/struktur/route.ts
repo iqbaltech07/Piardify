@@ -42,8 +42,20 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Check Database
-    const project = await prisma.project.findUnique({
+    const project = await (prisma.project as any).findUnique({
       where: { id: projectId, userId: session.user.id },
+      select: {
+        id: true,
+        userId: true,
+        appName: true,
+        appIdea: true,
+        formInputs: true,
+        strukturData: true,
+        prdData: true,
+        taskData: true,
+        designData: true,
+        status: true,
+      },
     });
 
     if (!project) {
@@ -302,6 +314,7 @@ For each integration above, include a dedicated sub-section or detailed bullet i
         strukturData: JSON.stringify(parsedStruktur),
         prdData: prdText 
       },
+      select: { id: true },
     });
 
     // Save both to Redis Cache

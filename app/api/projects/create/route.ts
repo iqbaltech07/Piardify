@@ -53,7 +53,9 @@ export async function POST(req: NextRequest) {
         appName: appName,
         appIdea: appIdea,
         formInputs: JSON.stringify(body),
+        ...(body.designData ? { designData: body.designData } : {}),
       },
+      select: { id: true },
     });
 
     return NextResponse.json({ projectId: project.id });

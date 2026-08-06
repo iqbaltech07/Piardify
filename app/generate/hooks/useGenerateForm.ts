@@ -19,6 +19,7 @@ export function useGenerateForm() {
   const setAppName = (val: string) => setForm(f => ({ ...f, appName: val }));
   const setAppIdea = (val: string) => setForm(f => ({ ...f, appIdea: val }));
   const setStackMode = (mode: "manual" | "ai") => setForm(f => ({ ...f, stackMode: mode }));
+  const setDesignData = (val: string) => setForm(f => ({ ...f, designData: val }));
 
   const fetchDynamicQuestions = async () => {
     setQuestionsLoading(true);
@@ -68,6 +69,7 @@ export function useGenerateForm() {
     form, setForm,
     setStack,
     setAppName, setAppIdea, setStackMode,
+    setDesignData,
     fetchDynamicQuestions, setDynamicAnswer
   };
 }

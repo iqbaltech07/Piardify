@@ -15,15 +15,35 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { projectId, prdData, strukturData, tasksOutdated, appName, appIdea } = body;
+    const {
+      projectId, prdData, strukturData, appName, appIdea,
+      formInputs, taskData, status, checkedTasks,
+    } = body;
+    let tasksOutdated: boolean = body.tasksOutdated ?? false;
 
     if (!projectId) {
       return NextResponse.json({ error: "Missing projectId" }, { status: 400 });
     }
 
     // Verify ownership
-    const project = await prisma.project.findUnique({
+    const project = await (prisma.project as any).findUnique({
       where: { id: projectId, userId: session.user.id },
+      select: {
+        id: true,
+        userId: true,
+        appName: true,
+        appIdea: true,
+        formInputs: true,
+        strukturData: true,
+        prdData: true,
+        taskData: true,
+        designData: true,
+        status: true,
+        checkedTasks: true,
+        finishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     if (!project) {
@@ -31,6 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const updateData: any = {};
+
     if (appName !== undefined) {
       updateData.appName = appName;
 
@@ -66,6 +87,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (formInputs !== undefined) {
+      updateData.formInputs = typeof formInputs === "string" ? formInputs : JSON.stringify(formInputs);
+    }
+
     if (prdData !== undefined) {
       updateData.prdData = prdData;
       // Update redis cache for PRD
@@ -77,31 +102,47 @@ export async function POST(req: NextRequest) {
       const strukturStr = typeof strukturData === 'string' ? strukturData : JSON.stringify(strukturData);
       updateData.strukturData = strukturStr;
       // Update redis cache for Struktur
-      try { 
-        await redis.set(`project:${projectId}:struktur`, typeof strukturData === 'string' ? JSON.parse(strukturData) : strukturData); 
+      try {
+        await redis.set(`project:${projectId}:struktur`, typeof strukturData === 'string' ? JSON.parse(strukturData) : strukturData);
       } catch (e) { console.warn("Redis Struktur update error", e); }
     }
 
-    if (body.taskStatus !== undefined) {
-      const taskStatusStr = typeof body.taskStatus === 'string' ? body.taskStatus : JSON.stringify(body.taskStatus);
-      updateData.checkedTasks = taskStatusStr;
+    if (taskData !== undefined) {
+      updateData.taskData = typeof taskData === "string" ? taskData : JSON.stringify(taskData);
+      tasksOutdated = false;
       try {
-        await redis.set(`project:${projectId}:taskStatus`, typeof body.taskStatus === 'string' ? JSON.parse(body.taskStatus) : body.taskStatus);
+        await redis.set(`project:${projectId}:tasks`, typeof taskData === "string" ? JSON.parse(taskData) : taskData);
+      } catch (e) { console.warn("Redis TaskData update error", e); }
+    }
+
+    if (status !== undefined) {
+      updateData.status = status;
+    }
+
+    if (checkedTasks !== undefined) {
+      updateData.checkedTasks = typeof checkedTasks === "string" ? checkedTasks : JSON.stringify(checkedTasks);
+      try {
+        await redis.set(`project:${projectId}:taskStatus`, typeof checkedTasks === "string" ? JSON.parse(checkedTasks) : checkedTasks);
         await redis.del(`project:${projectId}:tasks`);
       } catch (e) { console.warn("Redis TaskStatus update error", e); }
     }
 
+    if (body.designData !== undefined) {
+      updateData.designData = body.designData;
+    }
+
     if (tasksOutdated) {
       // Inject _tasksOutdated flag into formInputs without needing Prisma schema migration
-      let formInputsObj = project.formInputs ? JSON.parse(project.formInputs) : {};
+      const formInputsObj = project.formInputs ? JSON.parse(project.formInputs) : {};
       formInputsObj._tasksOutdated = true;
       updateData.formInputs = JSON.stringify(formInputsObj);
     }
 
     if (Object.keys(updateData).length > 0) {
-      const updatedProject = await prisma.project.update({
+      await (prisma.project as any).update({
         where: { id: projectId },
         data: updateData,
+        select: { id: true },
       });
       // Invalidate project info and structure cache in Redis
       try {

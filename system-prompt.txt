@@ -34,7 +34,7 @@ The rule is simple: if it goes inside [], {}, or (), it must have double quotes 
 
 4. Respond ONLY with the raw Markdown. Do not include introductory or concluding conversational text.
 5. Write the content in Indonesian (Bahasa Indonesia) if the user's inputs are in Indonesian, otherwise match their language.
-6. On Section Design Guidelines add some design guidelines that are modern, clean, developer-friendly, and not AI-slop, using the Design Tokens & Color Palette and Typography & Component Tokens provided.
+6. On Section 9 (Design Guidelines), ALWAYS reference and direct to 'design.md' ('designData'). DO NOT dump or copy full raw design markdown into the PRD text. State clearly that complete color tokens, HEX values, typography, and UI component guidelines (Do's & Don'ts) are maintained in 'design.md' (designData), and provide only a clean high-level summary of aesthetic principles.
 
 INTEGRATION RULES (CRITICAL):
 7. Every integration listed in the user inputs (e.g. Google OAuth, Stripe, Firebase, Twilio, etc.) MUST be explicitly described inside the relevant feature section. Examples:

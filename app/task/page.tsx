@@ -125,7 +125,7 @@ function KanbanTaskCard({
             }}
           >
             {/* Header row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span
                   style={{
@@ -149,20 +149,21 @@ function KanbanTaskCard({
               </div>
 
               {/* Status Move Shortcuts */}
-              <div style={{ display: "flex", gap: 3 }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
                 {task.status !== "todo" && (
                   <button
                     onClick={() => onToggleStatus(task.id, "todo")}
                     title="Move to To Do"
                     style={{
-                      padding: "2px 6px",
+                      padding: "3px 7px",
                       borderRadius: "var(--radius-xs)",
                       border: "1px solid var(--border-hairline)",
-                      background: "transparent",
+                      background: "rgba(255,255,255,0.03)",
                       color: "var(--fg-muted)",
                       fontSize: 9,
                       fontFamily: "var(--font-mono)",
                       cursor: "pointer",
+                      transition: "all 0.15s ease",
                     }}
                   >
                     ← Todo
@@ -173,17 +174,18 @@ function KanbanTaskCard({
                     onClick={() => onToggleStatus(task.id, "in_progress")}
                     title="Move to In Progress"
                     style={{
-                      padding: "2px 6px",
+                      padding: "3px 7px",
                       borderRadius: "var(--radius-xs)",
-                      border: "1px solid rgba(255,182,39,0.3)",
-                      background: "rgba(255,182,39,0.08)",
+                      border: "1px solid rgba(255,182,39,0.35)",
+                      background: "rgba(255,182,39,0.1)",
                       color: "var(--color-signal)",
                       fontSize: 9,
                       fontFamily: "var(--font-mono)",
                       cursor: "pointer",
+                      transition: "all 0.15s ease",
                     }}
                   >
-                    Prog
+                    ⚡ Prog
                   </button>
                 )}
                 {task.status !== "done" && (
@@ -191,14 +193,15 @@ function KanbanTaskCard({
                     onClick={() => onToggleStatus(task.id, "done")}
                     title="Mark Done"
                     style={{
-                      padding: "2px 6px",
+                      padding: "3px 7px",
                       borderRadius: "var(--radius-xs)",
-                      border: "1px solid rgba(79,209,197,0.3)",
-                      background: "rgba(79,209,197,0.08)",
+                      border: "1px solid rgba(79,209,197,0.35)",
+                      background: "rgba(79,209,197,0.1)",
                       color: "var(--color-circuit)",
                       fontSize: 9,
                       fontFamily: "var(--font-mono)",
                       cursor: "pointer",
+                      transition: "all 0.15s ease",
                     }}
                   >
                     ✓ Done
@@ -597,6 +600,35 @@ function TaskPageContent() {
         <ProjectHeaderBrand projectId={projectId} />
         <StepNavbar currentStep="task" projectId={projectId} />
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+          {!isLoading && data && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 10px",
+                borderRadius: "var(--radius-xs)",
+                border: "1px solid rgba(79,209,197,0.25)",
+                background: "rgba(79,209,197,0.06)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                color: "var(--color-circuit)",
+                letterSpacing: "0.04em",
+              }}
+              title="Kanban status automatically syncs with MCP IDE & database in real-time"
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#4FD1C5",
+                  boxShadow: "0 0 8px #4FD1C5",
+                }}
+              />
+              Live Sync
+            </div>
+          )}
           {!isLoading && data && (
             <button
               onClick={() => setShowMcpModal(true)}

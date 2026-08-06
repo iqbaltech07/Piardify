@@ -35,8 +35,21 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Check Database
-    const project = await prisma.project.findUnique({
+    const project = await (prisma.project as any).findUnique({
       where: { id: projectId, userId: session.user.id },
+      select: {
+        id: true,
+        userId: true,
+        appName: true,
+        appIdea: true,
+        formInputs: true,
+        strukturData: true,
+        prdData: true,
+        taskData: true,
+        designData: true,
+        status: true,
+        checkedTasks: true,
+      },
     });
 
     if (!project) {
@@ -68,7 +81,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
     }
 
-    let systemPrompt = `You are a senior software project manager. Based on the PRD, project structure, and app info, generate a comprehensive, actionable task list for building this project.
+    let systemPrompt = `You are a senior software project manager and Vibe Coding AI Architect. Based on the PRD, project structure, and app info, generate a comprehensive, highly actionable task list for building this project.
 
 RESPONSE FORMAT (strict JSON only, no markdown):
 {
@@ -98,10 +111,19 @@ PHASE STRUCTURE — YOU MUST GENERATE ALL 5 PHASES, NO EXCEPTIONS:
 4. Pengembangan Frontend
 5. Testing & Deployment
 
-CRITICAL RULES:
+CRITICAL RULES FOR VIBE CODING & ATOMIC TASK BREAKDOWN:
+- ATOMIC & GRANULAR TASK BREAKDOWN: Each task MUST be small, specific, and focused on 1 single component or feature unit (e.g. for Frontend UI, break down per-section: "Implement Hero Section & Header CTA", "Implement Features Grid Component", "Implement Pricing Section", "Implement Footer & Nav Links"). NEVER generate lump-sum tasks like "Build all Frontend pages" or "Develop entire UI".
+- SINGLE CLEAR DELIVERABLE: Each task must have 1 concrete deliverable that a developer or AI coding agent can implement and verify 1-by-1 sequentially without hallucination.
+- ONLY GENERATE ACTIONABLE CODE & UI/UX TASKS: Focus strictly on code implementation, component building, API route logic, database schemas, state management, caching, form validation, theme switching, dynamic SEO, and test scripts that an AI Coding Assistant can build directly.
+- STRICTLY DO NOT GENERATE UNREACHABLE / MANUAL NON-CODE TASKS:
+  * DO NOT include manual domain/SSL purchases in registrar portals or manual DNS setup outside codebase.
+  * DO NOT include manual business KYC approval for payment gateways (e.g. Stripe/Midtrans manual business registration).
+  * DO NOT include manual Apple Developer / Google Play Developer account creation or identity verification.
+  * DO NOT include manual physical hardware device testing on multiple physical phones.
+  * DO NOT include manual human user interviews, field marketing, or manual vendor sales negotiations.
+- Phase 5 (Testing & Deployment) MUST focus strictly on code-based testing and automated scripts (unit tests, integration test suites, build validation scripts, GitHub Actions CI/CD configuration, environment variable configs).
 - You MUST output ALL 5 phases. A response with fewer than 5 phases is INVALID and will be rejected.
-- Phase 5 (Testing & Deployment) MUST include tasks such as: unit testing, integration testing, UAT, CI/CD pipeline setup, staging deployment, production deployment, monitoring setup.
-- Generate 4-8 specific, actionable tasks per phase based on the PRD features and project structure.
+- Generate 5-8 atomic, specific, actionable tasks per phase based on the PRD features and project structure.
 - Each task MUST be directly traceable to a feature or requirement in the PRD or project structure.
 - Priority: high = must have for MVP, medium = important but not blocking, low = nice to have
 - Estimasi must be realistic time estimates in Bahasa Indonesia
@@ -143,16 +165,17 @@ ${strukturSummary}
 ` : ""}PRD Content (first 4000 chars):
 ${(prdMarkdown || "").substring(0, 4000)}
 
-REMINDER: You MUST output all 5 phases including Phase 5 (Testing & Deployment). Tasks must align with the PRD content and project structure above.`;
+REMINDER: You MUST output all 5 phases including Phase 5 (Testing & Deployment). All tasks must be actionable code/UI tasks suitable for AI Vibe Coding and MUST exclude manual non-code/unreachable tasks (no manual domain buying, no manual business KYC, no manual account verifications).`;
 
     if (project.taskData && isOutdated) {
-      systemPrompt = `You are a senior software project manager. The user has manually updated their PRD and/or Project Structure. Your task is to intelligently sync the EXISTING task list with the new requirements.
+      systemPrompt = `You are a senior software project manager and Vibe Coding AI Architect. The user has manually updated their PRD and/or Project Structure. Your task is to intelligently sync the EXISTING task list with the new requirements.
 
 CRITICAL INSTRUCTIONS:
 1. ONLY modify, add, or remove tasks that are directly affected by the changes in the PRD or Structure.
-2. Preserve the exact details (title, description, estimasi, tags, priority) of existing tasks that are NOT affected.
-3. You must maintain the exact same JSON format with 5 phases.
-4. Output the FULL updated JSON, ensuring you include all unchanged tasks alongside the modified ones.`;
+2. Ensure ALL tasks (new or updated) are actionable code/UI tasks suitable for Vibe Coding and strictly exclude manual non-code tasks (no manual domain purchase, no manual KYC, no manual developer account creation).
+3. Preserve the exact details (title, description, estimasi, tags, priority) of existing tasks that are NOT affected.
+4. You must maintain the exact same JSON format with 5 phases.
+5. Output the FULL updated JSON, ensuring you include all unchanged tasks alongside the modified ones.`;
 
       userPrompt = `Here is the NEW PRD Summary:
 ${(prdMarkdown || "").substring(0, 2000)}
@@ -386,6 +409,7 @@ Please return the fully synchronized Task List in JSON format.`;
     await prisma.project.update({
       where: { id: projectId },
       data: updateData,
+      select: { id: true },
     });
 
     // Save to Redis Cache

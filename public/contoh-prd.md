@@ -153,35 +153,14 @@ flowchart TD
 
 ## 9. Design Guidelines
 
+> [!NOTE]
+> Detail spesifikasi sistem desain, token warna (HEX/HSL), hirarki tipografi, serta panduan komponen UI (Do's & Don'ts) dikelola secara terpusat dan terpisah di dokumen `design.md` (`designData`).
+
 ### 9.1 General Aesthetics
 
-- **Style**: Ultra-clean, modern enterprise dark-mode, developer-first.
-- **UI Principles**: High readability, clear visual hierarchy, minimal clutter, micro-animations for high polish.
-- **Anti AI-Slop Guarantee**: Menggunakan palet warna terkurasi khusus (HSL/Hex), glassmorphism berlapis, border glowing halus, dan tipografi modern (bukan bawaan browser polos).
-
-### 9.2 Design Tokens & Color Palette
-
-| Token Category | Token Name | Value / HEX / CSS | Penggunaan |
-| :--- | :--- | :--- | :--- |
-| **Background** | `bg-base` | `#0a0c18` | Latar belakang halaman utama |
-| **Background** | `bg-surface` | `#0f1223` / `rgba(15,18,35,0.95)` | Panel, sidebar, dan container kartu |
-| **Background** | `bg-elevated` | `rgba(255,255,255,0.04)` | Modal, dropdown option, dan popover |
-| **Borders** | `border-subtle` | `rgba(99,102,241,0.15)` | Garis batas elemen & pembatas antar section |
-| **Borders** | `border-glow` | `rgba(99,102,241,0.45)` | Status active / focus state pada input & button |
-| **Accent Primary** | `accent-indigo` | `#6366f1` | Tombol aksi utama, indikator aktif |
-| **Accent Glow** | `accent-gradient` | `linear-gradient(135deg, #6366f1, #a78bfa)` | Header badge, CTA button, glowing icons |
-| **Typography** | `font-sans` | `'Inter'`, `'Outfit'`, sans-serif | Teks UI, judul, paragraf |
-| **Typography** | `font-mono` | `'Geist Mono'`, `'Fira Code'`, monospace | Kode, token JSON, dan syntax highlight |
-| **Effects** | `glass-blur` | `backdrop-filter: blur(16px)` | Floating panel, chat drawer, sticky headers |
-| **Animations** | `micro-transition` | `all 0.25s cubic-bezier(0.4, 0, 0.2, 1)` | Hover state, tab active indicator, modal fade |
-
-### 9.3 Typography & Component Tokens
-
-- **Heading 1**: `2rem` (32px), Font-weight 800, Color `#f8fafc`, Bottom border `1px solid rgba(99,102,241,0.15)`
-- **Heading 2**: `1.3rem` (20.8px), Font-weight 700, Color `#f1f5f9`
-- **Heading 3**: `1.05rem` (16.8px), Font-weight 600, Color `#a5b4fc`
-- **Body Text**: `14px`, Line-height 1.7, Color `#cbd5e1`
-- **Code Pill**: Background `rgba(99,102,241,0.18)`, Border `rgba(99,102,241,0.28)`, Text `#c084fc`
+- **Style**: Ultra-clean, modern enterprise light-mode, users-first.
+- **UI Principles**: High readability, clear visual hierarchy, minimal clutter, micro-animations untuk responsivitas visual.
+- **Design Alignment**: Seluruh penamaan token warna dan aturan komponen mengacu secara ketat pada spesifikasi berkas `design.md`.
 
 ---
 

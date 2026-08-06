@@ -20,6 +20,7 @@ export interface FormData {
   };
   dynamicQuestions: DynamicQuestion[];
   dynamicAnswers: Record<string, string | string[]>;
+  designData?: string;
 }
 
 export type StackCategory = "frontend" | "backend" | "database" | "deployment";

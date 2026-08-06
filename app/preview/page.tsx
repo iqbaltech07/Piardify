@@ -106,7 +106,7 @@ function PreviewPageContent() {
 
   const handleCopy = useCallback(async () => { await navigator.clipboard.writeText(markdown); setCopied(true); setTimeout(() => setCopied(false), 2000); }, [markdown]);
   const handleDownload = useCallback(() => { const b = new Blob([markdown], { type: "text/markdown" }); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "PRD.md"; a.click(); URL.revokeObjectURL(u); }, [markdown]);
-  const handleContinueToTask = () => router.push(`/task${projectId ? `?projectId=${projectId}` : ""}`);
+  const handleContinueToDesign = () => router.push(`/detail${projectId ? `?projectId=${projectId}` : ""}`);
   const scrollToHeading = (id: string) => { const c = contentRef.current; if (!c) return; const el = c.querySelector<HTMLElement>(`#${id}`); if (!el) return; c.scrollTo({ top: el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop - 24, behavior: "smooth" }); };
   const handleSave = async () => {
     if (!projectId) return; setIsSaving(true);
@@ -158,10 +158,10 @@ function PreviewPageContent() {
           <button onClick={handleCopy} disabled={isEditing} style={btn}>{copied ? "✓ Copied" : "Copy"}</button>
           <button onClick={handleDownload} style={btn}>↓ .md</button>
           <button
-            onClick={handleContinueToTask} disabled={isGenerating}
+            onClick={handleContinueToDesign} disabled={isGenerating}
             style={{ ...btn, background: "var(--color-signal)", color: "var(--color-graphite)", borderColor: "var(--color-signal)", opacity: isGenerating ? 0.4 : 1, cursor: isGenerating ? "not-allowed" : "pointer", padding: "5px 14px" }}
           >
-            Continue to Task →
+            Continue to Design →
           </button>
         </div>
       </header>

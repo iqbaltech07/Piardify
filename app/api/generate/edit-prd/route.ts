@@ -265,6 +265,7 @@ Respond in valid JSON according to the instructions.`;
           await prisma.project.update({
             where: { id: projectId },
             data: { prdData: updatedMarkdown },
+            select: { id: true },
           });
           const cacheKey = `project:${projectId}:prd`;
           await redis.set(cacheKey, updatedMarkdown);

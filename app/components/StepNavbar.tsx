@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 
-export type WorkflowStep = "struktur" | "prd" | "task";
+export type WorkflowStep = "struktur" | "prd" | "design" | "task";
 
 const STEPS: { id: WorkflowStep; label: string; path: string }[] = [
   { id: "struktur", label: "Structure", path: "/structure" },
   { id: "prd",      label: "PRD",       path: "/preview" },
+  { id: "design",   label: "Design",    path: "/detail" },
   { id: "task",     label: "Task",      path: "/task" },
 ];
 
@@ -25,7 +26,7 @@ export default function StepNavbar({
         const isDone = i < currentIdx;
         const isActive = step.id === currentStep;
         const href = `${step.path}${projectId ? `?projectId=${projectId}` : ""}`;
-        const clickable = isDone || isActive;
+        const clickable = !!projectId;
 
         return (
           <div key={step.id} style={{ display: "flex", alignItems: "center" }}>
@@ -37,7 +38,8 @@ export default function StepNavbar({
                 borderRadius: "var(--radius-sm)",
                 textDecoration: "none",
                 pointerEvents: clickable ? "auto" : "none",
-                opacity: !clickable ? 0.4 : 1,
+                opacity: isActive ? 1 : isDone ? 0.9 : 0.75,
+                transition: "all 0.15s ease",
               }}
             >
               {/* Step circle */}
@@ -48,9 +50,9 @@ export default function StepNavbar({
                 fontFamily: "var(--font-mono)",
                 fontSize: "9px", fontWeight: 700,
                 flexShrink: 0,
-                background: isDone || isActive ? "var(--color-signal)" : "transparent",
-                color: isDone || isActive ? "var(--color-graphite)" : "var(--fg-muted)",
-                border: isDone || isActive ? "none" : "1px solid var(--border-hairline)",
+                background: isActive ? "var(--color-signal)" : isDone ? "rgba(255,182,39,0.2)" : "transparent",
+                color: isActive ? "var(--color-graphite)" : isDone ? "var(--color-signal)" : "var(--fg-muted)",
+                border: isActive ? "none" : isDone ? "1px solid var(--color-signal)" : "1px solid var(--border-hairline)",
                 boxSizing: "border-box",
               }}>
                 {isDone ? "✓" : i + 1}
@@ -60,7 +62,7 @@ export default function StepNavbar({
                 fontFamily: "var(--font-mono)",
                 fontSize: "11px", fontWeight: isActive ? 700 : 500,
                 letterSpacing: "0.06em", textTransform: "uppercase",
-                color: isActive ? "var(--fg-primary)" : isDone ? "var(--color-signal)" : "var(--fg-muted)",
+                color: isActive ? "var(--fg-primary)" : isDone ? "var(--color-signal)" : "var(--fg-secondary)",
               }}>
                 {step.label}
               </span>

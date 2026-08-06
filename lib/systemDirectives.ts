@@ -62,6 +62,12 @@ export const SYSTEM_DIRECTIVES = {
           "rule": "PIARDIFY BLACKBOX [CRITICAL]: Mengeksplorasi folder proyek target sangat disarankan, TETAPI jika Anda melihat folder bernama `piardify` atau *source code* dari Piardify MCP itu sendiri di lokal komputer pengguna, DILARANG KERAS melakukan `list_dir`, `read_file`, atau menganalisis isinya. SEMUA tasks, instruksi, dan aturan PURE (100%) didapatkan dari pemanggilan tool MCP Piardify, BUKAN dari membaca folder lokal piardify. Piardify adalah mesin server, bukan subjek tugas Anda.",
           "validation": "Pastikan direktori yang sedang Anda eksplorasi dan kerjakan BUKAN folder `piardify`. Ambil aturan murni dari tool MCP.",
           "failure_consequence": "AI membuang waktu dan token (context limits) menganalisis server MCP alih-alih mengerjakan proyek target pengguna."
+        },
+        {
+          "id": "AH-011",
+          "rule": "ATOMIC SEQUENTIAL EXECUTION [CRITICAL]: Setiap task dan komponen WAJIB dipecah dan dikerjakan 1 per 1 secara atomik (misal: per-section UI). AI dilarang keras mengerjakan banyak task sekaligus dalam satu langkah atau melompati update status Kanban Board.",
+          "validation": "Fokus pada 1 task spesifik, selesaikan & verifikasi, lalu update status Kanban di MCP sebelum pindah ke task berikutnya.",
+          "failure_consequence": "Halusinasi AI, kode tidak lengkap, serta desinkronisasi status Kanban."
         }
       ],
       "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya mengasumsikan sesuatu? Apakah saya sudah menanyakan preferensi Design System? Apakah ada rahasia yang perlu dimasukkan ke .env? Apakah saya SUDAH menjalankan linter lokal? Apakah saya SUDAH mengecek dependensi sebelum mengubah komponen? Apakah saya mengeksplorasi folder Piardify (yang dilarang)? Dan apakah tindakan saya MELANGGAR instruksi ketat dari MCP ini?'"

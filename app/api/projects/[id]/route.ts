@@ -90,6 +90,7 @@ export async function DELETE(
     // Check if project belongs to user
     const project = await prisma.project.findUnique({
       where: { id: projectId, userId: session.user.id },
+      select: { id: true },
     });
 
     if (!project) {

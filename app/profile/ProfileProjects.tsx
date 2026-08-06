@@ -136,7 +136,7 @@ export default function ProfileProjects({ projects }: { projects: Project[] }) {
             return (
               <Link
                 key={project.id}
-                href={`/structure?projectId=${project.id}`}
+                href={`/detail?projectId=${project.id}`}
                 style={{ textDecoration: "none", display: "flex" }}
               >
                 <div style={{

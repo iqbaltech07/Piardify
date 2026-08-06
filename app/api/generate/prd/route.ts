@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -36,8 +36,20 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Check Database
-    const project = await prisma.project.findUnique({
+    const project = await (prisma.project as any).findUnique({
       where: { id: projectId, userId: session.user.id },
+      select: {
+        id: true,
+        userId: true,
+        appName: true,
+        appIdea: true,
+        formInputs: true,
+        strukturData: true,
+        prdData: true,
+        taskData: true,
+        designData: true,
+        status: true,
+      },
     });
 
     if (!project) {
@@ -45,7 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (project.prdData) {
-      try { await redis.set(cacheKey, project.prdData); } catch {}
+      try { await redis.set(cacheKey, project.prdData); } catch { }
       return NextResponse.json({ markdown: project.prdData });
     }
 
@@ -251,6 +263,7 @@ For each integration above, include a dedicated sub-section or detailed bullet i
     await prisma.project.update({
       where: { id: projectId },
       data: { prdData: text },
+      select: { id: true },
     });
 
     // Save to Redis Cache

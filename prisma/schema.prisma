@@ -88,6 +88,7 @@ model Project {
   strukturData String?  // JSON string
   prdData      String?  // text/md
   taskData     String?  // JSON string
+  designData   String?  // text/md design guidelines
 
   // Gamification
   status       String   @default("IN_PROGRESS")  // "IN_PROGRESS" | "FINISHED"

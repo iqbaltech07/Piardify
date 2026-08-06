@@ -51,6 +51,7 @@ export default function GeneratePage() {
     form,
     setStack,
     setAppName, setAppIdea, setStackMode,
+    setDesignData,
     fetchDynamicQuestions, setDynamicAnswer,
   } = useGenerateForm();
 
@@ -82,7 +83,7 @@ export default function GeneratePage() {
         throw new Error("Failed to create project");
       }
       const data = await res.json();
-      setTimeout(() => router.push(`/structure?projectId=${data.projectId}`), 2200);
+      setTimeout(() => router.push(`/detail?projectId=${data.projectId}`), 2200);
     } catch {
       setLoading(false);
     }
@@ -121,8 +122,10 @@ export default function GeneratePage() {
           <Step1Idea
             appName={form.appName}
             appIdea={form.appIdea}
+            designData={form.designData}
             setAppName={setAppName}
             setAppIdea={setAppIdea}
+            setDesignData={setDesignData}
           />
         )}
 

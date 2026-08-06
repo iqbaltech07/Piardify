@@ -27,6 +27,16 @@ export async function POST(req: NextRequest) {
     // ── 1. Load project and verify ownership ──────────────────────────────
     const project = await prisma.project.findUnique({
       where: { id: projectId, userId: session.user.id },
+      select: {
+        id: true,
+        userId: true,
+        appName: true,
+        appIdea: true,
+        taskData: true,
+        status: true,
+        checkedTasks: true,
+        finishedAt: true,
+      },
     });
 
     if (!project) {
@@ -97,6 +107,7 @@ export async function POST(req: NextRequest) {
           checkedTasks: JSON.stringify(checkedTasks),
           finishedAt: new Date(),
         },
+        select: { id: true, status: true, finishedAt: true },
       }),
     ]);
 

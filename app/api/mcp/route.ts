@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { SYSTEM_DIRECTIVES } from "@/lib/systemDirectives";
 import { TASTE_SKILL_DIRECTIVES } from "@/lib/tasteSkill";
+import { parseDesignMarkdown } from "@/lib/designParser";
 
 export async function POST(req: NextRequest) {
   try {
@@ -139,6 +140,17 @@ export async function POST(req: NextRequest) {
               }
             },
             {
+              name: "get_design_md",
+              description: "Mengambil pedoman desain (design.md Data & Vercel Blob URL) milik proyek.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  projectId: { type: "string", description: "ID unik proyek Piardify" }
+                },
+                required: ["projectId"]
+              }
+            },
+            {
               name: "update_task_status",
               description: "Memperbarui status tugas pada Kanban Board proyek Piardify.",
               inputSchema: {
@@ -170,8 +182,24 @@ export async function POST(req: NextRequest) {
         }, { status: 400 });
       }
 
-      const project = await prisma.project.findUnique({
-        where: { id: projectId, userId: user.id }
+      const project = await (prisma.project as any).findUnique({
+        where: { id: projectId, userId: user.id },
+        select: {
+          id: true,
+          userId: true,
+          appName: true,
+          appIdea: true,
+          formInputs: true,
+          strukturData: true,
+          prdData: true,
+          taskData: true,
+          designData: true,
+          status: true,
+          checkedTasks: true,
+          finishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
 
       if (!project) {
@@ -234,6 +262,38 @@ export async function POST(req: NextRequest) {
           jsonrpc: "2.0",
           result: {
             content: [{ type: "text", text: project.prdData || "No PRD data" }]
+          },
+          id
+        });
+      }
+
+      if (name === "get_design_md") {
+        const proj = project as any;
+        let rawText = proj.designData || "";
+        let structured: any = null;
+
+        if (rawText.startsWith("{") && rawText.includes("rawMarkdown")) {
+          try {
+            structured = JSON.parse(rawText);
+            rawText = structured.rawMarkdown || rawText;
+          } catch {}
+        }
+
+        if (!structured) {
+          structured = parseDesignMarkdown(rawText);
+        }
+
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          result: {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                colorTokens: structured.colorTokens || [],
+                sections: structured.sections || [],
+                rawMarkdown: structured.rawMarkdown || rawText || "No design.md content uploaded",
+              })
+            }]
           },
           id
         });
@@ -317,7 +377,8 @@ export async function POST(req: NextRequest) {
 
         await prisma.project.update({
           where: { id: projectId },
-          data: { checkedTasks: JSON.stringify(savedStatus) }
+          data: { checkedTasks: JSON.stringify(savedStatus) },
+          select: { id: true },
         });
 
         try {
