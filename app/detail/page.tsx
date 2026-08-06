@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  ChevronDown, ChevronRight, FileText, ArrowRight, ExternalLink,
-  Upload, Sparkles, Check, Edit2, Layout, Layers, ShieldCheck, Cpu
-} from "lucide-react";
+import { Upload, Sparkles, ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
 import StepNavbar from "../components/StepNavbar";
 import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 import McpConnectModal from "../components/McpConnectModal";
@@ -26,7 +23,7 @@ interface ColorToken {
   role: string;
 }
 
-const DEFAULT_COLOR_TOKENS: ColorToken[] = [
+export const DEFAULT_COLOR_TOKENS: ColorToken[] = [
   { token: "primary", hex: "#5645d4", role: "Primary / brand" },
   { token: "primary-pressed", hex: "#4534b3", role: "Primary / brand" },
   { token: "primary-deep", hex: "#3a2a99", role: "Primary / brand" },
@@ -41,7 +38,7 @@ const DEFAULT_COLOR_TOKENS: ColorToken[] = [
   { token: "brand-pink", hex: "#ff64c8", role: "Primary / brand" },
 ];
 
-const DEFAULT_ACCORDION_SECTIONS = [
+export const DEFAULT_ACCORDION_SECTIONS = [
   {
     id: "overview",
     title: "Overview",
@@ -523,13 +520,11 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
 
 function ProjectDetailContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const projectId = searchParams.get("projectId");
 
   const [project, setProject] = useState<ProjectDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({ dos_and_donts: true, overview: true });
   const [showMcpModal, setShowMcpModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -542,18 +537,14 @@ function ProjectDetailContent() {
         if (!res.ok) throw new Error("Failed to load project details");
         const json = await res.json();
         setProject(json.project || null);
-      } catch (err: any) {
-        setError(err.message || "Failed to connect to server");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to connect to server");
       } finally {
         setIsLoading(false);
       }
     };
     fetchProject();
   }, [projectId]);
-
-  const toggleAccordion = (id: string) => {
-    setOpenAccordions((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -581,8 +572,8 @@ function ProjectDetailContent() {
           }
           : prev
       );
-    } catch (err: any) {
-      alert("Failed to upload design.md: " + err.message);
+    } catch (err: unknown) {
+      alert("Failed to upload design.md: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsUploading(false);
     }
