@@ -525,8 +525,13 @@ function ProjectDetailContent() {
   const [project, setProject] = useState<ProjectDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({ dos_and_donts: true, overview: true });
   const [showMcpModal, setShowMcpModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  const toggleAccordion = (id: string) => {
+    setOpenAccordions((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
     if (!projectId) return;
