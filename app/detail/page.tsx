@@ -463,9 +463,9 @@ function renderStructuredAccordionContent(content: string, colorMap: Record<stri
                   {item.subItems && item.subItems.length > 0 && (
                     <div style={{ marginLeft: 14, marginTop: 6, paddingLeft: 10, borderLeft: "2px solid var(--border-hairline)", display: "flex", flexDirection: "column", gap: 6 }}>
                       {item.subItems.map((sub, sIdx) => (
-                        <div key={sIdx} style={{ fontSize: 12, color: "var(--fg-secondary)", lineHeight: 1.5 }}>
-                          <strong style={{ color: "var(--fg-primary)", fontWeight: 600 }}>{sub.title}</strong>
-                          {sub.desc ? `: ${sub.desc}` : ""}
+                        <div key={sIdx} style={{ fontSize: 12, color: "var(--fg-secondary)", lineHeight: 1.5, display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+                          <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--fg-muted)", flexShrink: 0 }} />
+                          <span dangerouslySetInnerHTML={{ __html: formatMarkdownText(sub.title + (sub.desc ? `: ${sub.desc}` : ""), colorMap) }} />
                         </div>
                       ))}
                     </div>
