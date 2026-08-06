@@ -83,7 +83,7 @@ export default function GeneratePage() {
         throw new Error("Failed to create project");
       }
       const data = await res.json();
-      setTimeout(() => router.push(`/detail?projectId=${data.projectId}`), 2200);
+      setTimeout(() => router.push(`/structure?projectId=${data.projectId}`), 2200);
     } catch {
       setLoading(false);
     }
