@@ -35,7 +35,16 @@ export async function GET(req: NextRequest) {
     let savedStatuses: Record<string, string> = {};
 
     if (project.taskData) {
-      try { tasks = JSON.parse(project.taskData); } catch {}
+      try {
+        const parsed = JSON.parse(project.taskData);
+        if (Array.isArray(parsed)) {
+          tasks = parsed;
+        } else if (parsed && Array.isArray(parsed.phases)) {
+          tasks = parsed.phases.flatMap((p: any) => p.tasks || []);
+        } else if (parsed && Array.isArray(parsed.tasks)) {
+          tasks = parsed.tasks;
+        }
+      } catch {}
     }
     if (project.checkedTasks) {
       try { savedStatuses = JSON.parse(project.checkedTasks); } catch {}
