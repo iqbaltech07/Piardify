@@ -14,6 +14,23 @@ Piardify is an AI PRD Generator & System Architecture Tracking Platform. This sk
 
 ---
 
+## Complete Command & Query Reference
+
+All legacy MCP tools are migrated 1:1 to the following NPX CLI commands:
+
+| Legacy MCP Tool | New NPX Command | Purpose |
+| :--- | :--- | :--- |
+| \`get_project_blueprint\` | \`npx piardify project context --json\` | Fetch PRD, Mindmap, Tasks & Directives in 1 payload |
+| \`get_project_structure\` | \`npx piardify project mindmap --json\` | Fetch visual architecture mindmap hierarchy |
+| \`get_prd_details\` | \`npx piardify project prd --json\` | Fetch raw PRD markdown documentation |
+| \`get_task_list\` | \`npx piardify task list [--status <s=>] --json\` | Fetch list of tasks filtered by status |
+| \`get_system_directives\` | \`npx piardify project directives --json\` | Fetch Anti-Hallucination rules & Taste guidelines |
+| \`get_taste_skill\` | \`npx piardify project directives --json\` | Fetch Taste Skill UI Anti-Slop framework |
+| \`get_design_md\` | \`npx piardify project design --json\` | Fetch color tokens, typography & design.md specs |
+| \`update_task_status\` | \`npx piardify task start <id>\`<br>\`npx piardify task complete <id>\`<br>\`npx piardify task fail <id> --reason "<r>"\` | Start task, complete task, or record task failure |
+
+---
+
 ## Core Workflow Lifecycle
 
 Get Current Task  -->  Start Task  -->  Inspect & Code  -->  Local Verification  -->  Complete Task
@@ -64,6 +81,16 @@ Execute the following in the terminal:
   \`\`\`bash
   npx piardify task current --json
   \`\`\`
+
+---
+
+## Anti-Hallucination Directives (\`AH-001\` to \`AH-010\`)
+
+1. **\`AH-001\` Zero Invention [CRITICAL]**: Never add unapproved libraries, frameworks, or dependencies outside what is specified in the PRD.
+2. **\`AH-002\` Zero Assumption [CRITICAL]**: Never assume un-documented API contracts, DB schemas, or response types. Verify from source code first.
+3. **\`AH-003\` Status Sync [REQUIRED]**: Always sync task state (\`start\`, \`complete\`, \`fail\`) via \`npx piardify task\`.
+4. **\`AH-004\` Local Verification Gate [CRITICAL]**: Run linter, compiler, and build checks locally before completing any task.
+5. **\`AH-005\` Atomic Sequential Execution [CRITICAL]**: Process tasks 1 by 1. Do not jump ahead or update multiple task statuses simultaneously without verification.
 `;
 
 export async function initCommand(options: { project?: string; json?: boolean }) {
