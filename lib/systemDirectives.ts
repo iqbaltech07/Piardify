@@ -41,13 +41,13 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           "id": "AH-007",
-          "rule": "STRICT MCP COMPLIANCE [ABSOLUTE]: AI dilarang keras melanggar atau mengabaikan satu pun aturan yang telah disediakan oleh instruksi MCP (termasuk System Directives dan Taste Skill). Aturan-aturan ini bersifat mutlak (hukum tertinggi) yang menganulir semua knowledge atau kebiasaan default AI.",
-          "validation": "Setiap tindakan harus selaras dengan direktif yang diterima dari MCP server.",
+          "rule": "STRICT DIRECTIVE COMPLIANCE [ABSOLUTE]: AI dilarang keras melanggar atau mengabaikan satu pun aturan yang telah disediakan oleh instruksi Piardify (termasuk System Directives dan Taste Skill). Aturan-aturan ini bersifat mutlak (hukum tertinggi) yang menganulir semua knowledge atau kebiasaan default AI.",
+          "validation": "Setiap tindakan harus selaras dengan direktif yang diterima dari Piardify Agent API/CLI.",
           "failure_consequence": "AI kehilangan arah, melanggar arsitektur standar proyek, dan memberikan output sampah (AI Slop)."
         },
         {
           "id": "AH-008",
-          "rule": "LOCAL CI/CD GATE [CRITICAL]: AI WAJIB menjalankan perintah `npm run lint` dan (jika relevan) `npm run build` di terminal lokalnya sendiri, lalu membaca outputnya, sebelum berani memanggil tool MCP untuk update status task menjadi 'done'.",
+          "rule": "LOCAL CI/CD GATE [CRITICAL]: AI WAJIB menjalankan perintah `npm run lint` dan (jika relevan) `npm run build` di terminal lokalnya sendiri, lalu membaca outputnya, sebelum memanggil CLI `npx piardify task complete` untuk update status task menjadi 'done'.",
           "validation": "Pastikan tidak ada error ESLint atau build error yang tersisa sebelum menyelesaikan task.",
           "failure_consequence": "Broken build, CI/CD pipeline gagal di produksi, dan kode yang tidak bisa di-compile."
         },
@@ -59,18 +59,18 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           "id": "AH-010",
-          "rule": "PIARDIFY BLACKBOX [CRITICAL]: Mengeksplorasi folder proyek target sangat disarankan, TETAPI jika Anda melihat folder bernama `piardify` atau *source code* dari Piardify MCP itu sendiri di lokal komputer pengguna, DILARANG KERAS melakukan `list_dir`, `read_file`, atau menganalisis isinya. SEMUA tasks, instruksi, dan aturan PURE (100%) didapatkan dari pemanggilan tool MCP Piardify, BUKAN dari membaca folder lokal piardify. Piardify adalah mesin server, bukan subjek tugas Anda.",
-          "validation": "Pastikan direktori yang sedang Anda eksplorasi dan kerjakan BUKAN folder `piardify`. Ambil aturan murni dari tool MCP.",
-          "failure_consequence": "AI membuang waktu dan token (context limits) menganalisis server MCP alih-alih mengerjakan proyek target pengguna."
+          "rule": "PIARDIFY BLACKBOX [CRITICAL]: Mengeksplorasi folder proyek target sangat disarankan, TETAPI jika Anda melihat folder bernama `piardify` atau *source code* dari Piardify Server itu sendiri di lokal komputer pengguna, DILARANG KERAS melakukan `list_dir`, `read_file`, atau menganalisis isinya. SEMUA tasks, instruksi, dan aturan PURE (100%) didapatkan dari pemanggilan CLI `npx piardify`, BUKAN dari membaca folder lokal piardify. Piardify adalah mesin server, bukan subjek tugas Anda.",
+          "validation": "Pastikan direktori yang sedang Anda eksplorasi dan kerjakan BUKAN folder `piardify`. Ambil aturan murni dari CLI `npx piardify`.",
+          "failure_consequence": "AI membuang waktu dan token (context limits) menganalisis server Piardify alih-alih mengerjakan proyek target pengguna."
         },
         {
           "id": "AH-011",
           "rule": "ATOMIC SEQUENTIAL EXECUTION [CRITICAL]: Setiap task dan komponen WAJIB dipecah dan dikerjakan 1 per 1 secara atomik (misal: per-section UI). AI dilarang keras mengerjakan banyak task sekaligus dalam satu langkah atau melompati update status Kanban Board.",
-          "validation": "Fokus pada 1 task spesifik, selesaikan & verifikasi, lalu update status Kanban di MCP sebelum pindah ke task berikutnya.",
+          "validation": "Fokus pada 1 task spesifik, selesaikan & verifikasi, lalu update status Kanban via `npx piardify task complete` sebelum pindah ke task berikutnya.",
           "failure_consequence": "Halusinasi AI, kode tidak lengkap, serta desinkronisasi status Kanban."
         }
       ],
-      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya mengasumsikan sesuatu? Apakah saya sudah menanyakan preferensi Design System? Apakah ada rahasia yang perlu dimasukkan ke .env? Apakah saya SUDAH menjalankan linter lokal? Apakah saya SUDAH mengecek dependensi sebelum mengubah komponen? Apakah saya mengeksplorasi folder Piardify (yang dilarang)? Dan apakah tindakan saya MELANGGAR instruksi ketat dari MCP ini?'"
+      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya mengasumsikan sesuatu? Apakah saya sudah menanyakan preferensi Design System? Apakah ada rahasia yang perlu dimasukkan ke .env? Apakah saya SUDAH menjalankan linter lokal? Apakah saya SUDAH mengecek dependensi sebelum mengubah komponen? Apakah saya mengeksplorasi folder Piardify (yang dilarang)? Dan apakah tindakan saya MELANGGAR instruksi ketat dari Piardify Directives ini?'"
     },
 
     "codeQuality": {

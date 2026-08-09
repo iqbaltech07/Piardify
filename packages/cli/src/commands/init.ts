@@ -14,20 +14,23 @@ Piardify is an AI PRD Generator & System Architecture Tracking Platform. This sk
 
 ---
 
-## Complete Command & Query Reference
+## Piardify CLI Command Reference
 
-All legacy MCP tools are migrated 1:1 to the following NPX CLI commands:
+The Piardify CLI (\`npx piardify\`) provides the following commands for AI Agents:
 
-| Legacy MCP Tool | New NPX Command | Purpose |
-| :--- | :--- | :--- |
-| \`get_project_blueprint\` | \`npx piardify project context --json\` | Fetch PRD, Mindmap, Tasks & Directives in 1 payload |
-| \`get_project_structure\` | \`npx piardify project mindmap --json\` | Fetch visual architecture mindmap hierarchy |
-| \`get_prd_details\` | \`npx piardify project prd --json\` | Fetch raw PRD markdown documentation |
-| \`get_task_list\` | \`npx piardify task list [--status <s=>] --json\` | Fetch list of tasks filtered by status |
-| \`get_system_directives\` | \`npx piardify project directives --json\` | Fetch Anti-Hallucination rules & Taste guidelines |
-| \`get_taste_skill\` | \`npx piardify project directives --json\` | Fetch Taste Skill UI Anti-Slop framework |
-| \`get_design_md\` | \`npx piardify project design --json\` | Fetch color tokens, typography & design.md specs |
-| \`update_task_status\` | \`npx piardify task start <id>\`<br>\`npx piardify task complete <id>\`<br>\`npx piardify task fail <id> --reason "<r>"\` | Start task, complete task, or record task failure |
+| Command | Purpose |
+| :--- | :--- |
+| \`npx piardify project context --json\` | Fetch PRD, Mindmap, Tasks & Directives in 1 aggregated payload |
+| \`npx piardify project mindmap --json\` | Fetch visual architecture mindmap hierarchy |
+| \`npx piardify project prd --json\` | Fetch raw PRD markdown documentation |
+| \`npx piardify project design --json\` | Fetch color tokens, typography & design.md specs |
+| \`npx piardify project directives --json\` | Fetch Anti-Hallucination rules & Taste guidelines |
+| \`npx piardify task list [--status <s=>] --json\` | Fetch list of tasks filtered by status |
+| \`npx piardify task current --json\` | Fetch active or pending task |
+| \`npx piardify task start <id>\` | Move task status to IN_PROGRESS |
+| \`npx piardify task complete <id>\` | Complete task and update status to DONE |
+| \`npx piardify task fail <id> --reason "<r>"\` | Record task failure and update status to FAILED |
+| \`npx piardify kanban --json\` | Fetch full Kanban board state |
 
 ---
 

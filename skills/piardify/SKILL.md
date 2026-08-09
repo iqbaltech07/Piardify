@@ -9,6 +9,26 @@ Piardify is an AI PRD Generator & System Architecture Tracking Platform. This sk
 
 ---
 
+## 🛠️ Piardify CLI Command Reference
+
+The Piardify CLI (`npx piardify`) provides the following commands for AI Agents:
+
+| Command | Purpose |
+| :--- | :--- |
+| `npx piardify project context --json` | Fetch PRD, Mindmap, Tasks & Directives in 1 aggregated payload |
+| `npx piardify project mindmap --json` | Fetch visual architecture mindmap hierarchy |
+| `npx piardify project prd --json` | Fetch raw PRD markdown documentation |
+| `npx piardify project design --json` | Fetch color tokens, typography & design.md specs |
+| `npx piardify project directives --json` | Fetch Anti-Hallucination rules & Taste guidelines |
+| `npx piardify task list [--status <s=>] --json` | Fetch list of tasks filtered by status |
+| `npx piardify task current --json` | Fetch active or pending task |
+| `npx piardify task start <id>` | Move task status to IN_PROGRESS |
+| `npx piardify task complete <id>` | Complete task and update status to DONE |
+| `npx piardify task fail <id> --reason "<r>"` | Record task failure and update status to FAILED |
+| `npx piardify kanban --json` | Fetch full Kanban board state |
+
+---
+
 ## 📋 Core Workflow Lifecycle
 
 ```text
@@ -53,7 +73,7 @@ Execute the following in the terminal:
 
 - **If implementation or tests fail:**
   ```bash
-  npx piardify task fail <task-id> --reason "Build error: TS2322 in src/components/Header.tsx"
+  npx piardify task fail <task-id> --reason "Build error in TypeScript compiler"
   ```
   *The task status will update to FAILED with the error context preserved for debugging.*
 
