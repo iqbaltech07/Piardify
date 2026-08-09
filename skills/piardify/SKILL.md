@@ -9,47 +9,41 @@ Piardify is an AI PRD Generator & System Architecture Tracking Platform. This sk
 
 ---
 
-## 🛠️ Piardify CLI Command Reference
+## 🛠️ Direct Native Commands (Ultra-Fast 10ms Execution)
 
-The Piardify CLI (`npx piardify`) provides the following commands for AI Agents:
+The Piardify CLI (`npx piardify init`) pre-generates lightweight 10ms native helper scripts (`.piardify/sync` or `.piardify/sync.cmd`) and local blueprint file `.piardify/context.json` for zero-latency execution:
 
-| Command | Purpose |
-| :--- | :--- |
-| `npx piardify project context --json` | Fetch PRD, Mindmap, Tasks & Directives in 1 aggregated payload |
-| `npx piardify project mindmap --json` | Fetch visual architecture mindmap hierarchy |
-| `npx piardify project prd --json` | Fetch raw PRD markdown documentation |
-| `npx piardify project design --json` | Fetch color tokens, typography & design.md specs |
-| `npx piardify project directives --json` | Fetch Anti-Hallucination rules & Taste guidelines |
-| `npx piardify task list [--status <s=>] --json` | Fetch list of tasks filtered by status |
-| `npx piardify task current --json` | Fetch active or pending task |
-| `npx piardify task start <id>` | Move task status to IN_PROGRESS |
-| `npx piardify task complete <id>` | Complete task and update status to DONE |
-| `npx piardify task fail <id> --reason "<r>"` | Record task failure and update status to FAILED |
-| `npx piardify kanban --json` | Fetch full Kanban board state |
+| Action | Native Command (10ms Execution) | Fallback NPX Command |
+| :--- | :--- | :--- |
+| **Read Project Blueprint & Context** | Read `.piardify/context.json` (0ms) | `npx piardify project context --json` |
+| **Get Active Task** | `.piardify/sync current` | `npx piardify task current --json` |
+| **Start Task (`IN_PROGRESS`)** | `.piardify/sync start <id>` | `npx piardify task start <id>` |
+| **Complete Task (`DONE`)** | `.piardify/sync complete <id>` | `npx piardify task complete <id>` |
+| **Record Task Failure (`FAILED`)** | `.piardify/sync fail <id> "<reason>"` | `npx piardify task fail <id> --reason "<r>"` |
 
 ---
 
 ## 📋 Core Workflow Lifecycle
 
 ```text
-Get Current Task  ──►  Start Task  ──►  Inspect & Code  ──►  Local Verification  ──►  Complete Task
- (npx piardify          (npx piardify                       (npm run lint/build)      (npx piardify
-   task current)          task start)                                                  task complete)
+Read Local Context ──► Start Task (10ms) ──► Inspect & Code ──► Local Verification ──► Complete Task (10ms)
+ (.piardify/            (.piardify/sync                    (npm run lint/build)      (.piardify/sync
+  context.json)          start <id>)                                                  complete <id>)
 ```
 
 Follow these exact steps when working on a Piardify project:
 
 ### Step 1: Read Project Context & Active Task
-Fetch the project blueprint, system directives, and current active task using the Piardify CLI:
-```bash
-npx piardify project context --json
-npx piardify task current --json
-```
+- Read local blueprint file `.piardify/context.json` using `view_file` (0ms token-efficient reading).
+- Query active task:
+  ```bash
+  .piardify/sync current
+  ```
 
 ### Step 2: Start the Task
 Before starting code modifications, update the Kanban status to `IN_PROGRESS`:
 ```bash
-npx piardify task start <task-id>
+.piardify/sync start <task-id>
 ```
 
 ### Step 3: Implement Changes
@@ -67,19 +61,19 @@ Execute the following in the terminal:
 ### Step 5: Complete or Fail Task
 - **If all verifications pass:**
   ```bash
-  npx piardify task complete <task-id>
+  .piardify/sync complete <task-id>
   ```
-  *The Kanban card will automatically move to DONE on the Piardify web app.*
+  *The Kanban card will automatically move to DONE on the Piardify web app in real-time.*
 
 - **If implementation or tests fail:**
   ```bash
-  npx piardify task fail <task-id> --reason "Build error in TypeScript compiler"
+  .piardify/sync fail <task-id> "Build error in TypeScript compiler"
   ```
   *The task status will update to FAILED with the error context preserved for debugging.*
 
 - **Fetch Next Task:**
   ```bash
-  npx piardify task current --json
+  .piardify/sync current
   ```
 
 ---
@@ -88,6 +82,6 @@ Execute the following in the terminal:
 
 1. **`AH-001` Zero Invention [CRITICAL]**: Never add unapproved libraries, frameworks, or dependencies outside what is specified in the PRD.
 2. **`AH-002` Zero Assumption [CRITICAL]**: Never assume un-documented API contracts, DB schemas, or response types. Verify from source code first.
-3. **`AH-003` Status Sync [REQUIRED]**: Always sync task state (`start`, `complete`, `fail`) via `npx piardify task`.
+3. **`AH-003` Status Sync [REQUIRED]**: Always sync task state (`start`, `complete`, `fail`) via `.piardify/sync` or `npx piardify task`.
 4. **`AH-004` Local Verification Gate [CRITICAL]**: Run linter, compiler, and build checks locally before completing any task.
 5. **`AH-005` Atomic Sequential Execution [CRITICAL]**: Process tasks 1 by 1. Do not jump ahead or update multiple task statuses simultaneously without verification.
