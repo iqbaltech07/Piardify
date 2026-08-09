@@ -38,17 +38,25 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
   const cliCommands = `npx piardify login --token ${keyToUse}
 npx piardify init --project ${projectId}`;
 
-  const aiPrompt = `Saya sudah menyiapkan koneksi ke Piardify untuk proyek ini via NPX CLI & Agent Skill.
+  const aiPrompt = `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
 
-Tolong bantu lakukan langkah berikut:
+Tolong jalankan alur kerja otomatisasi berikut:
 
-1. Jalankan perintah autentikasi dan inisialisasi di terminal:
+1. SETUP CLI & INSTALL SKILL (Terminal):
+   Jalankan 2 perintah berikut di terminal:
    npx piardify login --token ${keyToUse}
    npx piardify init --project ${projectId}
 
-2. Setelah init selesai, baca instruksi Piardify Agent Skill yang otomatis terpasang di .agents/skills/piardify/SKILL.md.
+2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
+   Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.json yang otomatis terpasang di workspace.
 
-3. Pahami aturan Anti-Hallucination directives, ambil tugas pertama dengan 'npx piardify task current --json', tandai status 'in_progress' dengan 'npx piardify task start <id>', lalu implementasikan kodenya. Setelah lolos test dan build lokal, tandai task selesai dengan 'npx piardify task complete <id>'.`;
+3. EKSEKUSI TASK & AUTOMATIC KANBAN SYNC:
+   - Cek task aktif dengan: .piardify/sync current
+   - Sebelum mulai mengedit kode, tandai status task sebagai IN_PROGRESS dengan: .piardify/sync start <task-id>
+   - Implementasikan solusi sesuai PRD dan aturan Anti-Hallucination.
+   - WAJIB jalankan verifikasi lokal di terminal: npm run lint && npm run build
+   - Jika verifikasi lulus: tandai DONE dengan: .piardify/sync complete <task-id>
+   - Jika verifikasi gagal: tandai FAILED dengan: .piardify/sync fail <task-id> "alasan error"`;
 
   const copyToClipboard = async (text: string, setCopiedState: (val: boolean) => void) => {
     try {
@@ -139,7 +147,7 @@ Tolong bantu lakukan langkah berikut:
                   lineHeight: 1.2,
                 }}
               >
-                Integrasikan AI Agent via NPX CLI
+                Integrasikan AI Agent via NPX CLI & Agent Skill
               </h3>
               <p
                 style={{
@@ -150,7 +158,7 @@ Tolong bantu lakukan langkah berikut:
                   letterSpacing: "0.04em",
                 }}
               >
-                Zero-Friction Distribution & Skill Setup
+                Zero-Friction Distribution & Automatic Skill Provisioning
               </p>
             </div>
           </div>
@@ -181,7 +189,7 @@ Tolong bantu lakukan langkah berikut:
               marginBottom: 16,
             }}
           >
-            Jalankan <strong>2 perintah terminal</strong> di bawah ini atau tempelkan prompt setup langsung ke AI Coding Agent Anda (seperti <strong>Antigravity, Cursor, Claude Code</strong>). Perintah <code>npx piardify init</code> akan meng-install <strong>Piardify Agent Skill</strong> secara otomatis.
+            Jalankan <strong>2 perintah terminal</strong> di bawah ini atau tempelkan prompt setup langsung ke AI Coding Agent Anda (seperti <strong>Antigravity, Cursor, Claude Code</strong>). Perintah <code>npx piardify init</code> akan meng-install <strong>Piardify Agent Skill</strong> dan native 10ms sync helper secara otomatis.
           </p>
 
           {/* Terminal Code Block */}
@@ -208,7 +216,7 @@ Tolong bantu lakukan langkah berikut:
                     textTransform: "uppercase",
                   }}
                 >
-                  1. Perintah Setup Terminal
+                  1. Perintah Setup Terminal (Pengembang)
                 </span>
               </div>
             </div>
@@ -253,7 +261,7 @@ Tolong bantu lakukan langkah berikut:
                     textTransform: "uppercase",
                   }}
                 >
-                  2. Prompt Setup AI Agent (Paste ke Chat Agent)
+                  2. Prompt Setup AI Agent (Salin & Paste ke Chat Agent)
                 </span>
               </div>
             </div>
@@ -267,7 +275,7 @@ Tolong bantu lakukan langkah berikut:
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
                 margin: 0,
-                maxHeight: 130,
+                maxHeight: 140,
                 overflowY: "auto",
               }}
             >
@@ -307,7 +315,7 @@ Tolong bantu lakukan langkah berikut:
                 color: "var(--color-mist)",
               }}
             >
-              Automatic Kanban Task Sync
+              10ms Native Realtime Kanban Sync
             </div>
           </div>
 
