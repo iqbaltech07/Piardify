@@ -278,8 +278,8 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
 export default function HeroSection({ onSeeExample }: { onSeeExample: () => void }) {
   const stats = [
     { value: "< 3 MIN", label: "generation time" },
-    { value: "7-STEP", label: "wizard" },
-    { value: "1-CLICK", label: "MD export" },
+    { value: "10MS SYNC", label: "realtime kanban" },
+    { value: "2-COMMAND", label: "NPX skill setup" },
   ];
 
   return (
@@ -344,7 +344,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
                   background: "var(--color-signal)",
                 }}
               />
-              AI-Powered · Anti-Hallucination · Structured
+              AI Agent Native · NPX Skill Distribution · Zero Hallucination
             </span>
           </motion.div>
 
@@ -361,11 +361,11 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
               marginBottom: 24,
             }}
           >
-            Generate a{" "}
+            Generate PRDs &{" "}
             <span style={{ color: "var(--color-signal)" }}>
-              professional PRD
+              Auto-Sync AI Agent
             </span>{" "}
-            in minutes
+            Tasks
           </motion.h1>
 
           {/* Sub-headline */}
@@ -380,8 +380,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
               maxWidth: 480,
             }}
           >
-            Piardify turns your product idea into a complete, structured Product
-            Requirements Document, with AI that actually understands your vision.
+            Piardify turns product ideas into structured PRDs, visual mindmaps, and provisions an automated AI Agent Skill (<code style={{ color: "var(--color-circuit)" }}>npx piardify init</code>) to code and update your Kanban board in real-time.
           </motion.p>
 
           {/* CTAs */}
