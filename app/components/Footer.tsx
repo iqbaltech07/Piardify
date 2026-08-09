@@ -60,8 +60,9 @@ export default function Footer() {
             }}
           >
             {[
-              { label: "Features", href: "#features" },
-              { label: "How it Works", href: "#how-it-works" },
+              { label: "Features", href: "/#features" },
+              { label: "How it Works", href: "/#how-it-works" },
+              { label: "Changelog", href: "/changelog" },
               { label: "Generate", href: "/generate" },
             ].map((l) => (
               <li key={l.label}>
