@@ -4,6 +4,7 @@ import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { generateWithGeminiContextCache } from "@/lib/geminiCache";
 
 export async function POST(req: NextRequest) {
   try {
@@ -103,13 +104,11 @@ Respond in valid JSON according to the instructions.`;
 
         for (const model of modelsToTry) {
           try {
-            const response = await ai.models.generateContent({
+            const response = await generateWithGeminiContextCache({
+              ai,
               model: model,
-              contents: userPrompt,
-              config: {
-                systemInstruction: systemPrompt,
-                responseMimeType: "application/json",
-              }
+              systemInstruction: systemPrompt,
+              userPrompt
             });
 
             if (response && response.text) {

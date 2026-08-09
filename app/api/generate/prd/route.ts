@@ -6,6 +6,7 @@ import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { generateWithGeminiContextCache } from "@/lib/geminiCache";
 
 export async function POST(req: NextRequest) {
   try {
@@ -157,12 +158,11 @@ For each integration above, include a dedicated sub-section or detailed bullet i
 
       for (const model of models) {
         try {
-          response = await ai.models.generateContent({
-            model: model,
-            contents: userPrompt,
-            config: {
-              systemInstruction: systemPrompt
-            }
+          response = await generateWithGeminiContextCache({
+            ai,
+            model,
+            systemInstruction: systemPrompt,
+            userPrompt
           });
 
           success = true;

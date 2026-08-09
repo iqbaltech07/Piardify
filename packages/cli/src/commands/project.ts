@@ -1,7 +1,7 @@
 import { getProjectConfig } from "../config/store.js";
 import { apiRequest } from "../api/client.js";
 
-export async function projectCommand(section?: string, options: { project?: string; json?: boolean } = {}) {
+export async function projectCommand(section?: string, options: { project?: string; skill?: string; json?: boolean } = {}) {
   try {
     const projectId = options.project || getProjectConfig().projectId;
 
@@ -12,7 +12,12 @@ export async function projectCommand(section?: string, options: { project?: stri
     let sec = section || "overview";
     if (sec === "current") sec = "overview";
 
-    const res = await apiRequest(`/api/agent/project?projectId=${projectId}&section=${sec}`);
+    let url = `/api/agent/project?projectId=${projectId}&section=${sec}`;
+    if (options.skill) {
+      url += `&skill=${encodeURIComponent(options.skill)}`;
+    }
+
+    const res = await apiRequest(url);
 
     if (options.json) {
       console.log(JSON.stringify(res, null, 2));

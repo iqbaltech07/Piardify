@@ -35,42 +35,48 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           "id": "AH-006",
-          "rule": "ENVIRONMENT VARIABLES [CRITICAL]: Jika proyek diperkirakan membutuhkan token, API key, koneksi database, atau rahasia lainnya, WAJIB membuat file `.env.example` atau menginstruksikan pembuatan `.env`. Jangan pernah menaruh kredensial (hardcode) langsung di dalam source code.",
-          "validation": "Pastikan semua variabel sensitif menggunakan `process.env.NAMA_VARIABEL` dan terdokumentasi di file contoh `.env`.",
-          "failure_consequence": "Kebocoran data sensitif (security vulnerability) jika source code terpublikasi."
+          "rule": "MANDATORY CHECKPOINT HONOR [CRITICAL]: AI Agent WAJIB BERHENTI saat menemukan task dengan flag `isCheckpoint: true` atau judul `[CHECKPOINT]`. AI Agent dilarang keras melanjutkan ke task berikutnya sebelum user memberikan konfirmasi/ACC.",
+          "validation": "Outputkan ringkasan hasil ke user dan tunggu konfirmasi user sebelum memanggil `sync complete` atau pindah task.",
+          "failure_consequence": "AI Agent melompati persetujuan user dan merusak ekspektasi UI/Backend."
         },
         {
           "id": "AH-007",
-          "rule": "STRICT DIRECTIVE COMPLIANCE [ABSOLUTE]: AI dilarang keras melanggar atau mengabaikan satu pun aturan yang telah disediakan oleh instruksi Piardify (termasuk System Directives dan Taste Skill). Aturan-aturan ini bersifat mutlak (hukum tertinggi) yang menganulir semua knowledge atau kebiasaan default AI.",
-          "validation": "Setiap tindakan harus selaras dengan direktif yang diterima dari Piardify Agent API/CLI.",
-          "failure_consequence": "AI kehilangan arah, melanggar arsitektur standar proyek, dan memberikan output sampah (AI Slop)."
+          "rule": "MANDATORY DESIGN REFERENCE [CRITICAL]: Sebelum membuat komponen Frontend UI, AI Agent WAJIB membaca file `design.md` (atau key `design` di `.piardify/context.json`) untuk mengambil token warna HEX, font, dan komponen UI yang valid.",
+          "validation": "Cross-check seluruh style warna dan tipografi dengan design.md. Dilarang menghalusinasi warna di luar token.",
+          "failure_consequence": "Desain UI berantakan dan tidak konsisten (AI Slop)."
         },
         {
           "id": "AH-008",
-          "rule": "LOCAL CI/CD GATE [CRITICAL]: AI WAJIB menjalankan perintah `npm run lint` dan (jika relevan) `npm run build` di terminal lokalnya sendiri, lalu membaca outputnya, sebelum memanggil CLI `npx piardify task complete` untuk update status task menjadi 'done'.",
-          "validation": "Pastikan tidak ada error ESLint atau build error yang tersisa sebelum menyelesaikan task.",
-          "failure_consequence": "Broken build, CI/CD pipeline gagal di produksi, dan kode yang tidak bisa di-compile."
+          "rule": "DUMMY DATA ELIMINATION [REQUIRED]: Di Phase 6 (Integrasi Backend), AI Agent WAJIB meretouch seluruh komponen Frontend untuk menghapus data mock/dummy dan menyambungkannya ke real API route & database seeder.",
+          "validation": "Pastikan tidak ada array mock/dummy data statis yang tertinggal di komponen Frontend.",
+          "failure_consequence": "Tampilan Frontend tidak menampilkan data asli dari database."
         },
         {
           "id": "AH-009",
-          "rule": "AST & DEPENDENCY CHECK [CRITICAL]: DILARANG KERAS menghapus, mengganti nama, atau memodifikasi sebuah komponen/fungsi yang di-export tanpa menjalankan tool pencarian lokal (seperti `grep_search`) terlebih dahulu untuk melacak SEMUA file yang bergantung padanya.",
-          "validation": "Selalu lakukan pencarian menyeluruh (cross-file reference check) sebelum melakukan refactor atau perubahan argumen Props.",
-          "failure_consequence": "Dependency terputus (broken import), halaman lain menjadi blank atau error tanpa disadari."
+          "rule": "MODERN DOCS VERIFICATION [REQUIRED]: Sebelum membuat file framework (misal Next.js App Router, Middleware, Auth), AI Agent WAJIB mengecek dokumentasi terbaru via MCP Context7 atau Web Search untuk menggunakan nama file & konvensi terbaru.",
+          "validation": "Pastikan nama file dan API mengikuti konvensi versi framework terbaru (misal `proxy.ts` vs `middleware.ts` di Next.js 16).",
+          "failure_consequence": "Error kompilasi akibat konvensi framework yang deprecated/outdated."
         },
         {
           "id": "AH-010",
-          "rule": "PIARDIFY BLACKBOX [CRITICAL]: Mengeksplorasi folder proyek target sangat disarankan, TETAPI jika Anda melihat folder bernama `piardify` atau *source code* dari Piardify Server itu sendiri di lokal komputer pengguna, DILARANG KERAS melakukan `list_dir`, `read_file`, atau menganalisis isinya. SEMUA tasks, instruksi, dan aturan PURE (100%) didapatkan dari pemanggilan CLI `npx piardify`, BUKAN dari membaca folder lokal piardify. Piardify adalah mesin server, bukan subjek tugas Anda.",
-          "validation": "Pastikan direktori yang sedang Anda eksplorasi dan kerjakan BUKAN folder `piardify`. Ambil aturan murni dari CLI `npx piardify`.",
-          "failure_consequence": "AI membuang waktu dan token (context limits) menganalisis server Piardify alih-alih mengerjakan proyek target pengguna."
+          "rule": "DEFINITION OF DONE VERIFICATION [CRITICAL]: Setiap task harus diverifikasi sesuai kriteria `definitionOfDone` sebelum ditandai `complete`.",
+          "validation": "Jalankan pengecekan lokal terhadap kriteria `definitionOfDone` task.",
+          "failure_consequence": "Task dianggap selesai padahal kriteria utama belum terpenuhi."
         },
         {
           "id": "AH-011",
-          "rule": "ATOMIC SEQUENTIAL EXECUTION [CRITICAL]: Setiap task dan komponen WAJIB dipecah dan dikerjakan 1 per 1 secara atomik (misal: per-section UI). AI dilarang keras mengerjakan banyak task sekaligus dalam satu langkah atau melompati update status Kanban Board.",
-          "validation": "Fokus pada 1 task spesifik, selesaikan & verifikasi, lalu update status Kanban via `npx piardify task complete` sebelum pindah ke task berikutnya.",
-          "failure_consequence": "Halusinasi AI, kode tidak lengkap, serta desinkronisasi status Kanban."
+          "rule": "PROJECT-SPECIFIC DESIGN SKILL ROUTING [CRITICAL]: AI Agent WAJIB memeriksa `design.style`/`vibe` di `.piardify/context.json` (atau `design.md`) sebelum membuat UI dan mengaktifkan Taste Skill yang sesuai.",
+          "validation": "Deklarasikan 'Design Skill Active: <selected-skill-name>' di awal respon sebelum menulis komponen Frontend.",
+          "failure_consequence": "AI Agent salah menggunakan gaya desain yang tidak sesuai dengan instruksi project user."
         }
       ],
-      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya mengasumsikan sesuatu? Apakah saya sudah menanyakan preferensi Design System? Apakah ada rahasia yang perlu dimasukkan ke .env? Apakah saya SUDAH menjalankan linter lokal? Apakah saya SUDAH mengecek dependensi sebelum mengubah komponen? Apakah saya mengeksplorasi folder Piardify (yang dilarang)? Dan apakah tindakan saya MELANGGAR instruksi ketat dari Piardify Directives ini?'"
+      "designHierarchy": {
+        "rule": "HIERARCHY OF AUTHORITY: design.md vs Taste Skill Synergy",
+        "level1_ground_truth": "design.md (atau context.json design): Menentukan WHAT to build (Warna HEX spesifik, font spesifik, dan layout wireframe project). Nilai di design.md SELALU memenangkan prioritas utama jika ada perbedaan warna/font.",
+        "level2_engineering_quality": "Taste Skill: Menentukan HOW to build (Standar kualitas frontend, anti-slop, kontras WCAG AA, fisika animasi spring, ritme spacing, & anti-klise). Taste Skill digunakan untuk mengimplementasikan design.md secara estetik & presisi, BUKAN untuk menggantikan warna/font dari design.md.",
+        "conflictResolution": "Jika design.md menentukan warna tertentu (misal ungu/brand khusus), AI Agent WAJIB menggunakan warna HEX tersebut dari design.md, sembari menerapkan kualitas engineering dari Taste Skill (kontras, padding, & responsivitas)."
+      },
+      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya menggunakan warna HEX dari design.md? Apakah Taste Skill membantu kualitas engineering UI tanpa merusak token design.md? Apakah saya SUDAH mematuhi Checkpoint?'"
     },
 
     "codeQuality": {

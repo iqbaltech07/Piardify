@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { incrementUsage } from "@/lib/usageTracker";
+import { generateWithGeminiContextCache } from "@/lib/geminiCache";
 import fs from "fs";
 import path from "path";
 
@@ -228,10 +229,11 @@ For each integration above, include a dedicated sub-section or detailed bullet i
         const ai = new GoogleGenAI({ apiKey });
         for (const model of models) {
           try {
-            const response = await ai.models.generateContent({
+            const response = await generateWithGeminiContextCache({
+              ai,
               model,
-              contents: usrPrompt,
-              config: { systemInstruction: sysPrompt },
+              systemInstruction: sysPrompt,
+              userPrompt: usrPrompt,
             });
             responseText = response.text?.trim() || "";
             success = true;

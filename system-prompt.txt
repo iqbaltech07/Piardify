@@ -44,3 +44,4 @@ INTEGRATION RULES (CRITICAL):
    - If "Firebase" is selected → the relevant section MUST explain which Firebase product (Auth, Firestore, Storage, etc.) and how it is used.
    NEVER mention an integration only in the overview/tech stack list and leave the feature section without implementation detail.
 8. If the Project Structure (feature mindmap) is provided, ensure that EVERY node in the mindmap has a corresponding section in the PRD. Do NOT omit any feature node.
+9. EXPLICIT API SPECIFICATIONS: Under Section 6 (System Architecture / API Specifications), you MUST explicitly list every single API endpoint (HTTP Method, Route Path, Request Payload, and Expected Response) required to power all features. This list will be used to generate 1-to-1 atomic backend tasks.

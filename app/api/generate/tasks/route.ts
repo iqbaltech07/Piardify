@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { incrementUsage } from "@/lib/usageTracker";
+import { generateWithGeminiContextCache } from "@/lib/geminiCache";
 
 export async function POST(req: NextRequest) {
   try {
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
     }
 
-    let systemPrompt = `You are a senior software project manager and Vibe Coding AI Architect. Based on the PRD, project structure, and app info, generate a comprehensive, highly actionable task list for building this project.
+    let systemPrompt = `You are a senior software project manager and Vibe Coding AI Architect. Based on the PRD, project structure, and app info, generate a comprehensive, highly actionable 6-PHASE task list for building this project following a FRONTEND-FIRST workflow with 3 MANDATORY STRATEGIC CHECKPOINTS.
 
 RESPONSE FORMAT (strict JSON only, no markdown):
 {
@@ -94,40 +95,51 @@ RESPONSE FORMAT (strict JSON only, no markdown):
         {
           "id": "task-id",
           "title": "Task title",
-          "description": "What needs to be done",
-          "priority": "high|medium|low",
+          "description": "What needs to be done. Must include design/API references.",
           "estimasi": "e.g. 2 hari, 1 minggu",
-          "tags": ["tag1", "tag2"]
+          "tags": ["tag1", "tag2"],
+          "isCheckpoint": false,
+          "definitionOfDone": "Clear, verifiable acceptance criteria (e.g. 'All mock data in file X replaced with real API fetch')"
         }
       ]
     }
   ]
 }
 
-PHASE STRUCTURE — YOU MUST GENERATE ALL 5 PHASES, NO EXCEPTIONS:
-1. Perencanaan & Desain
-2. Setup & Infrastruktur
-3. Pengembangan Backend
-4. Pengembangan Frontend
-5. Testing & Deployment
+FRONTEND-FIRST 6-PHASE STRUCTURE — YOU MUST GENERATE ALL 6 PHASES IN THIS EXACT ORDER, NO EXCEPTIONS:
+
+Phase 1: Perencanaan & Desain System
+- Setup architecture, color hex tokens, typography, and UI component guidelines in 'design.md'.
+- MUST include CHECKPOINT 1 task: "[CHECKPOINT] Review & ACC Token Desain (design.md) & Arsitektur dengan User".
+
+Phase 2: Setup & Infrastruktur Frontend Base
+- Initializing project workspace, Tailwind CSS/styling setup, base page layout, navigation structure, and UI component library.
+
+Phase 3: Pengembangan Frontend UI (Mock Data)
+- Granular UI tasks (1-by-1 per section/component): Hero Section, Header CTA, Features Grid, Sidebar Navigation, Form Modals, Footer, etc.
+- MUST explicitly instruct in task description: "Wajib membaca design.md (designData) terlebih dahulu untuk token warna, font, dan komponen UI."
+- Allowed to use initial mock/dummy data so user can preview and test UI visual interaction first.
+
+Phase 4: [CHECKPOINT] Review & ACC Visual UI Frontend
+- MUST generate a single dedicated Checkpoint task: "[CHECKPOINT] Review & ACC Tampilan Frontend (Mock Data) dengan User".
+- Description MUST state: "AI Agent WAJIB STOP di sini. Tampilkan UI ke user dan tunggu konfirmasi/ACC dari user sebelum menyentuh Backend atau merubah data mock."
+
+Phase 5: Pengembangan API Backend & Database Seeding
+- Pembuatan Database Schema (Prisma/Drizzle), script 'seed.ts' data awal.
+- Pembuatan API Route 1-TO-1 FOR EVERY SINGLE ENDPOINT & API DESCRIBED IN THE PRD. Do NOT omit any API endpoint!
+
+Phase 6: Integrasi Full-Stack, Replacement Data Dummy & Final Deployment
+- Mandatory task: "Refactor & Hapus Seluruh Data Dummy di Frontend — Hubungkan Komponen Frontend ke Real API Routes Backend & Database Seeder".
+- Verification task using latest framework docs (Check Context7 MCP / Web Search for latest Next.js 16 file names like proxy.ts vs middleware.ts).
+- MUST include CHECKPOINT 3 task: "[CHECKPOINT] Verifikasi Final Build (npm run build) & Kepastian Bebas Data Dummy".
 
 CRITICAL RULES FOR VIBE CODING & ATOMIC TASK BREAKDOWN:
-- ATOMIC & GRANULAR TASK BREAKDOWN: Each task MUST be small, specific, and focused on 1 single component or feature unit (e.g. for Frontend UI, break down per-section: "Implement Hero Section & Header CTA", "Implement Features Grid Component", "Implement Pricing Section", "Implement Footer & Nav Links"). NEVER generate lump-sum tasks like "Build all Frontend pages" or "Develop entire UI".
-- SINGLE CLEAR DELIVERABLE: Each task must have 1 concrete deliverable that a developer or AI coding agent can implement and verify 1-by-1 sequentially without hallucination.
-- ONLY GENERATE ACTIONABLE CODE & UI/UX TASKS: Focus strictly on code implementation, component building, API route logic, database schemas, state management, caching, form validation, theme switching, dynamic SEO, and test scripts that an AI Coding Assistant can build directly.
-- STRICTLY DO NOT GENERATE UNREACHABLE / MANUAL NON-CODE TASKS:
-  * DO NOT include manual domain/SSL purchases in registrar portals or manual DNS setup outside codebase.
-  * DO NOT include manual business KYC approval for payment gateways (e.g. Stripe/Midtrans manual business registration).
-  * DO NOT include manual Apple Developer / Google Play Developer account creation or identity verification.
-  * DO NOT include manual physical hardware device testing on multiple physical phones.
-  * DO NOT include manual human user interviews, field marketing, or manual vendor sales negotiations.
-- Phase 5 (Testing & Deployment) MUST focus strictly on code-based testing and automated scripts (unit tests, integration test suites, build validation scripts, GitHub Actions CI/CD configuration, environment variable configs).
-- You MUST output ALL 5 phases. A response with fewer than 5 phases is INVALID and will be rejected.
-- Generate 5-8 atomic, specific, actionable tasks per phase based on the PRD features and project structure.
-- Each task MUST be directly traceable to a feature or requirement in the PRD or project structure.
-- Priority: high = must have for MVP, medium = important but not blocking, low = nice to have
-- Estimasi must be realistic time estimates in Bahasa Indonesia
-- Tags should be short tech labels (e.g. "React", "API", "Database", "UI/UX", "Testing", "DevOps")
+- CHECKPOINT TASKS: Set 'isCheckpoint: true' ONLY for the 3 dedicated Checkpoint tasks (in Phase 1, Phase 4, and Phase 6). For all normal coding/development tasks, set 'isCheckpoint: false'.
+- ATOMIC & GRANULAR TASK BREAKDOWN: Each task MUST be small, specific, and focused on 1 single component or feature unit. NEVER generate lump-sum tasks like "Build all Frontend pages" or "Develop entire UI".
+- SINGLE CLEAR DELIVERABLE: Each task must have 1 concrete deliverable with a clear 'definitionOfDone'.
+- 1-TO-1 API MAPPING: Read the ENTIRE PRD. Every API endpoint, authentication flow, CRUD operation, and integration MUST be mapped into a specific backend task in Phase 5.
+- STRICTLY DO NOT GENERATE UNREACHABLE / MANUAL NON-CODE TASKS (no manual domain purchasing, no manual business KYC, no manual account creation).
+- You MUST output ALL 6 phases. A response with fewer than 6 phases is INVALID and will be rejected.
 - Return ONLY valid JSON. Do NOT wrap in markdown code blocks.`;
 
     const integrations = Array.isArray(form?.integrations)
@@ -151,7 +163,7 @@ CRITICAL RULES FOR VIBE CODING & ATOMIC TASK BREAKDOWN:
         })()
       : "";
 
-    let userPrompt = `Generate a complete 5-phase task list for this project:
+    let userPrompt = `Generate a complete Frontend-First 6-phase task list with 3 strategic checkpoints for this project:
 
 App Name: ${form?.appName || "N/A"}
 App Idea: ${form?.appIdea || "N/A"}
@@ -162,10 +174,10 @@ Integrations: ${integrations}
 ${strukturSummary ? `Project Structure (Feature Mindmap):
 ${strukturSummary}
 
-` : ""}PRD Content (first 4000 chars):
-${(prdMarkdown || "").substring(0, 4000)}
+` : ""}PRD Content (FULL):
+${prdMarkdown || "N/A"}
 
-REMINDER: You MUST output all 5 phases including Phase 5 (Testing & Deployment). All tasks must be actionable code/UI tasks suitable for AI Vibe Coding and MUST exclude manual non-code/unreachable tasks (no manual domain buying, no manual business KYC, no manual account verifications).`;
+REMINDER: You MUST output all 6 phases including Phase 4 Checkpoint and Phase 6 Dummy Data Cleanup. All tasks must include 'definitionOfDone'. Read the FULL PRD and map EVERY API 1-to-1.`;
 
     if (project.taskData && isOutdated) {
       systemPrompt = `You are a senior software project manager and Vibe Coding AI Architect. The user has manually updated their PRD and/or Project Structure. Your task is to intelligently sync the EXISTING task list with the new requirements.
@@ -177,16 +189,16 @@ CRITICAL INSTRUCTIONS:
 4. You must maintain the exact same JSON format with 5 phases.
 5. Output the FULL updated JSON, ensuring you include all unchanged tasks alongside the modified ones.`;
 
-      userPrompt = `Here is the NEW PRD Summary:
-${(prdMarkdown || "").substring(0, 2000)}
+      userPrompt = `Here is the NEW PRD Content:
+${prdMarkdown || "N/A"}
 
 Here is the NEW Project Structure (Mindmap):
-${(project.strukturData || "").substring(0, 2000)}
+${project.strukturData || "N/A"}
 
 Here is the EXISTING Task List that needs to be updated:
 ${project.taskData}
 
-Please return the fully synchronized Task List in JSON format.`;
+Please return the fully synchronized 6-Phase Task List with Checkpoints in JSON format.`;
     }
 
     const settings: any = (await redis.get("app:settings")) || {};
@@ -214,10 +226,11 @@ Please return the fully synchronized Task List in JSON format.`;
         const ai = new GoogleGenAI({ apiKey });
         for (const model of models) {
           try {
-            response = await ai.models.generateContent({
+            response = await generateWithGeminiContextCache({
+              ai,
               model,
-              contents: userPrompt,
-              config: { systemInstruction: systemPrompt },
+              systemInstruction: systemPrompt,
+              userPrompt
             });
             const rawText = response.text?.trim() || "";
             const cleaned = rawText.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
@@ -324,11 +337,11 @@ Please return the fully synchronized Task List in JSON format.`;
 
     let parsed = parseAndValidateTasks(text);
 
-    // Auto-retry if fewer than 5 phases returned
-    if (!parsed || parsed.phases.length < 5) {
-      console.warn(`[Tasks] Got ${parsed?.phases?.length ?? 0} phases, expected 5. Auto-retrying...`);
+    // Auto-retry if fewer than 6 phases returned
+    if (!parsed || parsed.phases.length < 6) {
+      console.warn(`[Tasks] Got ${parsed?.phases?.length ?? 0} phases, expected 6. Auto-retrying...`);
 
-      const retryPrompt = `${userPrompt}\n\nIMPORTANT: Your previous response was incomplete — it only had ${parsed?.phases?.length ?? 0} phases. You MUST return ALL 5 phases. Do NOT stop after phase 1 or phase 2. Generate the complete JSON with all 5 phases now.`;
+      const retryPrompt = `${userPrompt}\n\nIMPORTANT: Your previous response was incomplete — it only had ${parsed?.phases?.length ?? 0} phases. You MUST return ALL 6 phases. Do NOT stop after phase 1 or phase 2. Generate the complete JSON with all 6 phases now.`;
 
       let retryText = "";
       let retrySuccess = false;
@@ -339,10 +352,11 @@ Please return the fully synchronized Task List in JSON format.`;
           const ai = new GoogleGenAI({ apiKey });
           for (const model of models) {
             try {
-              const retryResponse = await ai.models.generateContent({
+              const retryResponse = await generateWithGeminiContextCache({
+                ai,
                 model,
-                contents: retryPrompt,
-                config: { systemInstruction: systemPrompt },
+                systemInstruction: systemPrompt,
+                userPrompt: retryPrompt
               });
               retryText = retryResponse.text?.trim() || "";
               retrySuccess = true;
@@ -381,12 +395,11 @@ Please return the fully synchronized Task List in JSON format.`;
 
       if (retrySuccess && retryText) {
         const retryParsed = parseAndValidateTasks(retryText);
-        if (retryParsed && retryParsed.phases.length >= 5) {
+        if (retryParsed && retryParsed.phases.length >= 6) {
           parsed = retryParsed;
           console.log(`[Tasks] Retry succeeded with ${retryParsed.phases.length} phases.`);
         } else {
           console.warn(`[Tasks] Retry still incomplete (${retryParsed?.phases?.length ?? 0} phases). Using best available result.`);
-          // Use retry result if it has more phases than original
           if (retryParsed && (!parsed || retryParsed.phases.length > parsed.phases.length)) {
             parsed = retryParsed;
           }

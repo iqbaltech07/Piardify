@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateAgentRequest } from "@/lib/agentAuth";
 import { prisma } from "@/lib/prisma";
 import { SYSTEM_DIRECTIVES } from "@/lib/systemDirectives";
-import { TASTE_SKILL_DIRECTIVES } from "@/lib/tasteSkill";
+import { TASTE_SKILL_DIRECTIVES, getFilteredTasteSkill } from "@/lib/tasteSkill";
 import { parseDesignMarkdown } from "@/lib/designParser";
 
 export async function GET(req: NextRequest) {
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get("projectId");
     const section = searchParams.get("section") || "overview";
+    const requestedSkill = searchParams.get("skill") || undefined;
 
     // If no projectId provided, return user's projects list
     if (!projectId) {
@@ -103,6 +104,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    if (section === "taste-skill") {
+      const proj = project as any;
+      const rawDesignText = proj.designData || "";
+      const filteredSkill = getFilteredTasteSkill(rawDesignText, requestedSkill);
+      return NextResponse.json({
+        success: true,
+        tasteSkill: filteredSkill,
+      });
+    }
+
     if (section === "design") {
       const proj = project as any;
       let rawText = proj.designData || "";
@@ -145,6 +156,10 @@ export async function GET(req: NextRequest) {
         structuredDesign = parseDesignMarkdown(rawText);
       }
 
+      // SELECTIVE TASTE SKILL PAYLOAD REDUCTION
+      // Filter tasteSkill to include ONLY the 1 matching skill for this project
+      const selectiveTasteSkill = getFilteredTasteSkill(rawText, requestedSkill);
+
       return NextResponse.json({
         success: true,
         project: {
@@ -167,7 +182,7 @@ export async function GET(req: NextRequest) {
         directives: {
           antiHallucinationRules: SYSTEM_DIRECTIVES.systemDirectives.antiHallucinationRules,
           codeQuality: SYSTEM_DIRECTIVES.systemDirectives.codeQuality,
-          tasteSkill: TASTE_SKILL_DIRECTIVES,
+          tasteSkill: selectiveTasteSkill,
         },
       });
     }

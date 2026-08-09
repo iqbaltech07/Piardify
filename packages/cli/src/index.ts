@@ -33,6 +33,9 @@ async function main() {
     if (args[i] === "--url" && args[i + 1]) {
       options.url = args[i + 1];
     }
+    if (args[i] === "--skill" && args[i + 1]) {
+      options.skill = args[i + 1];
+    }
   }
 
   switch (command) {

@@ -83,10 +83,39 @@ Execute the following in the terminal:
 
 ---
 
-## 🛡️ Anti-Hallucination Directives (`AH-001` to `AH-010`)
+## 🛡️ Anti-Hallucination Directives (`AH-001` to `AH-011`)
 
 1. **`AH-001` Zero Invention [CRITICAL]**: Never add unapproved libraries, frameworks, or dependencies outside what is specified in the PRD.
 2. **`AH-002` Zero Assumption [CRITICAL]**: Never assume un-documented API contracts, DB schemas, or response types. Verify from source code first.
 3. **`AH-003` Status Sync [REQUIRED]**: Always sync task state (`start`, `complete`, `fail`) via `.piardify/sync` or `npx piardify task`.
 4. **`AH-004` Local Verification Gate [CRITICAL]**: Run linter, compiler, and build checks locally before completing any task.
 5. **`AH-005` Atomic Sequential Execution [CRITICAL]**: Process tasks 1 by 1. Do not jump ahead or update multiple task statuses simultaneously without verification.
+6. **`AH-006` Mandatory Checkpoint Honor [CRITICAL]**: When encountering a `[CHECKPOINT]` task (such as after Phase 1, Phase 4 UI Completion, or Phase 6 Final), the AI Agent MUST stop execution, output a clear summary to the user for review, and wait for explicit user approval before proceeding to subsequent tasks.
+7. **`AH-007` Mandatory Design Reference [CRITICAL]**: Before implementing any Frontend UI component, the AI Agent MUST read `.piardify/context.json` (specifically the `design` key or `design.md`) to use exact HEX color tokens, typography, and UI rules instead of hallucinating custom styles.
+8. **`AH-008` Dummy Data Elimination [REQUIRED]**: In Phase 6 (Integration & Cleanup), the AI Agent MUST refactor all Frontend components to remove mock/dummy data arrays, replacing them with real API fetching (`fetch`/`SWR`/`React Query`) and database seeders.
+9. **`AH-009` Modern Docs Verification [REQUIRED]**: Before creating or refactoring framework configuration files (e.g. Next.js App Router, Middleware, Auth), the AI Agent MUST check live documentation via MCP Context7 or Web Search to use the latest file names and conventions (e.g. `proxy.ts` vs `middleware.ts`).
+10. **`AH-010` Definition of Done Verification [CRITICAL]**: Always verify task results against the task's explicit `definitionOfDone` criteria before marking the task complete.
+11. **`AH-011` Project-Specific Design Skill Routing [CRITICAL]**: Before implementing any Frontend UI component, the AI Agent MUST inspect `design.style`/`vibe` inside `.piardify/context.json` (or `design.md`) and automatically activate the corresponding Taste Skill from `directives.tasteSkill.skills`:
+    - **Minimalist / Calming / Document-Style** ──► Activate `skills.minimalistUi`
+    - **High-End Luxury / Agency / $150k Visual** ──► Activate `skills.highEndVisualDesign`
+    - **Awwwards / GSAP Motion / Kinetic** ──► Activate `skills.gptTaste`
+    - **Stitch Semantic System** ──► Activate `skills.stitchDesignTaste`
+    - **Redesign / Legacy Overhaul** ──► Activate `skills.redesignExistingProjects`
+    - **Standard SaaS / Marketing Landing Page** ──► Activate `skills.designTasteFrontend`
+    *The AI Agent MUST output `🎨 Design Skill Active: <selected-skill-name>` before generating UI components.*
+
+---
+
+## 🎨 Hierarchy of Authority & Design Synergy (`design.md` vs `Taste Skill`)
+
+To prevent any conflict between the user's project design tokens and Taste Skill guidelines, the AI Agent MUST follow this strict hierarchy:
+
+1. **Level 1 (Highest Priority - Ground Truth)**: **`design.md`** (or `design` key in `.piardify/context.json`).
+   - Defines **WHAT to build**: Exact HEX color tokens (e.g. `#0F172A`), project typography choice, logo assets, and wireframe layout structure.
+   - *Rule: If `design.md` specifies an explicit HEX color code or font choice, the AI Agent MUST use the exact values from `design.md` without alteration.*
+
+2. **Level 2 (Engineering Quality & Anti-Slop Enforcement)**: **`Taste Skill`**.
+   - Defines **HOW to build it with excellence**: Engineering best practices, WCAG AA contrast validation, spring animation physics, responsive grid math, no em-dashes, and anti-cliché copywriting.
+   - *Rule: `Taste Skill` NEVER overrides the user's `design.md` tokens; it ensures `design.md` is implemented with award-winning frontend engineering quality.*
+
+

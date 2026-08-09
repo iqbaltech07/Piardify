@@ -23,14 +23,25 @@ export async function taskCommand(
         console.log("\nNo active task found.");
       } else {
         const t = res.task;
+        const isCheckpoint = t.isCheckpoint || t.title?.includes("[CHECKPOINT]");
+        
         console.log(`\nTask #${t.id}`);
+        if (isCheckpoint) {
+          console.log(`🛑 === MANDATORY CHECKPOINT (AI AGENT MUST STOP & REQUEST USER REVIEW) ===`);
+        }
         console.log(`Title              : ${t.title}`);
         console.log(`Status             : ${t.status?.toUpperCase()}`);
         console.log(`Category           : ${t.category || "-"}`);
         console.log(`Description        : ${t.description || "-"}`);
+        if (t.definitionOfDone) {
+          console.log(`Definition of Done : ${t.definitionOfDone}`);
+        }
         if (t.acceptanceCriteria && Array.isArray(t.acceptanceCriteria)) {
           console.log("Acceptance Criteria:");
           t.acceptanceCriteria.forEach((ac: string) => console.log(`  - ${ac}`));
+        }
+        if (isCheckpoint) {
+          console.log(`🛑 MANDATORY: Present completed work to user and wait for explicit approval before proceeding.`);
         }
         console.log("");
       }

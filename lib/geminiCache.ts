@@ -1,0 +1,99 @@
+import { GoogleGenAI } from "@google/genai";
+import { redis } from "@/lib/redis";
+import crypto from "crypto";
+
+export interface GenerateWithCacheParams {
+  ai: GoogleGenAI;
+  model: string;
+  systemInstruction: string;
+  userPrompt: string;
+  cacheKeyPrefix?: string;
+  ttlSeconds?: number;
+}
+
+/**
+ * Executes generateContent using Gemini API Context Caching when possible.
+ * If cache creation fails (e.g. prompt length below threshold or unsupported model),
+ * it gracefully falls back to normal generateContent with systemInstruction.
+ */
+export async function generateWithGeminiContextCache({
+  ai,
+  model,
+  systemInstruction,
+  userPrompt,
+  cacheKeyPrefix = "gemini:ctx-cache",
+  ttlSeconds = 300 // default 5 minutes
+}: GenerateWithCacheParams) {
+  let cachedContentName: string | null = null;
+
+  // Hash systemInstruction + model to reuse existing cache in Redis
+  const hash = crypto.createHash("sha256").update(`${model}:${systemInstruction}`).digest("hex").slice(0, 16);
+  const redisCacheKey = `${cacheKeyPrefix}:${hash}`;
+
+  // 1. Try retrieving cached content resource name from Redis
+  try {
+    const existingCacheName = await redis.get<string>(redisCacheKey);
+    if (existingCacheName) {
+      cachedContentName = existingCacheName;
+    }
+  } catch (err) {
+    console.warn("[Gemini Cache] Redis read error:", err);
+  }
+
+  // 2. If no valid cache reference found in Redis, attempt creating a Gemini Context Cache
+  if (!cachedContentName && systemInstruction && systemInstruction.trim().length > 0) {
+    try {
+      console.log(`[Gemini Cache] Creating new context cache for model ${model}...`);
+      const cacheResponse = await ai.caches.create({
+        model: model,
+        config: {
+          displayName: `piardify_${hash}`,
+          systemInstruction: systemInstruction,
+          ttl: `${ttlSeconds}s`
+        }
+      });
+
+      if (cacheResponse?.name) {
+        cachedContentName = cacheResponse.name;
+        // Save cache resource name in Redis matching TTL
+        try {
+          await redis.set(redisCacheKey, cachedContentName, { ex: ttlSeconds });
+          console.log(`[Gemini Cache] Context cached successfully: ${cachedContentName}`);
+        } catch (rErr) {
+          console.warn("[Gemini Cache] Redis set error:", rErr);
+        }
+      }
+    } catch (cacheErr: any) {
+      console.warn(`[Gemini Cache] Context cache creation skipped/failed (${model}):`, cacheErr?.message || cacheErr);
+      // Fail silently for cache creation; cachedContentName remains null so fallback will run
+    }
+  }
+
+  // 3. Generate content using cachedContent if available
+  if (cachedContentName) {
+    try {
+      return await ai.models.generateContent({
+        model: model,
+        contents: userPrompt,
+        config: {
+          cachedContent: cachedContentName
+        }
+      });
+    } catch (genErr: any) {
+      console.warn(`[Gemini Cache] generateContent with cachedContent failed: ${genErr?.message || genErr}. Executing fallback.`);
+      // Invalidate broken cache key in Redis
+      try {
+        await redis.del(redisCacheKey);
+      } catch {}
+    }
+  }
+
+  // Fallback: Standard generateContent without Gemini Context Cache
+  return await ai.models.generateContent({
+    model: model,
+    contents: userPrompt,
+    config: {
+      systemInstruction: systemInstruction
+    }
+  });
+}
