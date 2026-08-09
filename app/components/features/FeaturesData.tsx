@@ -25,7 +25,7 @@ export const FEATURES: Feature[] = [
     accent: "var(--color-signal)",
     size: "large",
     icon: <Sparkles size={24} strokeWidth={1.5} />,
-    tag: "Powered by Gemini 2.5 Flash",
+    tag: "Powered by Gemini 3.6 Flash",
   },
   {
     id: "agent-skill",
