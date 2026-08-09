@@ -11,14 +11,14 @@ export default function FeaturesSection() {
       <div className="feat-header">
         <div className="feat-header-pill">
           <span className="feat-header-dot" aria-hidden="true" />
-          All Features
+          System Capabilities
         </div>
         <h2 className="feat-heading">
-          Built for teams that{" "}
-          <span className="feat-heading-accent">refuse to slow down</span>
+          Engineered for{" "}
+          <span className="feat-heading-accent">production engineering teams</span>
         </h2>
         <p className="feat-subheading">
-          Every tool you need, from ideation to export, wired into one integrated AI workflow.
+          From system specs to autonomous AI Agent execution, managed in one integrated pipeline.
         </p>
       </div>
 

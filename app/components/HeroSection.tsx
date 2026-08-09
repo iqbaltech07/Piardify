@@ -59,10 +59,10 @@ function CropMark({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
 /* ── PRD Document card — the signature hero element ── */
 function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
   const sections = [
-    { label: "01 / Overview", lines: [100, 100, 70] },
-    { label: "02 / Target Users", lines: [100, 55] },
-    { label: "03 / Core Features", lines: [100, 100, 100, 68] },
-    { label: "04 / Tech Stack", lines: [100, 48] },
+    { label: "01 / Architecture Overview", lines: [100, 100, 70] },
+    { label: "02 / Target Users & Scopes", lines: [100, 55] },
+    { label: "03 / Core Functional Specs", lines: [100, 100, 100, 68] },
+    { label: "04 / Tech Stack & Directives", lines: [100, 48] },
   ];
 
   return (
@@ -114,7 +114,7 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
                 opacity: 0.7,
               }}
             >
-              PRODUCT REQUIREMENTS DOCUMENT
+              SYSTEM PRD BLUEPRINT
             </span>
           </div>
           <span
@@ -143,7 +143,7 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
               marginBottom: 6,
             }}
           >
-            REF: PRD-2024-0042
+            REF: PRD-2026-0042
           </div>
           <h3
             style={{
@@ -155,7 +155,7 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
               marginBottom: 14,
             }}
           >
-            TaskFlow: AI Task Manager
+            TaskFlow: AI Engine Architecture
           </h3>
 
           {/* Divider */}
@@ -214,7 +214,7 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
           ))}
         </div>
 
-        {/* Progress annotation strip — the signature mono edge label */}
+        {/* Progress annotation strip */}
         <div
           style={{
             display: "flex",
@@ -247,7 +247,7 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
                 letterSpacing: "0.06em",
               }}
             >
-              Generated in 1m 42s · 100% complete
+              Synthesized in 1m 42s · Agent Skill Ready
             </span>
           </div>
           <button
@@ -277,9 +277,9 @@ function MockPrdCard({ onSeeExample }: { onSeeExample: () => void }) {
 /* ── Hero Section ─────────────────────────── */
 export default function HeroSection({ onSeeExample }: { onSeeExample: () => void }) {
   const stats = [
-    { value: "< 3 MIN", label: "generation time" },
-    { value: "10MS SYNC", label: "realtime kanban" },
-    { value: "2-COMMAND", label: "NPX skill setup" },
+    { value: "< 3 MIN", label: "PRD synthesis" },
+    { value: "10 MS", label: "Agent API sync" },
+    { value: "ZERO", label: "AI drift" },
   ];
 
   return (
@@ -344,7 +344,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
                   background: "var(--color-signal)",
                 }}
               />
-              AI Agent Native · NPX Skill Distribution · Zero Hallucination
+              Developer Infrastructure · Agent Skill Provisioning
             </span>
           </motion.div>
 
@@ -361,11 +361,11 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
               marginBottom: 24,
             }}
           >
-            Generate PRDs &{" "}
+            Build System PRDs.{" "}
             <span style={{ color: "var(--color-signal)" }}>
-              Auto-Sync AI Agent
+              Provision AI Agent
             </span>{" "}
-            Tasks
+            Skills.
           </motion.h1>
 
           {/* Sub-headline */}
@@ -380,7 +380,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
               maxWidth: 480,
             }}
           >
-            Piardify turns product ideas into structured PRDs, visual mindmaps, and provisions an automated AI Agent Skill (<code style={{ color: "var(--color-circuit)" }}>npx piardify init</code>) to code and update your Kanban board in real-time.
+            Piardify converts raw product ideas into structured PRDs, visual mindmaps, and NPX CLI skills (<code style={{ color: "var(--color-circuit)" }}>npx piardify init</code>) for autonomous AI Agent execution.
           </motion.p>
 
           {/* CTAs */}
@@ -416,7 +416,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
               }
             >
               <FileText size={14} strokeWidth={2.5} />
-              Generate My PRD
+              Create PRD Blueprint
             </Link>
 
             <button
@@ -450,7 +450,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
                 el.style.color = "var(--fg-secondary)";
               }}
             >
-              See Example
+              Explore Sample PRD
               <ArrowRight size={13} strokeWidth={2} />
             </button>
           </motion.div>

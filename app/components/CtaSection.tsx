@@ -5,9 +5,9 @@ import { FileText } from "lucide-react";
 
 export default function CtaSection({ onSeeExample }: { onSeeExample: () => void }) {
   const stats = [
-    { value: "< 3 MIN", label: "Avg. generation time" },
-    { value: "90%+",    label: "PRDs completed first try" },
-    { value: "FREE",    label: "No credit card required" },
+    { value: "< 3 MIN", label: "PRD synthesis time" },
+    { value: "10 MS", label: "Agent API latency" },
+    { value: "FREE", label: "No credit card required" },
   ];
 
   return (
@@ -75,7 +75,7 @@ export default function CtaSection({ onSeeExample }: { onSeeExample: () => void 
               marginBottom: 22,
             }}
           >
-            Get Started Free
+            Developer Onboarding
           </div>
 
           <h2
@@ -89,8 +89,8 @@ export default function CtaSection({ onSeeExample }: { onSeeExample: () => void 
               marginBottom: 16,
             }}
           >
-            Ready to write your{" "}
-            <span style={{ color: "var(--color-signal)" }}>first PRD?</span>
+            Ready to provision your{" "}
+            <span style={{ color: "var(--color-signal)" }}>first AI Agent Skill?</span>
           </h2>
 
           <p
@@ -99,12 +99,12 @@ export default function CtaSection({ onSeeExample }: { onSeeExample: () => void 
               fontSize: "15px",
               color: "var(--color-mist)",
               marginBottom: 36,
-              maxWidth: 460,
+              maxWidth: 480,
               margin: "0 auto 36px",
               lineHeight: 1.7,
             }}
           >
-            Join developers, product managers, and students who generate professional PRDs in under 3 minutes.
+            Synthesize production-ready PRDs, visual mindmaps, and NPX CLI agent skills in under 3 minutes.
           </p>
 
           {/* CTAs */}
@@ -145,7 +145,7 @@ export default function CtaSection({ onSeeExample }: { onSeeExample: () => void 
               }
             >
               <FileText size={14} strokeWidth={2.5} />
-              Start Generating Free
+              Create PRD Blueprint
             </Link>
 
             <button
@@ -179,7 +179,7 @@ export default function CtaSection({ onSeeExample }: { onSeeExample: () => void 
                 el.style.color = "var(--fg-secondary)";
               }}
             >
-              See Example PRD
+              Explore Sample PRD
             </button>
           </div>
 

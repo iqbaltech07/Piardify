@@ -11,14 +11,14 @@ export default function HowItWorksSection() {
       <div className="hiw-header">
         <div className="hiw-header-pill">
           <span className="hiw-pulse-dot" aria-hidden="true" />
-          How It Works
+          System Pipeline
         </div>
         <h2 className="hiw-heading">
-          From raw idea to{" "}
-          <span className="hiw-heading-accent">shipped PRD in 4 steps</span>
+          From raw concept to{" "}
+          <span className="hiw-heading-accent">autonomous execution</span>
         </h2>
         <p className="hiw-subheading">
-          A guided, AI-powered workflow: zero guesswork, zero blank-page anxiety.
+          A structured 4-step pipeline: Zero AI drift, zero configuration friction.
         </p>
       </div>
 
