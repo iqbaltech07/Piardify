@@ -55,7 +55,7 @@ export default function DesignDropzone({
       </h3>
 
       <p style={{ fontFamily: "var(--font-body)", fontSize: 13.5, color: "var(--color-mist)", maxWidth: 560, margin: "0 auto 24px", lineHeight: 1.6 }}>
-        Unggah file <code style={{ color: "var(--color-signal)", fontFamily: "var(--font-mono)" }}>design.md</code> milik project ini agar AI Agent (Antigravity/Cursor/Windsurf) dapat membaca token warna, typography, layout, dan aturan komponen UI secara otomatis via MCP Server.
+        Unggah file <code style={{ color: "var(--color-signal)", fontFamily: "var(--font-mono)" }}>design.md</code> milik project ini agar AI Agent (Antigravity/Cursor/Windsurf) dapat membaca token warna, typography, layout, dan aturan komponen UI secara otomatis via Piardify Agent CLI (npx piardify init).
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>

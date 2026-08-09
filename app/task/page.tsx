@@ -359,7 +359,7 @@ function TaskPageContent() {
           setData(json);
           if (json.phases?.[0]?.id) setActivePhase(json.phases[0].id);
 
-          // Server State Priority: Server DB (including MCP AI updates) takes priority
+          // Server State Priority: Server DB (including AI Agent CLI updates) takes priority
           const serverSaved = json.savedStatus || {};
           let initialStatuses: Record<string, ColumnId> = {};
 
@@ -615,7 +615,7 @@ function TaskPageContent() {
                 color: "var(--color-circuit)",
                 letterSpacing: "0.04em",
               }}
-              title="Kanban status automatically syncs with MCP IDE & database in real-time"
+              title="Kanban status automatically syncs with AI Agent via NPX CLI & REST API"
             >
               <span
                 style={{
@@ -640,7 +640,7 @@ function TaskPageContent() {
               }}
             >
               <Cpu size={12} style={{ color: "var(--color-circuit)" }} />
-              Sync IDE with MCP
+              Setup AI Agent CLI
             </button>
           )}
           {!isLoading && data && (

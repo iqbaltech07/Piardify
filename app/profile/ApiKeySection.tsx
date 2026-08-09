@@ -135,7 +135,7 @@ export default function ApiKeySection() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                API Key Integrasi MCP
+                API Key Integrasi AI Agent (npx piardify)
               </h3>
               <p
                 style={{
@@ -146,7 +146,7 @@ export default function ApiKeySection() {
                   letterSpacing: "0.03em",
                 }}
               >
-                Gunakan API key ini untuk mengintegrasikan AI Coding Agent (Cursor, Antigravity, dll) dengan Piardify
+                Gunakan API key ini untuk login via CLI: <code>npx piardify login --token &lt;KEY&gt;</code>
               </p>
             </div>
           </div>
@@ -296,7 +296,7 @@ export default function ApiKeySection() {
               lineHeight: 1.5,
             }}
           >
-            ⚠️ Regenerasi API Key akan membatalkan API Key sebelumnya. Koneksi MCP yang aktif perlu diperbarui dengan API key baru.
+            ⚠️ Regenerasi API Key akan membatalkan API Key sebelumnya. Token pada CLI `npx piardify login` perlu diperbarui dengan API key baru.
           </p>
 
           {!confirmRegenerate ? (

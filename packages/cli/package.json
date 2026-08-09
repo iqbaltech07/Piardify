@@ -1,0 +1,20 @@
+{
+  "name": "piardify",
+  "version": "1.0.0",
+  "description": "Piardify AI Agent CLI & Executable Function Package",
+  "main": "./dist/index.js",
+  "bin": {
+    "piardify": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["piardify", "ai-agent", "npx", "kanban", "prd", "cli"],
+  "author": "Piardify",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Copy, Check, Terminal, ExternalLink, X, ShieldCheck, Cpu } from "lucide-react";
+import { Sparkles, Copy, Check, Terminal, X, ShieldCheck, Cpu, MessageSquareText } from "lucide-react";
 
 interface McpConnectModalProps {
   projectId: string;
@@ -12,7 +12,8 @@ interface McpConnectModalProps {
 export default function McpConnectModal({ projectId, appName, onClose }: McpConnectModalProps) {
   const [apiKey, setApiKey] = useState<string>("");
   const [isLoadingKey, setIsLoadingKey] = useState(true);
-  const [isCopied, setIsCopied] = useState(false);
+  const [isCopiedCommand, setIsCopiedCommand] = useState(false);
+  const [isCopiedPrompt, setIsCopiedPrompt] = useState(false);
 
   useEffect(() => {
     async function fetchApiKey() {
@@ -32,32 +33,30 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
     fetchApiKey();
   }, []);
 
-  const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://piardify.vercel.app";
+  const keyToUse = apiKey || "<YOUR_API_KEY>";
 
-  const aiPrompt = `Saya sudah menyiapkan koneksi ke Piardify untuk proyek ini. Berikut detailnya:
+  const cliCommands = `npx piardify login --token ${keyToUse}
+npx piardify init --project ${projectId}`;
 
-- MCP Endpoint: ${currentOrigin}/api/mcp
-- Project ID: ${projectId}
-- Key: ${apiKey}
+  const aiPrompt = `Saya sudah menyiapkan koneksi ke Piardify untuk proyek ini via NPX CLI & Agent Skill.
 
-Bisa tolong bantu langkah berikut:
+Tolong bantu lakukan langkah berikut:
 
-1. Tambahkan konfigurasi MCP server bernama "piardify" di environment ini, lalu panggil tool get_project_blueprint.
+1. Jalankan perintah autentikasi dan inisialisasi di terminal:
+   npx piardify login --token ${keyToUse}
+   npx piardify init --project ${projectId}
 
-2. Dari hasil blueprint tersebut, ada bagian bernama "systemDirectives" yang berisi standar koding dan desain untuk proyek ini. Tolong baca dan pahami isinya dulu sebelum lanjut. Bagian itu mencakup aturan teknis seperti penggunaan warna, spacing, tipografi, pola desain yang dihindari, dan cara validasi output.
+2. Setelah init selesai, baca instruksi Piardify Agent Skill yang otomatis terpasang di .agents/skills/piardify/SKILL.md.
 
-3. Setelah itu, lihat daftar tugas di blueprint, tentukan mana yang paling pertama bisa dikerjakan, ubah statusnya jadi "in_progress" lewat MCP, lalu beri tahu saya ringkasan tugasnya.
+3. Pahami aturan Anti-Hallucination directives, ambil tugas pertama dengan 'npx piardify task current --json', tandai status 'in_progress' dengan 'npx piardify task start <id>', lalu implementasikan kodenya. Setelah lolos test dan build lokal, tandai task selesai dengan 'npx piardify task complete <id>'.`;
 
-Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong selalu merujuk kembali ke systemDirectives tadi sebagai acuan standar teknisnya. Kalau ada permintaan saya yang bertentangan dengan aturan di sana, lebih baik pakai aturan di systemDirectives dan bilang ke saya kenapa dipilih alternatifnya.`;
-
-  const handleCopy = async () => {
+  const copyToClipboard = async (text: string, setCopiedState: (val: boolean) => void) => {
     try {
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(aiPrompt);
+        await navigator.clipboard.writeText(text);
       } else {
-        // Fallback for non-HTTPS / restricted contexts
         const textArea = document.createElement("textarea");
-        textArea.value = aiPrompt;
+        textArea.value = text;
         textArea.style.position = "fixed";
         textArea.style.left = "-999999px";
         textArea.style.top = "-999999px";
@@ -67,21 +66,10 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
         document.execCommand("copy");
         textArea.remove();
       }
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2500);
+      setCopiedState(true);
+      setTimeout(() => setCopiedState(false), 2500);
     } catch (e) {
-      console.warn("Clipboard copy fallback failed:", e);
-      // Extra fallback attempt
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = aiPrompt;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        textArea.remove();
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2500);
-      } catch (err) { }
+      console.warn("Clipboard copy failed:", e);
     }
   };
 
@@ -104,7 +92,7 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
           background: "var(--bg-surface)",
           border: "1px solid var(--border-hairline)",
           borderRadius: "var(--radius-lg)",
-          maxWidth: 580,
+          maxWidth: 620,
           width: "100%",
           overflow: "hidden",
           boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
@@ -151,7 +139,7 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                   lineHeight: 1.2,
                 }}
               >
-                Integrasikan AI Coding Agent
+                Integrasikan AI Agent via NPX CLI
               </h3>
               <p
                 style={{
@@ -162,7 +150,7 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                   letterSpacing: "0.04em",
                 }}
               >
-                Otomatisasi Task & Blueprint Anti-Halusinasi
+                Zero-Friction Distribution & Skill Setup
               </p>
             </div>
           </div>
@@ -193,10 +181,10 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
               marginBottom: 16,
             }}
           >
-            Cukup salin prompt di bawah ini dan tempelkan (*paste*) ke AI Coding Agent Anda di IDE (seperti <strong>Antigravity, Cursor, Kiro, Codex, Claude Code</strong>). AI Agent akan melakukan setup koneksi MCP secara mandiri.
+            Jalankan <strong>2 perintah terminal</strong> di bawah ini atau tempelkan prompt setup langsung ke AI Coding Agent Anda (seperti <strong>Antigravity, Cursor, Claude Code</strong>). Perintah <code>npx piardify init</code> akan meng-install <strong>Piardify Agent Skill</strong> secara otomatis.
           </p>
 
-          {/* Prompt Code Block */}
+          {/* Terminal Code Block */}
           <div
             style={{
               position: "relative",
@@ -207,7 +195,7 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
               marginBottom: 16,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <Terminal size={12} style={{ color: "var(--color-circuit)" }} />
                 <span
@@ -220,18 +208,54 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                     textTransform: "uppercase",
                   }}
                 >
-                  Prompt Setup AI Agent
+                  1. Perintah Setup Terminal
                 </span>
               </div>
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  color: "var(--fg-muted)",
-                }}
-              >
-                1-Click Copy
-              </span>
+            </div>
+
+            <pre
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                color: "var(--color-signal)",
+                lineHeight: 1.6,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                margin: 0,
+                padding: "4px 0",
+              }}
+            >
+              {isLoadingKey ? "# Memuat API Key milik Anda...\nnpx piardify login\nnpx piardify init" : cliCommands}
+            </pre>
+          </div>
+
+          {/* Prompt Agent Block */}
+          <div
+            style={{
+              position: "relative",
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border-hairline)",
+              borderRadius: "var(--radius-md)",
+              padding: "14px 16px",
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <MessageSquareText size={12} style={{ color: "var(--color-signal)" }} />
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "var(--color-signal)",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  2. Prompt Setup AI Agent (Paste ke Chat Agent)
+                </span>
+              </div>
             </div>
 
             <pre
@@ -239,15 +263,15 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                 fontFamily: "var(--font-mono)",
                 fontSize: 11,
                 color: "var(--fg-secondary)",
-                lineHeight: 1.6,
+                lineHeight: 1.5,
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
                 margin: 0,
-                maxHeight: 180,
+                maxHeight: 130,
                 overflowY: "auto",
               }}
             >
-              {isLoadingKey ? "Memuat API Key milik Anda..." : aiPrompt}
+              {isLoadingKey ? "Memuat prompt setup..." : aiPrompt}
             </pre>
           </div>
 
@@ -267,7 +291,7 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                 color: "var(--color-circuit)",
               }}
             >
-              <ShieldCheck size={12} /> 100% Anti-Halusinasi Context
+              <ShieldCheck size={12} /> Auto Agent Skill Installation
             </div>
             <div
               style={{
@@ -283,14 +307,40 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                 color: "var(--color-mist)",
               }}
             >
-              Auto Sync Kanban Task
+              Automatic Kanban Task Sync
             </div>
           </div>
 
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={handleCopy}
+              onClick={() => copyToClipboard(cliCommands, setIsCopiedCommand)}
+              style={{
+                flex: 1,
+                padding: "12px 16px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--color-circuit)",
+                background: "rgba(79,209,197,0.1)",
+                color: "var(--color-circuit)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                transition: "opacity 0.15s",
+              }}
+            >
+              {isCopiedCommand ? <Check size={15} /> : <Terminal size={15} />}
+              {isCopiedCommand ? "Command Disalin!" : "Salin Perintah CLI"}
+            </button>
+
+            <button
+              onClick={() => copyToClipboard(aiPrompt, setIsCopiedPrompt)}
               style={{
                 flex: 1,
                 padding: "12px 16px",
@@ -311,8 +361,8 @@ Satu hal penting: setiap kali saya minta buatkan UI atau komponen nanti, tolong 
                 transition: "opacity 0.15s",
               }}
             >
-              {isCopied ? <Check size={15} /> : <Copy size={15} />}
-              {isCopied ? "Prompt Berhasil Disalin!" : "Salin Prompt ke AI Agent"}
+              {isCopiedPrompt ? <Check size={15} /> : <Copy size={15} />}
+              {isCopiedPrompt ? "Prompt Agent Disalin!" : "Salin Prompt AI Agent"}
             </button>
           </div>
         </div>
