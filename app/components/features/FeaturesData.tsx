@@ -1,5 +1,5 @@
 import React from "react";
-import { Bot, Cpu, Zap, Network, ClipboardList, Layers, Download } from "lucide-react";
+import { Sparkles, Terminal, Zap, Network, ClipboardList, Layers, Download } from "lucide-react";
 
 export interface Feature {
   id: string;
@@ -24,8 +24,8 @@ export const FEATURES: Feature[] = [
     statLabel: "Faster than manual spec writing",
     accent: "var(--color-signal)",
     size: "large",
-    icon: <Bot size={24} strokeWidth={1.5} />,
-    tag: "Powered by GPT-4o",
+    icon: <Sparkles size={24} strokeWidth={1.5} />,
+    tag: "Powered by Gemini 2.5 Flash",
   },
   {
     id: "agent-skill",
@@ -36,7 +36,7 @@ export const FEATURES: Feature[] = [
     statLabel: "Zero-friction developer setup",
     accent: "var(--color-circuit)",
     size: "tall",
-    icon: <Cpu size={22} strokeWidth={1.5} />,
+    icon: <Terminal size={22} strokeWidth={1.5} />,
     tag: "AI Agent Native",
   },
   {
