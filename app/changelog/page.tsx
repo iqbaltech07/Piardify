@@ -37,10 +37,55 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v2.1.0",
+    date: "9 Agustus 2026",
+    title: "Modular Taste Skill Library, Selective Payload Delivery & Design Hierarchy",
+    badge: "Latest Release",
+    summary:
+      "Integrasi 100% Taste Skill tanpa potongan dari Knowledge OS Second Brain, pengiriman payload selektif hemat 90% token, hirarki sinergi design.md vs Taste Skill, serta pembagian file modular.",
+    highlights: [
+      {
+        type: "feat",
+        title: "Unabridged Modular Taste Skill Library",
+        description:
+          "Integrasi 8 Taste Skill utuh (designTasteFrontend, highEndVisualDesign, minimalistUi, redesignExistingProjects, gptTaste, stitchDesignTaste, fullOutputEnforcement, findSkills) beserta canonical code skeletons (GSAP StickyStack, HorizontalPan, Motion RevealStagger, Apple Liquid Glass Web CSS).",
+        tags: ["Taste Skill", "Design System", "Anti-Slop"],
+      },
+      {
+        type: "feat",
+        title: "Selective Taste Skill Payload Reduction (On-Demand Delivery)",
+        description:
+          "Pengurangan beban context JSON sebesar 90% (163KB -> 12KB) dengan mendeteksi vibe project dan hanya melampirkan 1 skill aktif. Menyediakan endpoint API & CLI taste-skill --skill <name> secara on-demand.",
+        tags: ["Performance", "Context API", "Payload 90% Reduced"],
+      },
+      {
+        type: "improvement",
+        title: "Design Hierarchy of Authority (design.md vs Taste Skill)",
+        description:
+          "Penetapan tegas Level 1 Ground Truth (design.md menentukan WHAT to build) vs Level 2 Engineering Quality (Taste Skill menentukan HOW to build with excellence). Eliminasi total bentrok token warna & font.",
+        tags: ["Hierarchy", "Design Synergy", "Anti-Hallucination"],
+      },
+      {
+        type: "improvement",
+        title: "Hidden Background Skill Injection & English Console Logs",
+        description:
+          "Taste Skill dan direktif sistem disuntikkan secara tersembunyi (hidden) di latar belakang melalui .piardify/context.json & .agents/skills/ tanpa mengotori tampilan terminal/UI manusia. Seluruh CLI log distandarisasi ke Bahasa Inggris.",
+        tags: ["CLI", "UX", "Hidden Directives"],
+      },
+    ],
+    codeSnippet: {
+      language: "bash",
+      code: `# Fetch specific taste skill on-demand
+npx piardify project taste-skill --skill minimalistUi --json
+
+# Automatic Project Context with 90% Reduced Payload
+npx piardify project context --json`,
+    },
+  },
+  {
     version: "v1.2.0",
     date: "9 Agustus 2026",
     title: "NPX CLI, Agent Skill & 10ms Realtime Autonomous Sync",
-    badge: "Latest Release",
     summary:
       "Transformasi penuh integrasi AI Agent dari legacy MCP ke Zero-Friction NPX CLI, native Agent Skill (.agents/skills/piardify/SKILL.md), serta instant Upstash Redis sync engine (<10ms).",
     highlights: [
