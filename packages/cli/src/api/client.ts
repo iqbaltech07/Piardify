@@ -1,9 +1,10 @@
 import { getGlobalConfig } from "../config/store.js";
+import { DEFAULT_API_URL } from "../config/constants.js";
 
 export async function apiRequest(endpoint: string, options: { method?: string; body?: any; token?: string; apiUrl?: string } = {}): Promise<any> {
   const globalConfig = getGlobalConfig();
   const token = options.token || globalConfig.token || process.env.PIARDIFY_API_KEY || "";
-  const baseUrl = (options.apiUrl || globalConfig.apiUrl || process.env.PIARDIFY_API_URL || "http://localhost:3000").replace(/\/$/, "");
+  const baseUrl = (options.apiUrl || globalConfig.apiUrl || DEFAULT_API_URL).replace(/\/$/, "");
 
   if (!token && !endpoint.includes("/api/agent/status")) {
     throw new Error("NOT_AUTHENTICATED: Please run 'npx piardify login --token <TOKEN>' first.");

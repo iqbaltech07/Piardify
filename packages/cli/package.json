@@ -1,16 +1,28 @@
 {
   "name": "piardify",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Piardify AI Agent CLI & Executable Function Package",
   "main": "./dist/index.js",
   "bin": {
-    "piardify": "./dist/index.js"
+    "piardify": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "skills",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["piardify", "ai-agent", "npx", "kanban", "prd", "cli"],
+  "keywords": [
+    "piardify",
+    "ai-agent",
+    "npx",
+    "kanban",
+    "prd",
+    "cli"
+  ],
   "author": "Piardify",
   "license": "MIT",
   "devDependencies": {

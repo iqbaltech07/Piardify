@@ -2,10 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.apiRequest = apiRequest;
 const store_js_1 = require("../config/store.js");
+const constants_js_1 = require("../config/constants.js");
 async function apiRequest(endpoint, options = {}) {
     const globalConfig = (0, store_js_1.getGlobalConfig)();
     const token = options.token || globalConfig.token || process.env.PIARDIFY_API_KEY || "";
-    const baseUrl = (options.apiUrl || globalConfig.apiUrl || process.env.PIARDIFY_API_URL || "http://localhost:3000").replace(/\/$/, "");
+    const baseUrl = (options.apiUrl || globalConfig.apiUrl || constants_js_1.DEFAULT_API_URL).replace(/\/$/, "");
     if (!token && !endpoint.includes("/api/agent/status")) {
         throw new Error("NOT_AUTHENTICATED: Please run 'npx piardify login --token <TOKEN>' first.");
     }
