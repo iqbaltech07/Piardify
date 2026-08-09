@@ -36,8 +36,13 @@ Read Local Context --> Start Task (10ms) --> Inspect & Code --> Local Verificati
 
 Follow these exact steps when working on a Piardify project:
 
-### Step 1: Read Project Context & Active Task
+### Step 1: Read Blueprint in Order (Structure --> PRD --> Design --> Active Task)
 - Read local blueprint file \`.piardify/context.json\` using \`view_file\` (0ms token-efficient reading).
+- Digest the project blueprint in this exact hierarchical sequence:
+  1. **\`structure\`**: Visual feature hierarchy, mindmap nodes, and architectural components.
+  2. **\`prd\`**: Product Requirements Document (specs, user flow, data flow, API contracts).
+  3. **\`design\`**: Color tokens, typography, layout rules, and UI anti-slop guidelines.
+  4. **\`tasks\`**: Current task ID, acceptance criteria, and status.
 - Query active task:
   \`\`\`bash
   .piardify/sync current

@@ -130,6 +130,21 @@ export async function GET(req: NextRequest) {
     }
 
     if (section === "context") {
+      const proj = project as any;
+      let rawText = proj.designData || "";
+      let structuredDesign: any = null;
+
+      if (rawText.startsWith("{") && rawText.includes("rawMarkdown")) {
+        try {
+          structuredDesign = JSON.parse(rawText);
+          rawText = structuredDesign.rawMarkdown || rawText;
+        } catch {}
+      }
+
+      if (!structuredDesign) {
+        structuredDesign = parseDesignMarkdown(rawText);
+      }
+
       return NextResponse.json({
         success: true,
         project: {
@@ -140,8 +155,13 @@ export async function GET(req: NextRequest) {
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
         },
-        prd: project.prdData || "",
         structure,
+        prd: project.prdData || "",
+        design: {
+          colorTokens: structuredDesign.colorTokens || [],
+          sections: structuredDesign.sections || [],
+          rawMarkdown: structuredDesign.rawMarkdown || rawText || "",
+        },
         tasks,
         taskStatuses: savedStatus,
         directives: {
