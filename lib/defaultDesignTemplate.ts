@@ -59,8 +59,16 @@ export function generateDefaultDesignMarkdown(
 - **Card Containers**: 12px (\`rounded.lg\`) to 16px (\`rounded.xl\`) for main content cards and preview panels.
 - **Badges & Tags**: Full pill (\`rounded-full\` / 9999px) strictly reserved for status indicators.
 
-## 7. Component Guidelines & Badges
+## 7. Component Guidelines & Curated React Bits Framework
 - **Modular Architecture**: Self-contained, reusable React components with zero ad-hoc inline styles.
+- **Latest React Bits (reactbits.dev) Installation & TS-TW Variant Rules**:
+  - **CLI / Component Addition**: Install via CLI (\`npx shadcn@latest add @react-bits/<ComponentName>-TS-TW\` or \`npx jsrepo add @react-bits/<ComponentName>-TS-TW\`) or copy-paste source into \`components/reactbits/<ComponentName>.tsx\`.
+  - **Stack Variant Standard**: ALWAYS use the \`TS-TW\` (TypeScript + Tailwind CSS) variant for Next.js / React projects.
+  - **Dependencies**: Ensure required component dependencies are installed (\`framer-motion\`, \`lucide-react\`, \`clsx\`, \`tailwind-merge\`, or 3D deps \`ogl\`/\`three\` when needed).
+  - **High-Taste Curation Gate**: Filter and use ONLY elegant, performant, eye-catching React Bits components. Never dump chaotic effects indiscriminately.
+  - **Approved Hero Backgrounds**: Use subtle, high-taste background FX (e.g. \`Aurora Background\` in HSL muted mode, \`Animated Grid / Dot Pattern\` with 1px hairline stroke, \`Particles / Waves\` with soft opacity).
+  - **Approved UI FX**: Use restrained, eye-catching micro-interactions (e.g. \`Spotlight Card\` with subtle hover stroke, \`Magnet Button\`, \`Blur Text\` / \`Split Text\` reveal, \`Rolling Numbers\` counter).
+  - **Forbidden Slop Patterns**: NO custom mouse cursors (accessibility-hostile), NO oversaturated neon glows, NO unreadable text glitch/jitter FX.
 - **Hero Badge Rule**: Eyebrow badge allowed ONLY on Hero section if visual anchor is required; prohibited on subsequent sections.
 - **Bento Layouts**: Feature cards should utilize asymmetric bento grid layout to avoid repetitive 3-card loops.
 
@@ -74,19 +82,27 @@ export function generateDefaultDesignMarkdown(
 - **Focus Rings**: 2px visible focus ring (\`border-glow\`) with 2px offset for keyboard navigation.
 - **Semantic HTML**: HTML5 semantic markup (\`<header>\`, \`<main>\`, \`<section>\`, \`<article>\`) with valid ARIA attributes.
 
-## 10. Do's and Don'ts (Taste Skill Anti-Slop Directives)
+## 10. Do's and Don'ts (Universal Anti-Slop Directives)
 
 ### Do
 - Declare an explicit design direction before writing UI code.
+- Filter React Bits (\`reactbits.dev\`) selection strictly for eye-catching, high-taste, elegant components only.
 - Maintain strict color and shape consistency across all page sections.
 - Use HSL defined tokens and pair display font with body font.
 - Ensure WCAG AA contrast compliance for all text against light surfaces.
+- Align badges and status pills neatly in-line with \`shrink-0\` to avoid overlapping titles or text.
+- Use spatial negative space (\`space-y-8\`) and surface contrast instead of line dividers.
 
 ### Don't
-- Do not use purple-to-blue gradient, gradient text, or neon glows (AI Slop Tell #1).
+- Do not use purple-to-blue gradient, gradient text, or neon glows (\`blur-3xl bg-blue-600/10\`) (AI Slop Tell #1).
+- Do not use un-curated chaotic React Bits effects (e.g. custom mouse cursors, heavy 3D loops, or unreadable glitch text).
+- Do not use plain static browser-default backgrounds for Hero Section (Use curated React Bits background FX).
+- Do not use default navy blue slop containers (\`#0F172A\`) or muddy tinted background boxes (\`bg-rose-500/10\`, \`bg-amber-500/10\`) for grid cards.
+- Do not use arbitrary hairline dividers (\`border-t\`, \`border-b\`, \`divide-y\` under every header and card row).
 - Do not use side-tab accent borders or nested cards inside cards.
 - Do not repeat identical 3-card grid loops without visual weight variation.
-- Do not use marketing buzzwords ("supercharge", "next-gen", "cutting-edge") in copy.
+- Do not wrap section icons in repetitive small square boxes next to titles.
+- Do not ignore user terminal instructions; if the user commands not to run a build, DO NOT run \`npm run build\`.
 `;
 }
 

@@ -83,7 +83,7 @@ Execute the following in the terminal:
 
 ---
 
-## 🛡️ Anti-Hallucination Directives (`AH-001` to `AH-011`)
+## 🛡️ Anti-Hallucination Directives (`AH-001` to `AH-012`)
 
 1. **`AH-001` Zero Invention [CRITICAL]**: Never add unapproved libraries, frameworks, or dependencies outside what is specified in the PRD.
 2. **`AH-002` Zero Assumption [CRITICAL]**: Never assume un-documented API contracts, DB schemas, or response types. Verify from source code first.
@@ -103,6 +103,11 @@ Execute the following in the terminal:
     - **Redesign / Legacy Overhaul** ──► Activate `skills.redesignExistingProjects`
     - **Standard SaaS / Marketing Landing Page** ──► Activate `skills.designTasteFrontend`
     *The AI Agent MUST output `🎨 Design Skill Active: <selected-skill-name>` before generating UI components.*
+12. **`AH-012` Anti-Slop Visual Quality & User Directive Discipline [CRITICAL]**:
+    - **No AI Slop Color Defaults**: Banned neon glows (`blur-3xl bg-blue-600/10`), default navy blue slop containers, and muddy tinted background boxes (`bg-rose-500/10`, `bg-amber-500/10`). Use matte Obsidian Charcoal (`#090A0C` / `#121318`), clean monochrome typography, and muted status tones.
+    - **No Arbitrary Line Slop**: Banned arbitrary divider line slop (`border-t`, `border-b`, `divide-y` under every header and card item). Use generous spatial grouping (`space-y-8`) and clean elevated surface contrasts instead of line dividers.
+    - **No Overlapping Badges & Cluttered Containers**: Badges and status pills MUST be neatly aligned in-line with `shrink-0` to prevent overlapping category titles or text.
+    - **Strict Command Discipline**: The AI Agent MUST strictly obey user terminal instructions. If the user commands not to run a build (e.g. "jika sudah beres fix jangan build"), the AI Agent MUST NOT execute `npm run build` or build tasks under any circumstances.
 
 ---
 

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -64,10 +64,10 @@ export async function POST(req: NextRequest) {
       const data = JSON.parse(project.taskData);
       let savedStatus = {};
       if (project.checkedTasks) {
-        try { savedStatus = JSON.parse(project.checkedTasks); } catch {}
+        try { savedStatus = JSON.parse(project.checkedTasks); } catch { }
       }
       const responseData = { ...data, savedStatus };
-      try { await redis.set(cacheKey, responseData); } catch {}
+      try { await redis.set(cacheKey, responseData); } catch { }
       return NextResponse.json(responseData);
     }
 
@@ -106,38 +106,42 @@ RESPONSE FORMAT (strict JSON only, no markdown):
   ]
 }
 
-FRONTEND-FIRST 6-PHASE STRUCTURE — YOU MUST GENERATE ALL 6 PHASES IN THIS EXACT ORDER, NO EXCEPTIONS:
+FRONTEND-FIRST 6-PHASE STRUCTURE — YOU MUST GENERATE ALL 6 PHASES IN THIS EXACT ORDER WITH CONCISE 1-2 WORD PHASE NAMES, NO EXCEPTIONS:
 
-Phase 1: Perencanaan & Desain System
+Phase 1: Desain Sistem
 - Setup architecture, color hex tokens, typography, and UI component guidelines in 'design.md'.
 - MUST include CHECKPOINT 1 task: "[CHECKPOINT] Review & ACC Token Desain (design.md) & Arsitektur dengan User".
 
-Phase 2: Setup & Infrastruktur Frontend Base
+Phase 2: Setup Base
 - Initializing project workspace, Tailwind CSS/styling setup, base page layout, navigation structure, and UI component library.
 
-Phase 3: Pengembangan Frontend UI (Mock Data)
+Phase 3: UI Frontend
 - Granular UI tasks (1-by-1 per section/component): Hero Section, Header CTA, Features Grid, Sidebar Navigation, Form Modals, Footer, etc.
 - MUST explicitly instruct in task description: "Wajib membaca design.md (designData) terlebih dahulu untuk token warna, font, dan komponen UI."
+- MANDATORY REACT BITS DIRECTIVE: For Hero Section and UI components, task description MUST state: "Wajib menggunakan React Bits (reactbits.dev) untuk animasi UI, background FX Hero Section (misal: Aurora Background, Grid Pattern, Spotlight Card, Text Animations), & komponen interaktif."
+- MANDATORY SKILL FOCUS & ZERO-SLOP GATE: Task description MUST state: "AI Agent WAJIB fokus & TIDAK BOLEH melewatkan Taste Skill. Setiap UI/komponen/halaman WAJIB 100% eye-catching, bebas dari AI slop, dan DILARANG BERHALUSINASI. Deklarasikan '🎨 Active Design Skill', blok '<skill_comprehension>', dan '<design_plan>' sebelum menulis kode UI."
 - Allowed to use initial mock/dummy data so user can preview and test UI visual interaction first.
+- MUST END WITH CHECKPOINT 2 TASK AS THE VERY LAST TASK OF PHASE 3: "[CHECKPOINT] Review & ACC Tampilan Frontend (Mock Data) dengan User".
+- Description of Checkpoint 2 MUST state: "AI Agent WAJIB STOP di sini setelah menguji seluruh UI Phase 3. Tampilkan UI ke user dan tunggu konfirmasi/ACC dari user sebelum menyentuh Backend atau merubah data mock."
 
-Phase 4: [CHECKPOINT] Review & ACC Visual UI Frontend
-- MUST generate a single dedicated Checkpoint task: "[CHECKPOINT] Review & ACC Tampilan Frontend (Mock Data) dengan User".
-- Description MUST state: "AI Agent WAJIB STOP di sini. Tampilkan UI ke user dan tunggu konfirmasi/ACC dari user sebelum menyentuh Backend atau merubah data mock."
-
-Phase 5: Pengembangan API Backend & Database Seeding
+Phase 4: Backend API
 - Pembuatan Database Schema (Prisma/Drizzle), script 'seed.ts' data awal.
 - Pembuatan API Route 1-TO-1 FOR EVERY SINGLE ENDPOINT & API DESCRIBED IN THE PRD. Do NOT omit any API endpoint!
 
-Phase 6: Integrasi Full-Stack, Replacement Data Dummy & Final Deployment
+Phase 5: Integrasi Fullstack
 - Mandatory task: "Refactor & Hapus Seluruh Data Dummy di Frontend — Hubungkan Komponen Frontend ke Real API Routes Backend & Database Seeder".
 - Verification task using latest framework docs (Check Context7 MCP / Web Search for latest Next.js 16 file names like proxy.ts vs middleware.ts).
-- MUST include CHECKPOINT 3 task: "[CHECKPOINT] Verifikasi Final Build (npm run build) & Kepastian Bebas Data Dummy".
+
+Phase 6: Audit Final
+- MUST include CHECKPOINT 3 task: "[CHECKPOINT] Audit & Verification: Pastikan Bebas Data Dummy & Production Build Check (npm run build)".
+- Description MUST state: "AI Agent WAJIB melakukan audit menyeluruh pada kode frontend & backend untuk memverifikasi bahwa 100% data dummy/mock data telah diganti dengan real API fetch, serta menjalankan 'npm run build' tanpa error."
 
 CRITICAL RULES FOR VIBE CODING & ATOMIC TASK BREAKDOWN:
-- CHECKPOINT TASKS: Set 'isCheckpoint: true' ONLY for the 3 dedicated Checkpoint tasks (in Phase 1, Phase 4, and Phase 6). For all normal coding/development tasks, set 'isCheckpoint: false'.
+- PHASE NAMES: Phase names MUST be strictly 1-2 words only ('Desain Sistem', 'Setup Base', 'UI Frontend', 'Backend API', 'Integrasi Fullstack', 'Audit Final').
+- CHECKPOINT TASKS: Set 'isCheckpoint: true' ONLY for the 3 strategic Checkpoint tasks (Checkpoint 1 in Phase 1, Checkpoint 2 as the LAST task of Phase 3, and Checkpoint 3 in Phase 6). For all normal coding/development tasks, set 'isCheckpoint: false'.
 - ATOMIC & GRANULAR TASK BREAKDOWN: Each task MUST be small, specific, and focused on 1 single component or feature unit. NEVER generate lump-sum tasks like "Build all Frontend pages" or "Develop entire UI".
 - SINGLE CLEAR DELIVERABLE: Each task must have 1 concrete deliverable with a clear 'definitionOfDone'.
-- 1-TO-1 API MAPPING: Read the ENTIRE PRD. Every API endpoint, authentication flow, CRUD operation, and integration MUST be mapped into a specific backend task in Phase 5.
+- 1-TO-1 API MAPPING: Read the ENTIRE PRD. Every API endpoint, authentication flow, CRUD operation, and integration MUST be mapped into a specific backend task in Phase 4.
 - STRICTLY DO NOT GENERATE UNREACHABLE / MANUAL NON-CODE TASKS (no manual domain purchasing, no manual business KYC, no manual account creation).
 - You MUST output ALL 6 phases. A response with fewer than 6 phases is INVALID and will be rejected.
 - Return ONLY valid JSON. Do NOT wrap in markdown code blocks.`;
@@ -148,19 +152,19 @@ CRITICAL RULES FOR VIBE CODING & ATOMIC TASK BREAKDOWN:
 
     const strukturSummary = project.strukturData
       ? (() => {
-          try {
-            const s = JSON.parse(project.strukturData);
-            if (s.nodes && Array.isArray(s.nodes)) {
-              return s.nodes.map((n: any) => {
-                const children = Array.isArray(n.children)
-                  ? n.children.map((c: any) => `  - ${c.label}`).join("\n")
-                  : "";
-                return `• ${n.label} (Phase ${n.phase})${children ? "\n" + children : ""}`;
-              }).join("\n");
-            }
-          } catch {}
-          return "";
-        })()
+        try {
+          const s = JSON.parse(project.strukturData);
+          if (s.nodes && Array.isArray(s.nodes)) {
+            return s.nodes.map((n: any) => {
+              const children = Array.isArray(n.children)
+                ? n.children.map((c: any) => `  - ${c.label}`).join("\n")
+                : "";
+              return `• ${n.label} (Phase ${n.phase})${children ? "\n" + children : ""}`;
+            }).join("\n");
+          }
+        } catch { }
+        return "";
+      })()
       : "";
 
     let userPrompt = `Generate a complete Frontend-First 6-phase task list with 3 strategic checkpoints for this project:
@@ -177,7 +181,7 @@ ${strukturSummary}
 ` : ""}PRD Content (FULL):
 ${prdMarkdown || "N/A"}
 
-REMINDER: You MUST output all 6 phases including Phase 4 Checkpoint and Phase 6 Dummy Data Cleanup. All tasks must include 'definitionOfDone'. Read the FULL PRD and map EVERY API 1-to-1.`;
+REMINDER: You MUST output all 6 phases with 1-2 word names including Checkpoint 2 at the end of Phase 3 and Phase 6 AI Agent Audit (Bebas Data Dummy). All tasks must include 'definitionOfDone'. Read the FULL PRD and map EVERY API 1-to-1.`;
 
     if (project.taskData && isOutdated) {
       systemPrompt = `You are a senior software project manager and Vibe Coding AI Architect. The user has manually updated their PRD and/or Project Structure. Your task is to intelligently sync the EXISTING task list with the new requirements.
@@ -186,7 +190,7 @@ CRITICAL INSTRUCTIONS:
 1. ONLY modify, add, or remove tasks that are directly affected by the changes in the PRD or Structure.
 2. Ensure ALL tasks (new or updated) are actionable code/UI tasks suitable for Vibe Coding and strictly exclude manual non-code tasks (no manual domain purchase, no manual KYC, no manual developer account creation).
 3. Preserve the exact details (title, description, estimasi, tags, priority) of existing tasks that are NOT affected.
-4. You must maintain the exact same JSON format with 5 phases.
+4. You must maintain the exact same JSON format with 6 phases using 1-2 word phase names.
 5. Output the FULL updated JSON, ensuring you include all unchanged tasks alongside the modified ones.`;
 
       userPrompt = `Here is the NEW PRD Content:

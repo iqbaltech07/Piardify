@@ -122,10 +122,8 @@ export default function GeneratePage() {
           <Step1Idea
             appName={form.appName}
             appIdea={form.appIdea}
-            designData={form.designData}
             setAppName={setAppName}
             setAppIdea={setAppIdea}
-            setDesignData={setDesignData}
           />
         )}
 
@@ -134,8 +132,10 @@ export default function GeneratePage() {
           <Step2TechStack
             stackMode={form.stackMode}
             stacks={form.stacks}
+            designData={form.designData}
             setStackMode={setStackMode}
             setStack={setStack}
+            setDesignData={setDesignData}
           />
         )}
 

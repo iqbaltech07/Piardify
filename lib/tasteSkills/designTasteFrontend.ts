@@ -35,8 +35,10 @@ Ask exactly **one** clarifying question - never a multi-question dump - and only
 
 If you can confidently infer from context, **do not ask**. Just declare the design read and proceed.
 
-### 0.D Anti-Default Discipline
-Do not default to: AI-purple gradients, centered hero over dark mesh, three equal feature cards, generic glassmorphism on everything, infinite-loop micro-animations everywhere, Inter + slate-900. These are the LLM defaults. Reach past them deliberately based on the design read.
+### 0.D Anti-Default Discipline & Ground Truth Binding
+1. **\`design.md\` Ground Truth Binding**: Always map colors directly to the project's \`design.md\` token variables (\`bg-base\`, \`bg-surface\`, \`accent-primary\`, \`border-subtle\`, \`fg-primary\`).
+2. **React Bits (reactbits.dev) Integration**: Mandate curated React Bits components for Hero background FX (\`Aurora Background\`, \`Animated Grid\`) and UI components (\`Spotlight Card\`, \`Blur Text\`, \`Magnet Button\`) using \`TS-TW\` variant standards (\`npx shadcn@latest add @react-bits/<ComponentName>-TS-TW\`).
+3. **Banned AI Slop Defaults**: Do not default to AI-purple gradients, default navy blue \`#0F172A\` containers, centered hero over dark mesh, three equal feature cards, cheap meta-labels ("SECTION 01"), un-curated custom mouse cursors, unreadable text glitch FX, or generic glassmorphism on everything. These are the LLM defaults. Reach past them deliberately based on the design read.
 
 ---
 
@@ -597,8 +599,11 @@ Open the page in both modes during development. Do not ship a page you've only s
 Avoid these signatures unless the brief explicitly asks for them.
 
 ### 9.A Visual & CSS
-* **NO neon / outer glows** by default. Use inner borders or subtle tinted shadows.
-* **NO pure black (\`#000000\`).** Off-black, zinc-950, or charcoal.
+* **NO neon / outer glows** by default (\`blur-3xl bg-blue-600/10\`). Use inner borders or subtle tinted shadows.
+* **NO pure black (\`#000000\`).** Off-black, zinc-950, or charcoal (\`#090A0C\` / \`#121318\`).
+* **NO muddy tinted background boxes** (\`bg-rose-500/10\`, \`bg-amber-500/10\`) for grid cards. Use uniform surface backgrounds (\`bg-[#090A0C]\`) with clean status typography.
+* **NO arbitrary hairline dividers** (\`border-t\`, \`border-b\`, \`divide-y\` under every header or card row). Use spatial negative space (\`space-y-8\`) and surface elevation contrast instead.
+* **NO overlapping badges or floating clutter.** Badges and status pills MUST be neatly aligned in-line with \`shrink-0\` to prevent overlapping titles or text.
 * **NO oversaturated accents.** Desaturate to blend with neutrals.
 * **NO excessive gradient text** for large headers.
 * **NO custom mouse cursors.** Outdated, accessibility-hostile, perf-hostile.

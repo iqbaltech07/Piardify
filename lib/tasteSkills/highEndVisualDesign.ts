@@ -10,8 +10,15 @@ description: Teaches the AI to design like a high-end agency. Defines the exact 
 - **Objective:** You engineer $150k+ agency-level digital experiences, not just websites. Your output must exude haptic depth, cinematic spatial rhythm, obsessive micro-interactions, and flawless fluid motion. 
 - **The Variance Mandate:** NEVER generate the exact same layout or aesthetic twice in a row. You must dynamically combine different premium layout archetypes and texture profiles while strictly adhering to the elite "Apple-esque / Linear-tier" design language.
 
-## 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS)
-If your generated code includes ANY of the following, the design instantly fails:
+## 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS & GROUND TRUTH)
+Before writing any code:
+- **\`design.md\` Token Binding**: You MUST strictly use the HEX/HSL color tokens from \`design.md\` (\`bg-base\`, \`bg-surface\`, \`accent-primary\`, \`border-subtle\`, \`fg-primary\`).
+- **React Bits (reactbits.dev) Integration**: ALWAYS use curated React Bits components for Hero backgrounds (\`Aurora Background\` in HSL mode, \`Animated Grid\`) and UI components (\`Spotlight Card\`, \`Blur Text\`, \`Magnet Button\`) adhering to \`TS-TW\` variant standards (\`npx shadcn@latest add @react-bits/<ComponentName>-TS-TW\`).
+- **Banned Slop Patterns**:
+  - ❌ NEVER use default navy blue \`#0F172A\` slop containers or muddy tinted background boxes.
+  - ❌ NEVER use purple-to-blue neon gradient text or \`blur-3xl bg-blue-600/10\` glows.
+  - ❌ NEVER use un-curated chaotic React Bits effects (custom mouse cursors, unreadable text glitch).
+  - ❌ NEVER use cheap meta-labels ("SECTION 01", "QUESTION 05").
 - **Banned Fonts:** Inter, Roboto, Arial, Open Sans, Helvetica. (Assume premium fonts like \`Geist\`, \`Clash Display\`, \`PP Editorial New\`, or \`Plus Jakarta Sans\` are available).
 - **Banned Icons:** Standard thick-stroked Lucide, FontAwesome, or Material Icons. Use only ultra-light, precise lines (e.g., Phosphor Light, Remix Line).
 - **Banned Borders & Shadows:** Generic 1px solid gray borders. Harsh, dark drop shadows (\`shadow-md\`, \`rgba(0,0,0,0.3)\`). 
@@ -59,41 +66,4 @@ Never use default transitions. All motion must simulate real-world mass and spri
 - **The Hamburger Morph:** On click, the 2 or 3 lines of the hamburger icon must fluidly rotate and translate to form a perfect 'X' (\`rotate-45\` and \`-rotate-45\` with absolute positioning), not just disappear.
 - **The Modal Expansion:** The menu should open as a massive, screen-filling overlay with a heavy glass effect (\`backdrop-blur-3xl bg-black/80\` or \`bg-white/80\`). 
 - **Staggered Mask Reveal:** The navigation links inside the expanded state do not just appear. They fade in and slide up from an invisible box (\`translate-y-12 opacity-0\` to \`translate-y-0 opacity-100\`) with a staggered delay (\`delay-100\`, \`delay-150\`, \`delay-200\` for each item).
-
-### B. Magnetic Button Hover Physics
-- Use the \`group\` utility. On hover, do not just change the background color.
-- Scale the entire button down slightly (\`active:scale-[0.98]\`) to simulate physical pressing.
-- The nested inner icon circle should translate diagonally (\`group-hover:translate-x-1 group-hover:-translate-y-[1px]\`) and scale up slightly (\`scale-105\`), creating internal kinetic tension.
-
-### C. Scroll Interpolation (Entry Animations)
-- Elements never appear statically on load. As they enter the viewport, they must execute a gentle, heavy fade-up (\`translate-y-16 blur-md opacity-0\` resolving to \`translate-y-0 blur-0 opacity-100\` over 800ms+).
-- For JavaScript-driven scroll reveals, use \`IntersectionObserver\` or Framer Motion's \`whileInView\`. Never use \`window.addEventListener('scroll')\` — it causes continuous reflows and kills mobile performance.
-
-## 6. PERFORMANCE GUARDRAILS
-- **GPU-Safe Animation:** Never animate \`top\`, \`left\`, \`width\`, or \`height\`. Animate exclusively via \`transform\` and \`opacity\`. Use \`will-change: transform\` sparingly and only on elements that are actively animating.
-- **Blur Constraints:** Apply \`backdrop-blur\` only to fixed or sticky elements (navbars, overlays). Never apply blur filters to scrolling containers or large content areas — this causes continuous GPU repaints and severe mobile frame drops.
-- **Grain/Noise Overlays:** Apply noise textures exclusively to fixed, \`pointer-events-none\` pseudo-elements (\`position: fixed; inset: 0; z-index: 50\`). Never attach them to scrolling containers.
-- **Z-Index Discipline:** Do not use arbitrary \`z-50\` or \`z-[9999]\`. Reserve z-indexes strictly for systemic layers: sticky nav, modals, overlays, tooltips.
-
-## 7. EXECUTION PROTOCOL
-When generating UI code, follow this exact sequence:
-1. **[SILENT THOUGHT]** Roll the Variance Engine (Section 3). Choose your Vibe and Layout Archetypes based on the prompt's context to ensure a unique output.
-2. **[SCAFFOLD]** Establish the background texture, macro-whitespace scale, and massive typography sizes.
-3. **[ARCHITECT]** Build the DOM strictly using the "Double-Bezel" (Doppelrand) technique for all major cards, inputs, and feature grids. Use exaggerated squircle radii (\`rounded-[2rem]\`).
-4. **[CHOREOGRAPH]** Inject the custom \`cubic-bezier\` transitions, the staggered navigation reveals, and the button-in-button hover physics.
-5. **[OUTPUT]** Deliver flawless, pixel-perfect React/Tailwind/HTML code. Do not include basic, generic fallbacks.
-
-## 8. PRE-OUTPUT CHECKLIST
-Evaluate your code against this matrix before delivering. This is the last filter.
-- [ ] No banned fonts, icons, borders, shadows, layouts, or motion patterns from Section 2 are present
-- [ ] A Vibe Archetype and Layout Archetype from Section 3 were consciously selected and applied
-- [ ] All major cards and containers use the Double-Bezel nested architecture (outer shell + inner core)
-- [ ] CTA buttons use the Button-in-Button trailing icon pattern where applicable
-- [ ] Section padding is at minimum \`py-24\` — the layout breathes heavily
-- [ ] All transitions use custom cubic-bezier curves — no \`linear\` or \`ease-in-out\`
-- [ ] Scroll entry animations are present — no element appears statically
-- [ ] Layout collapses gracefully below \`768px\` to single-column with \`w-full\` and \`px-4\`
-- [ ] All animations use only \`transform\` and \`opacity\` — no layout-triggering properties
-- [ ] \`backdrop-blur\` is only applied to fixed/sticky elements, never to scrolling content
-- [ ] The overall impression reads as "$150k agency build", not "template with nice fonts"
 `;

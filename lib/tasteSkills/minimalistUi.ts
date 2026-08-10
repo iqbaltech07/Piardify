@@ -5,6 +5,17 @@ description: Clean editorial-style interfaces. Warm monochrome palette, typograp
 
 # Protocol: Premium Utilitarian Minimalism UI Architect
 
+## 0. THE GROUND TRUTH BINDING (\`design.md\` & ANTI-SLOP ENFORCEMENT)
+
+Before writing any code or components:
+1. **Token Hierarchy**: You MUST map all colors, background surfaces, typography, and borders to \`design.md\` (\`bg-base\`, \`bg-surface\`, \`accent-primary\`, \`border-subtle\`, \`fg-primary\`).
+2. **React Bits (reactbits.dev) Integration**: Use curated React Bits components for Hero Section backgrounds (e.g. \`Animated Grid / Dot Pattern\` with hairline stroke) and UI components (\`Spotlight Card\`, \`Blur Text\`, \`Magnet Button\`) adhering to \`TS-TW\` variant standards (\`npx shadcn@latest add @react-bits/<ComponentName>-TS-TW\`).
+3. **ABS-BANNED SLOP DEFAULTS**:
+   - ❌ NEVER use navy blue \`#0F172A\` slop containers or muddy tinted background boxes.
+   - ❌ NEVER use purple-to-blue neon gradient text or \`blur-3xl bg-blue-600/10\` glows.
+   - ❌ NEVER use un-curated chaotic React Bits effects (custom mouse cursors, unreadable text glitch).
+   - ❌ NEVER use cheap meta-labels ("SECTION 01", "QUESTION 05").
+
 ## 1. Protocol Overview
 Name: Premium Utilitarian Minimalism & Editorial UI
 Description: An advanced frontend engineering directive for generating highly refined, ultra-minimalist, "document-style" web interfaces analogous to top-tier workspace platforms. This protocol strictly enforces a high-contrast warm monochrome palette, bespoke typographic hierarchies, meticulous structural macro-whitespace, bento-grid layouts, and an ultra-flat component architecture with deliberate muted pastel accents. It actively rejects standard generic SaaS design trends.
@@ -20,6 +31,10 @@ The AI must strictly avoid the following generic web development defaults:
 - DO NOT use emojis anywhere in code, markup, text content, headings, or alt text. Replace with proper icons or clean SVG primitives.
 - DO NOT use generic placeholder names like "John Doe", "Acme Corp", or "Lorem Ipsum". Use realistic, contextual content.
 - DO NOT use AI copywriting clichés: "Elevate", "Seamless", "Unleash", "Next-Gen", "Game-changer", "Delve". Write plain, specific language.
+- DO NOT use default navy blue slop containers (\`#0F172A\`) or muddy tinted background boxes (\`bg-rose-500/10\`, \`bg-amber-500/10\`) for grid cards. Use uniform surface backgrounds (\`bg-[#090A0C]\`) with clean status typography.
+- DO NOT use arbitrary hairline dividers (\`border-t\`, \`border-b\`, \`divide-y\` under every header and card row). Use spatial negative space (\`space-y-8\`) and surface elevation contrast instead.
+- DO NOT allow badges or status pills to overlap titles or text. Align them neatly in-line with \`shrink-0\`.
+- DO NOT ignore user terminal instructions; if the user commands not to run a build, DO NOT run \`npm run build\`.
 
 ## 3. Typographic Architecture
 The interface must rely on extreme typographic contrast and premium font selection to establish an editorial feel.

@@ -39,6 +39,12 @@ export const TASTE_SKILL_DIRECTIVES = {
       shapeConsistencyLock: "Gunakan 1 sistem corner-radius konsisten per halaman.",
       pageThemeLock: "Tetapkan tema (light atau dark mode) pada root halaman."
     },
+    antiSlopRules: {
+      colors: "Dilarang keras memakai neon glow (blur-3xl bg-blue-600/10), default navy blue slop containers, atau muddy tinted background boxes (bg-rose-500/10, bg-amber-500/10). Wajib gunakan matte Obsidian Charcoal (#090A0C / #121318), clean monochrome typography, dan status natural muted.",
+      lineDividers: "Dilarang keras memakai hairline dividers berulang (border-t, border-b, divide-y di bawah setiap header & card item). Manfaatkan spatial negative space (space-y-8) dan elevasi permukaan kontras.",
+      badgeAlignment: "Badge dan status pills WAJIB sejajar in-line dengan shrink-0 agar tidak tumpang tindih (overlap) menutupi teks judul kategori.",
+      commandDiscipline: "AI Agent WAJIB mematuhi instruksi khusus terminal dari pengguna. Jika pengguna melarang build (e.g. 'jika sudah beres fix jangan build'), AI Agent DILARANG KERAS menjalankan npm run build."
+    },
     heroDiscipline: {
       headline: "Maksimal 2 baris pada tampilan desktop dengan value proposition yang spesifik.",
       subtext: "Maksimal 20 kata / 4 baris.",

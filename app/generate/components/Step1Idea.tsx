@@ -3,26 +3,12 @@ import React from "react";
 interface Step1IdeaProps {
   appName: string;
   appIdea: string;
-  designData?: string;
   setAppName: (val: string) => void;
   setAppIdea: (val: string) => void;
-  setDesignData?: (val: string) => void;
 }
 
-export default function Step1Idea({ appName, appIdea, designData, setAppName, setAppIdea, setDesignData }: Step1IdeaProps) {
+export default function Step1Idea({ appName, appIdea, setAppName, setAppIdea }: Step1IdeaProps) {
   const ideaValid = appIdea.length >= 20;
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && setDesignData) {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const text = evt.target?.result as string;
-        if (text) setDesignData(text);
-      };
-      reader.readAsText(file);
-    }
-  };
 
   return (
     <div>
@@ -122,60 +108,8 @@ export default function Step1Idea({ appName, appIdea, designData, setAppName, se
             </span>
           </div>
         </div>
-
-        {/* Optional design.md Upload */}
-        <div style={{
-          padding: "16px",
-          borderRadius: "var(--radius-md)",
-          border: "1px dashed var(--border-hairline)",
-          background: "rgba(255,255,255,0.02)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <label style={{
-              fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700,
-              letterSpacing: "0.14em", textTransform: "uppercase",
-              color: designData ? "var(--color-signal)" : "var(--fg-muted)",
-            }}>
-              Design Guidelines (design.md) — Opsional
-            </label>
-            <label style={{
-              fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700,
-              padding: "3px 8px", borderRadius: "var(--radius-xs)",
-              background: "rgba(79,209,197,0.1)", color: "var(--color-circuit)",
-              cursor: "pointer", border: "1px solid rgba(79,209,197,0.3)",
-            }}>
-              ↑ Upload File .md
-              <input
-                type="file"
-                accept=".md,.txt"
-                onChange={handleFileUpload}
-                style={{ display: "none" }}
-              />
-            </label>
-          </div>
-          <textarea
-            rows={3}
-            placeholder="Atau paste isi file design.md di sini (Color Tokens, Typography, Layout, Components)..."
-            value={designData || ""}
-            onChange={(e) => setDesignData && setDesignData(e.target.value)}
-            style={{
-              width: "100%", padding: "10px 12px",
-              borderRadius: "var(--radius-sm)", fontSize: "12px",
-              fontFamily: "var(--font-mono)",
-              outline: "none", resize: "vertical",
-              background: "var(--bg-elevated)",
-              border: "1px solid var(--border-hairline)",
-              color: "var(--fg-primary)", lineHeight: 1.5,
-              boxSizing: "border-box",
-            }}
-          />
-          {designData && (
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", color: "var(--color-circuit)", marginTop: 6, margin: 0 }}>
-              ✓ design.md loaded ({designData.length} chars)
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );
 }
+

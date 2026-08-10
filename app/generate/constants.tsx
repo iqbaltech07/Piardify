@@ -13,7 +13,7 @@ export const TECH_CATEGORIES = [
     id: "backend" as StackCategory, title: "Backend", subtitle: "Logic & API server",
     icon: <Server size={20} strokeWidth={2} />,
     color: "#10b981", bg: "rgba(16,185,129,0.15)",
-    options: ["Node.js", "Python (FastAPI/Django)", "Laravel", "NestJS", "Spring Boot", "Go", "Ruby on Rails", "Rust (Actix/Axum)", "Elixir (Phoenix)"],
+    options: ["Next.js (API Routes)", "Node.js", "Python (FastAPI/Django)", "Laravel", "NestJS", "Spring Boot", "Go", "Ruby on Rails", "Rust (Actix/Axum)", "Elixir (Phoenix)"],
   },
   {
     id: "database" as StackCategory, title: "Database", subtitle: "Penyimpanan data",
@@ -26,6 +26,127 @@ export const TECH_CATEGORIES = [
     icon: <Cloud size={20} strokeWidth={2} />,
     color: "#a855f7", bg: "rgba(168,85,247,0.15)",
     options: ["Vercel", "AWS", "Google Cloud", "Azure", "Railway", "Docker", "Cloudflare Workers / Pages", "Fly.io", "Render"],
+  }
+];
+
+export const POPULAR_STACK_PRESETS = [
+  {
+    id: "next-fullstack",
+    label: "Next.js Fullstack",
+    desc: "App Router API Routes + Vercel",
+    badge: "Most Popular",
+    stacks: {
+      frontend: "Next.js",
+      backend: "Next.js (API Routes)",
+      database: "PostgreSQL",
+      deployment: "Vercel"
+    }
+  },
+  {
+    id: "t3-stack",
+    label: "T3 / Node Stack",
+    desc: "Next.js + Node.js + Postgres",
+    badge: "Enterprise",
+    stacks: {
+      frontend: "Next.js",
+      backend: "Node.js",
+      database: "PostgreSQL",
+      deployment: "Vercel"
+    }
+  },
+  {
+    id: "ai-saas",
+    label: "AI SaaS Stack",
+    desc: "Next.js + FastAPI + Postgres",
+    badge: "AI Ready",
+    stacks: {
+      frontend: "Next.js",
+      backend: "Python (FastAPI/Django)",
+      database: "PostgreSQL",
+      deployment: "Vercel"
+    }
+  },
+  {
+    id: "mern-stack",
+    label: "MERN Stack",
+    desc: "React + Node.js + Mongo + Railway",
+    badge: "Classic",
+    stacks: {
+      frontend: "React",
+      backend: "Node.js",
+      database: "MongoDB",
+      deployment: "Railway"
+    }
+  },
+  {
+    id: "expo-supabase",
+    label: "Mobile Expo Stack",
+    desc: "React Native + Supabase + Cloudflare",
+    badge: "Mobile",
+    stacks: {
+      frontend: "React Native",
+      backend: "Node.js",
+      database: "Supabase",
+      deployment: "Cloudflare Workers / Pages"
+    }
+  }
+];
+
+export const COLOR_PALETTE_PRESETS = [
+  {
+    id: "amber-cyber",
+    name: "Amber Signal",
+    theme: "Cyber Slate Dark",
+    primary: "#ffb627",
+    bg: "#090a0c",
+    surface: "#121418",
+    border: "#27272a",
+    text: "#f4f4f5",
+    muted: "#a1a1aa"
+  },
+  {
+    id: "ocean-indigo",
+    name: "Ocean Indigo",
+    theme: "Clean Enterprise Light",
+    primary: "#4f46e5",
+    bg: "#f8fafc",
+    surface: "#ffffff",
+    border: "#e2e8f0",
+    text: "#0f172a",
+    muted: "#64748b"
+  },
+  {
+    id: "electric-emerald",
+    name: "Electric Emerald",
+    theme: "Modern Tech Dark",
+    primary: "#10b981",
+    bg: "#0f172a",
+    surface: "#1e293b",
+    border: "#334155",
+    text: "#f8fafc",
+    muted: "#94a3b8"
+  },
+  {
+    id: "neon-violet",
+    name: "Neon Violet",
+    theme: "SaaS Dark Glow",
+    primary: "#8b5cf6",
+    bg: "#0c0a09",
+    surface: "#1c1917",
+    border: "#292524",
+    text: "#fafaf9",
+    muted: "#a8a29e"
+  },
+  {
+    id: "crimson-coral",
+    name: "Crimson Coral",
+    theme: "Vibrant Minimal Light",
+    primary: "#f43f5e",
+    bg: "#fafafa",
+    surface: "#ffffff",
+    border: "#e4e4e7",
+    text: "#18181b",
+    muted: "#71717a"
   }
 ];
 
@@ -55,3 +176,4 @@ export const DESIGN_OPTIONS = [
   { id: "playful", label: "Playful & Creative", desc: "Colorful, fun, animated" },
   { id: "enterprise", label: "Enterprise", desc: "Professional, corporate" },
 ];
+
