@@ -1,6 +1,6 @@
 {
   "name": "piardify",
-  "version": "1.0.2",
+  "version": "2.2.1",
   "description": "Piardify AI Agent CLI & Executable Function Package",
   "main": "./dist/index.js",
   "bin": {

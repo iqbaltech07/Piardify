@@ -12,7 +12,11 @@ async function projectCommand(section, options = {}) {
         let sec = section || "overview";
         if (sec === "current")
             sec = "overview";
-        const res = await (0, client_js_1.apiRequest)(`/api/agent/project?projectId=${projectId}&section=${sec}`);
+        let url = `/api/agent/project?projectId=${projectId}&section=${sec}`;
+        if (options.skill) {
+            url += `&skill=${encodeURIComponent(options.skill)}`;
+        }
+        const res = await (0, client_js_1.apiRequest)(url);
         if (options.json) {
             console.log(JSON.stringify(res, null, 2));
         }
