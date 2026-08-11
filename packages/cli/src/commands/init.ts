@@ -89,18 +89,13 @@ Execute the following in the terminal:
 
 ---
 
-## 🛡️ Anti-Hallucination Directives (\`AH-001\` to \`AH-010\`)
+## 🛡️ Anti-Hallucination Directives & Design Hierarchy
 
-1. **\`AH-001\` Zero Invention [CRITICAL]**: Never add unapproved libraries, frameworks, or dependencies outside what is specified in the PRD.
-2. **\`AH-002\` Zero Assumption [CRITICAL]**: Never assume un-documented API contracts, DB schemas, or response types. Verify from source code first.
-3. **\`AH-003\` Status Sync [REQUIRED]**: Always sync task state (\`start\`, \`complete\`, \`fail\`) via \`.piardify/sync\` or \`npx piardify task\`.
-4. **\`AH-004\` Local Verification Gate [CRITICAL]**: Run linter, compiler, and build checks locally before completing any task.
-5. **\`AH-005\` Atomic Sequential Execution [CRITICAL]**: Process tasks 1 by 1. Do not jump ahead or update multiple task statuses simultaneously without verification.
-6. **\`AH-006\` Mandatory Checkpoint Honor [CRITICAL]**: When encountering a \`[CHECKPOINT]\` task (such as after Phase 1, Phase 4 UI Completion, or Phase 6 Final), the AI Agent MUST stop execution, output a clear summary to the user for review, and wait for explicit user approval before proceeding to subsequent tasks.
-7. **\`AH-007\` Mandatory Design Reference [CRITICAL]**: Before implementing any Frontend UI component, the AI Agent MUST read \`.piardify/context.md\` (specifically the \`<design_data>\` section or \`design.md\`) to use exact HEX color tokens, typography, and UI rules instead of hallucinating custom styles.
-8. **\`AH-008\` Dummy Data Elimination [REQUIRED]**: In Phase 6 (Integration & Cleanup), the AI Agent MUST refactor all Frontend components to remove mock/dummy data arrays, replacing them with real API fetching (\`fetch\`/\`SWR\`/\`React Query\`) and database seeders.
-9. **\`AH-009\` Modern Docs Verification [REQUIRED]**: Before creating or refactoring framework configuration files (e.g. Next.js App Router, Middleware, Auth), the AI Agent MUST check live documentation via MCP Context7 or Web Search to use the latest file names and conventions (e.g. \`proxy.ts\` vs \`middleware.ts\`).
-10. **\`AH-010\` Definition of Done Verification [CRITICAL]**: Always verify task results against the task's explicit \`definitionOfDone\` criteria before marking the task complete.
+> [!IMPORTANT]
+> To avoid redundant tokens, all \`AH-00x\` directives (Zero Invention, Local Verification Gate, Skill Routing, etc.) and the **Hierarchy of Authority** (\`design.md\` vs Taste Skill) are now injected dynamically into your context.
+>
+> **You MUST read and strictly obey the \`<system_directives>\` XML tag located at the very top of \`.piardify/context.md\`.**
+> The rules listed there are non-negotiable and carry the highest execution priority.
 `;
 
 export async function initCommand(options: { project?: string; json?: boolean }) {

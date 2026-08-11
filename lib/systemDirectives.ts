@@ -68,6 +68,36 @@ export const SYSTEM_DIRECTIVES = {
           "rule": "PROJECT-SPECIFIC DESIGN SKILL ROUTING [CRITICAL]: AI Agent WAJIB memeriksa `<design_data>` dan `<taste_skill>` di `.piardify/context.md` (atau `design.md`) sebelum membuat UI dan mengaktifkan Taste Skill yang sesuai.",
           "validation": "Deklarasikan 'Design Skill Active: <selected-skill-name>' di awal respon sebelum menulis komponen Frontend.",
           "failure_consequence": "AI Agent salah menggunakan gaya desain yang tidak sesuai dengan instruksi project user."
+        },
+        {
+          "id": "AH-012",
+          "rule": "CURATED REACT BITS & CLI INSTALLATION [CRITICAL]: AI Agent WAJIB menggunakan React Bits (reactbits.dev) via `npx shadcn@latest add @react-bits/<ComponentName>-TS-TW`. Komponen difilter secara ketat (misal: Aurora Background, Animated Grid, dsb). DILARANG KERAS menggunakan AI Slop: kursor mouse custom, glow neon berlebihan, efek glitch teks buram.",
+          "validation": "Pastikan komponen UI kompleks diambil dari React Bits dan bukan halusinasi manual yang buruk.",
+          "failure_consequence": "Desain UI terlalu kekanak-kanakan (AI Slop)."
+        },
+        {
+          "id": "AH-013",
+          "rule": "MANDATORY SKILL FOCUS & PRE-FLIGHT COMPREHENSION GATE [CRITICAL]: Sebelum menulis 1 baris kode UI, AI Agent WAJIB deklarasikan: 1) `🎨 Active Design Skill: <name>`, 2) `<skill_comprehension>` (3 prinsip eksekusi), 3) `<design_plan>` (mapping token dari design.md & math).",
+          "validation": "Jangan outputkan komponen React sebelum memunculkan blok verifikasi tersebut.",
+          "failure_consequence": "AI Agent membuat desain yang tidak selaras dengan instruksi proyek."
+        },
+        {
+          "id": "AH-014",
+          "rule": "ZERO-SLOP & ZERO-HALLUCINATION VISUAL QUALITY MANDATE [MANDATORY]: Setiap komponen UI WAJIB 100% mematuhi active Taste Skill dan design.md. Desain harus memukau (agency-grade). ZERO AI-slop, ZERO kontainer biru default (#0F172A), ZERO neon glows, ZERO halusinasi dependency.",
+          "validation": "Evaluasi ketat setiap kode UI. Jangan gunakan style default Tailwind yang biasa dipakai AI generik.",
+          "failure_consequence": "Tampilan UI terlihat murahan dan amatir."
+        },
+        {
+          "id": "AH-015",
+          "rule": "MANDATORY CONTEXT PERSISTENCE & RE-VERIFICATION GATE [CRITICAL]: AI Agent DILARANG KERAS lupa dengan konteks proyek. Sebelum mengeksekusi task APAPUN, AI Agent WAJIB memanggil `view_file` pada `.piardify/context.md` dan membaca semuanya (chunk-read jika >800 baris) untuk me-refresh 100% memori proyek.",
+          "validation": "Tidak ada task yang dieksekusi tanpa bukti pemanggilan `view_file` ke context.md sebelumnya di log percakapan.",
+          "failure_consequence": "AI Agent melupakan spesifikasi PRD dan token desain saat sesi chat terlalu panjang."
+        },
+        {
+          "id": "AH-016",
+          "rule": "MANDATORY CHUNK-READ FOR LARGE FILES [CRITICAL]: Saat membaca file berukuran besar (>800 baris) seperti `.piardify/context.md`, `design.md`, atau file *source code*, AI Agent WAJIB menggunakan `view_file` secara bertahap (chunk: baris 1-800, 801-1600, dst) sampai seluruh baris terbaca tuntas.",
+          "validation": "Jangan pernah klaim 'sudah baca' jika tidak menggunakan argument `StartLine` dan `EndLine` untuk membaca keseluruhan file besar.",
+          "failure_consequence": "AI Agent berhalusinasi atau melewati aturan kritikal karena teks terpotong oleh batasan `view_file`."
         }
       ],
       "designHierarchy": {
