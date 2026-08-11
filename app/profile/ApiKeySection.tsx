@@ -238,54 +238,74 @@ export default function ApiKeySection() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Toggle show/hide */}
-            <button
-              onClick={() => setShowKey(!showKey)}
-              disabled={isLoading || !apiKey}
-              title={showKey ? "Sembunyikan API Key" : "Tampilkan API Key"}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--border-hairline)",
-                background: "var(--bg-surface)",
-                color: "var(--fg-secondary)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                cursor: isLoading ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                transition: "all 0.15s ease",
-              }}
-            >
-              {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
-              {showKey ? "Hide" : "Show"}
-            </button>
+            {apiKey ? (
+              <>
+                {/* Toggle show/hide */}
+                <button
+                  onClick={() => setShowKey(!showKey)}
+                  title={showKey ? "Sembunyikan API Key" : "Tampilkan API Key"}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "var(--radius-md)",
+                    border: "1px solid var(--border-hairline)",
+                    background: "var(--bg-surface)",
+                    color: "var(--fg-secondary)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {showKey ? "Hide" : "Show"}
+                </button>
 
-            {/* Copy button */}
-            <button
-              onClick={handleCopy}
-              disabled={isLoading || !apiKey}
-              title="Salin API Key"
-              style={{
-                padding: "8px 14px",
-                borderRadius: "var(--radius-md)",
-                border: isCopied ? "1px solid var(--color-circuit)" : "1px solid var(--border-hairline)",
-                background: isCopied ? "rgba(79,209,197,0.1)" : "var(--bg-surface)",
-                color: isCopied ? "var(--color-circuit)" : "var(--fg-primary)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: isLoading ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                transition: "all 0.15s ease",
-              }}
-            >
-              {isCopied ? <Check size={14} /> : <Copy size={14} />}
-              {isCopied ? "Copied!" : "Copy"}
-            </button>
+                {/* Copy button */}
+                <button
+                  onClick={handleCopy}
+                  title="Salin API Key"
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: "var(--radius-md)",
+                    border: isCopied ? "1px solid var(--color-circuit)" : "1px solid var(--border-hairline)",
+                    background: isCopied ? "rgba(79,209,197,0.1)" : "var(--bg-surface)",
+                    color: isCopied ? "var(--color-circuit)" : "var(--fg-primary)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {isCopied ? <Check size={14} /> : <Copy size={14} />}
+                  {isCopied ? "Copied!" : "Copy"}
+                </button>
+              </>
+            ) : hasApiKey ? (
+              <div
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid rgba(255,182,39,0.3)",
+                  background: "rgba(255,182,39,0.05)",
+                  color: "var(--color-signal)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <EyeOff size={12} /> Hidden for security
+              </div>
+            ) : null}
           </div>
         </div>
 
