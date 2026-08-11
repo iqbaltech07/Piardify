@@ -3,4 +3,5 @@ export declare function apiRequest(endpoint: string, options?: {
     body?: any;
     token?: string;
     apiUrl?: string;
+    rawText?: boolean;
 }): Promise<any>;

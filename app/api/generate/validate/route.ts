@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-
-const prisma = new PrismaClient();
+import { getMonthlyProjectLimit } from "@/lib/planQuota";
 
 export async function POST() {
   const session = await auth.api.getSession({
@@ -34,11 +33,10 @@ export async function POST() {
     },
   });
 
-  const isUnlimited = user.email === "dev.iqbal007@gmail.com";
-  const prdLimit = isUnlimited ? Infinity : (user.tier === "PRO" ? 3 : 1);
+  const prdLimit = getMonthlyProjectLimit(user.tier, user.email);
 
   if (projectsThisMonth >= prdLimit) {
-    return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit} project per bulan.` }, { status: 403 });
+    return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit === Infinity ? "unlimited" : prdLimit} project per bulan.` }, { status: 403 });
   }
 
   // Increment usage count (lifetime counter)

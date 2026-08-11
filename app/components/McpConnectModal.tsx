@@ -48,7 +48,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
    npx piardify init --project ${projectId}
 
 2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
-   Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.json yang otomatis terpasang di workspace.
+   Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.md yang otomatis terpasang di workspace.
 
 3. EKSEKUSI TASK & AUTOMATIC KANBAN SYNC:
    - Cek task aktif dengan: .piardify/sync current

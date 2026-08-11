@@ -52,11 +52,11 @@ Piardify is an AI PRD Generator & System Architecture Tracking Platform. This sk
 
 ## 🛠️ Direct Native Commands (Ultra-Fast 10ms Execution)
 
-The Piardify CLI (\`npx piardify init\`) pre-generates lightweight 10ms native helper scripts (\`.piardify/sync\` or \`.piardify/sync.cmd\`) and local blueprint file \`.piardify/context.json\` for zero-latency execution:
+The Piardify CLI (\`npx piardify init\`) pre-generates lightweight 10ms native helper scripts (\`.piardify/sync\` or \`.piardify/sync.cmd\`) and local blueprint file \`.piardify/context.md\` for zero-latency execution:
 
 | Action | Native Command (10ms Execution) | Fallback NPX Command |
 | :--- | :--- | :--- |
-| **Read Project Blueprint & Context** | Read \`.piardify/context.json\` (0ms) | \`npx piardify project context --json\` |
+| **Read Project Blueprint & Context** | Read \`.piardify/context.md\` (0ms) | \`npx piardify project context --json\` |
 | **Get Active Task** | \`.piardify/sync current\` | \`npx piardify task current --json\` |
 | **Start Task (\`IN_PROGRESS\`)** | \`.piardify/sync start <id>\` | \`npx piardify task start <id>\` |
 | **Complete Task (\`DONE\`)** | \`.piardify/sync complete <id>\` | \`npx piardify task complete <id>\` |
@@ -69,13 +69,13 @@ The Piardify CLI (\`npx piardify init\`) pre-generates lightweight 10ms native h
 \`\`\`text
 Read Local Context ──► Start Task (10ms) ──► Inspect & Code ──► Local Verification ──► Complete Task (10ms)
  (.piardify/            (.piardify/sync                    (npm run lint/build)      (.piardify/sync
-  context.json)          start <id>)                                                  complete <id>)
+  context.md)             start <id>)                                                  complete <id>)
 \`\`\`
 
 Follow these exact steps when working on a Piardify project:
 
 ### Step 1: Read Blueprint in Order (Structure ──► PRD ──► Design ──► Active Task)
-- Read local blueprint file \`.piardify/context.json\` using \`view_file\` (0ms token-efficient reading).
+- Read local blueprint file \`.piardify/context.md\` using \`view_file\` (0ms token-efficient reading).
 - Digest the project blueprint in this exact hierarchical sequence:
   1. **\`structure\`**: Visual feature hierarchy, mindmap nodes, and architectural components.
   2. **\`prd\`**: Product Requirements Document (specs, user flow, data flow, API contracts).
@@ -132,7 +132,7 @@ Execute the following in the terminal:
 4. **\`AH-004\` Local Verification Gate [CRITICAL]**: Run linter, compiler, and build checks locally before completing any task.
 5. **\`AH-005\` Atomic Sequential Execution [CRITICAL]**: Process tasks 1 by 1. Do not jump ahead or update multiple task statuses simultaneously without verification.
 6. **\`AH-006\` Mandatory Checkpoint Honor [CRITICAL]**: When encountering a \`[CHECKPOINT]\` task (such as after Phase 1, Phase 4 UI Completion, or Phase 6 Final), the AI Agent MUST stop execution, output a clear summary to the user for review, and wait for explicit user approval before proceeding to subsequent tasks.
-7. **\`AH-007\` Mandatory Design Reference [CRITICAL]**: Before implementing any Frontend UI component, the AI Agent MUST read \`.piardify/context.json\` (specifically the \`design\` key or \`design.md\`) to use exact HEX color tokens, typography, and UI rules instead of hallucinating custom styles.
+7. **\`AH-007\` Mandatory Design Reference [CRITICAL]**: Before implementing any Frontend UI component, the AI Agent MUST read \`.piardify/context.md\` (specifically the \`<design_data>\` section or \`design.md\`) to use exact HEX color tokens, typography, and UI rules instead of hallucinating custom styles.
 8. **\`AH-008\` Dummy Data Elimination [REQUIRED]**: In Phase 6 (Integration & Cleanup), the AI Agent MUST refactor all Frontend components to remove mock/dummy data arrays, replacing them with real API fetching (\`fetch\`/\`SWR\`/\`React Query\`) and database seeders.
 9. **\`AH-009\` Modern Docs Verification [REQUIRED]**: Before creating or refactoring framework configuration files (e.g. Next.js App Router, Middleware, Auth), the AI Agent MUST check live documentation via MCP Context7 or Web Search to use the latest file names and conventions (e.g. \`proxy.ts\` vs \`middleware.ts\`).
 10. **\`AH-010\` Definition of Done Verification [CRITICAL]**: Always verify task results against the task's explicit \`definitionOfDone\` criteria before marking the task complete.
@@ -169,10 +169,10 @@ async function initCommand(options) {
         if (!fs.existsSync(piardifyDir)) {
             fs.mkdirSync(piardifyDir, { recursive: true });
         }
-        // Save full project context locally in 0ms readable format
+        // Save full project context locally in hybrid format (XML + Markdown + JSON)
         try {
-            const fullContextRes = await (0, client_js_1.apiRequest)(`/api/agent/project?projectId=${projectId}&section=context`);
-            fs.writeFileSync(path.join(piardifyDir, "context.json"), JSON.stringify(fullContextRes, null, 2), "utf-8");
+            const fullContextRes = await (0, client_js_1.apiRequest)(`/api/agent/project?projectId=${projectId}&section=context`, { rawText: true });
+            fs.writeFileSync(path.join(piardifyDir, "context.md"), fullContextRes, "utf-8");
         }
         catch { }
         // Generate Windows CMD 10ms native helper
@@ -258,7 +258,7 @@ fi
                     appName: project.appName,
                 },
                 nativeHelpers: [path.join(piardifyDir, "sync.cmd"), shPath],
-                localContext: path.join(piardifyDir, "context.json"),
+                localContext: path.join(piardifyDir, "context.md"),
                 skillInstalled: targetSkillFile,
                 currentTask,
             }));
@@ -269,7 +269,7 @@ fi
             console.log("==========================================");
             console.log(`  Project Name  : ${project.appName}`);
             console.log(`  Project ID    : ${project.id}`);
-            console.log("  Local Context : Saved -> .piardify/context.json (0ms)");
+            console.log("  Local Context : Saved -> .piardify/context.md (hybrid format)");
             console.log("  Native Helper : Generated -> .piardify/sync (10ms)");
             console.log("  Agent Skill   : Installed -> .agents/skills/piardify/SKILL.md");
             console.log(`  Authentication: Connected (${statusRes.user?.email})`);

@@ -1,7 +1,7 @@
 import { getGlobalConfig } from "../config/store.js";
 import { DEFAULT_API_URL } from "../config/constants.js";
 
-export async function apiRequest(endpoint: string, options: { method?: string; body?: any; token?: string; apiUrl?: string } = {}): Promise<any> {
+export async function apiRequest(endpoint: string, options: { method?: string; body?: any; token?: string; apiUrl?: string; rawText?: boolean } = {}): Promise<any> {
   const globalConfig = getGlobalConfig();
   const token = options.token || globalConfig.token || process.env.PIARDIFY_API_KEY || "";
   const baseUrl = (options.apiUrl || globalConfig.apiUrl || DEFAULT_API_URL).replace(/\/$/, "");
@@ -28,6 +28,15 @@ export async function apiRequest(endpoint: string, options: { method?: string; b
 
   try {
     const res = await fetch(url, fetchOptions);
+
+    // Return raw text for hybrid context format responses
+    if (options.rawText) {
+      if (!res.ok) {
+        throw new Error(`API_ERROR_${res.status}: ${res.statusText || "Request failed"}`);
+      }
+      return await res.text();
+    }
+
     const data: any = await res.json().catch(() => ({}));
     if (!res.ok) {
       const msg = data.error?.message || data.error || res.statusText || "Request failed";

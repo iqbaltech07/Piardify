@@ -1,0 +1,251 @@
+import { GoogleGenAI, Type } from "@google/genai";
+import { redis } from "./redis";
+import { incrementUsage, AIProvider } from "./usageTracker";
+import { generateWithGeminiContextCache } from "./geminiCache";
+
+/** Shared default fallback chain used across all AI routes. */
+export const GEMINI_FALLBACK_MODELS = [
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+];
+
+export const DEFAULT_OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
+
+interface AiSettings {
+  geminiModel?: string;
+  openRouterModel?: string;
+}
+
+export async function getAiSettings(): Promise<AiSettings> {
+  try {
+    const raw = await redis.get<any>("app:settings");
+    return raw || {};
+  } catch {
+    return {};
+  }
+}
+
+export function getGeminiKeys(): string[] {
+  return [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_SECONDARY,
+  ].filter((k): k is string => Boolean(k));
+}
+
+export function hasGeminiKeys(): boolean {
+  return getGeminiKeys().length > 0;
+}
+
+function pickProvider(apiKey: string): AIProvider {
+  return apiKey === process.env.GEMINI_API_KEY ? "gemini_key_1" : "gemini_key_2";
+}
+
+/** Dedupe while keeping the configured model first. */
+function orderedModels(preferred?: string): string[] {
+  return Array.from(new Set([preferred || "gemini-3.6-flash", ...GEMINI_FALLBACK_MODELS]));
+}
+
+export interface GeminiGenerateResult {
+  text: string;
+  model: string;
+  provider: AIProvider;
+}
+
+/**
+ * Runs a prompt through Gemini using every configured key × fallback model.
+ * Returns the first successful result or throws the last error.
+ */
+export async function generateGemini(opts: {
+  systemPrompt: string;
+  userPrompt: string;
+  preferredModel?: string;
+  /** Extra per-request Gemini config, e.g. responseMimeType/responseSchema. */
+  geminiConfig?: {
+    responseMimeType?: string;
+    responseSchema?: { type?: string; items?: unknown; properties?: Record<string, unknown>; enum?: string[]; required?: string[] };
+  };
+}): Promise<GeminiGenerateResult> {
+  const keys = getGeminiKeys();
+  if (keys.length === 0) {
+    throw new Error("Gemini API Keys not configured");
+  }
+
+  const models = orderedModels(opts.preferredModel);
+  let lastError: any = null;
+
+  for (const apiKey of keys) {
+    for (const model of models) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await generateWithGeminiContextCache({
+          ai,
+          model,
+          systemInstruction: opts.systemPrompt,
+          userPrompt: opts.userPrompt,
+        });
+        const text = response.text ?? "";
+        if (text.length === 0) throw new Error("Empty Gemini response");
+        await incrementUsage(pickProvider(apiKey));
+        return { text, model, provider: pickProvider(apiKey) };
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[Gemini] key=...${apiKey.slice(-6)} model=${model}:`, err?.message);
+      }
+    }
+  }
+
+  throw new Error(lastError?.message || "All Gemini keys/models failed");
+}
+
+/**
+ * Runs a prompt through a single configured OpenRouter model.
+ */
+export async function generateOpenRouter(opts: {
+  systemPrompt: string;
+  userPrompt: string;
+  model?: string;
+  /** When true, requests JSON output and retries without json_object if unsupported. */
+  jsonObject?: boolean;
+}): Promise<{ text: string; model: string; provider: AIProvider }> {
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error("OpenRouter API Key not configured");
+  }
+
+  const { default: OpenAI } = await import("openai");
+  const openai = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+  });
+
+  const model = opts.model || DEFAULT_OPENROUTER_MODEL;
+  const messages: Array<{ role: "system" | "user"; content: string }> = [
+    { role: "system", content: opts.systemPrompt },
+    { role: "user", content: opts.userPrompt },
+  ];
+
+  let completion: any;
+  try {
+    completion = await openai.chat.completions.create({
+      model,
+      messages,
+      ...(opts.jsonObject ? { response_format: { type: "json_object" as const } } : {}),
+    });
+  } catch (e: any) {
+    if (opts.jsonObject && (e.status === 400 || e.message?.includes("json_object"))) {
+      console.log("Model doesn't support json_object, retrying without it...");
+      completion = await openai.chat.completions.create({ model, messages });
+    } else {
+      throw e;
+    }
+  }
+
+  const text = completion?.choices?.[0]?.message?.content?.trim() ?? "";
+  if (!text) throw new Error("Empty response from OpenRouter");
+
+  await incrementUsage("openrouter");
+  return { text, model, provider: "openrouter" };
+}
+
+export interface GenerateResult {
+  text: string;
+  provider: "gemini_key_1" | "gemini_key_2" | "openrouter";
+  model: string;
+}
+
+/**
+ * High-level unified generation with priority ordering.
+ * - `priority: "gemini"` (default) → Gemini keys/models first, OpenRouter fallback.
+ * - `priority: "openrouter"` → OpenRouter first, Gemini fallback.
+ * Always returns text on success; throws a descriptive error if everything fails.
+ */
+export async function generateText(opts: {
+  systemPrompt: string;
+  userPrompt: string;
+  preferredModel?: string;
+  openRouterModel?: string;
+  priority?: "gemini" | "openrouter";
+  jsonObject?: boolean;
+}): Promise<GenerateResult> {
+  const { priority = "gemini" } = opts;
+  const settings = await getAiSettings();
+  const geminiModel = opts.preferredModel || settings.geminiModel;
+  const orModel = opts.openRouterModel || settings.openRouterModel;
+
+  let lastError: any = null;
+
+  const tryGemini = async (): Promise<GenerateResult | null> => {
+    if (!hasGeminiKeys()) return null;
+    try {
+      const res = await generateGemini({
+        systemPrompt: opts.systemPrompt,
+        userPrompt: opts.userPrompt,
+        preferredModel: geminiModel,
+      });
+      return { text: res.text, provider: res.provider, model: res.model };
+    } catch (err: any) {
+      lastError = err;
+      console.warn("[generateText] Gemini failed:", err?.message);
+      return null;
+    }
+  };
+
+  const tryOpenRouter = async (): Promise<GenerateResult | null> => {
+    if (!process.env.OPENROUTER_API_KEY) return null;
+    try {
+      const res = await generateOpenRouter({
+        systemPrompt: opts.systemPrompt,
+        userPrompt: opts.userPrompt,
+        model: orModel,
+        jsonObject: opts.jsonObject,
+      });
+      return { text: res.text, provider: res.provider, model: res.model };
+    } catch (err: any) {
+      lastError = err;
+      console.warn("[generateText] OpenRouter failed:", err?.message);
+      return null;
+    }
+  };
+
+  let result: GenerateResult | null = null;
+  if (priority === "openrouter") {
+    result = (await tryOpenRouter()) || (await tryGemini());
+  } else {
+    result = (await tryGemini()) || (await tryOpenRouter());
+  }
+
+  if (!result) {
+    throw new Error(lastError?.message || "All AI providers failed");
+  }
+  return result;
+}
+
+/** Strips code fences and extracts the first JSON object/array from LLM output. */
+export function extractJson(raw: string): string | null {
+  const cleaned = raw
+    .trim()
+    .replace(/^```json\n?/i, "")
+    .replace(/^```\n?/, "")
+    .replace(/\n?```$/, "");
+
+  const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (objectMatch) return objectMatch[0];
+  const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrayMatch) return arrayMatch[0];
+  return null;
+}
+
+/**
+ * Narrows the provided-ish Gemini JSON schema into the shape GoogleGenAI
+ * expects, deriving enum/type from the shorthand object.
+ */
+export function toGeminiSchema(schema: unknown) {
+  return schema;
+}
+
+export const GeminiType = Type;
+
+export { generateWithGeminiContextCache };

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { generateDefaultDesignData } from "@/lib/defaultDesignTemplate";
 import { parseDesignMarkdown } from "@/lib/designParser";
+import { getMonthlyProjectLimit } from "@/lib/planQuota";
+import { parseBody, createProjectSchema } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,12 +17,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await parseBody(req, createProjectSchema);
     const { appName, appIdea } = body;
-
-    if (!appName || !appIdea) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -42,11 +40,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const isUnlimited = user.email === "dev.iqbal007@gmail.com";
-    const prdLimit = isUnlimited ? Infinity : (user.tier === "PRO" ? 3 : 1);
+    const prdLimit = getMonthlyProjectLimit(user.tier, user.email);
 
     if (projectsThisMonth >= prdLimit) {
-      return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit} project per bulan.` }, { status: 403 });
+      return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit === Infinity ? "unlimited" : prdLimit} project per bulan.` }, { status: 403 });
     }
 
     let finalDesignData = "";
@@ -59,7 +56,7 @@ export async function POST(req: NextRequest) {
       }
     } else {
       const designPref = body.dynamicAnswers?.designPreference || body.designPreference;
-      finalDesignData = generateDefaultDesignData(appName, appIdea, designPref);
+      finalDesignData = generateDefaultDesignData(appName, appIdea, typeof designPref === "string" ? designPref : undefined);
     }
 
     const project = await prisma.project.create({

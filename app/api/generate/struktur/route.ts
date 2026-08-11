@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
-import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
+import { redis } from "@/lib/redis";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { incrementUsage } from "@/lib/usageTracker";
-import { generateWithGeminiContextCache } from "@/lib/geminiCache";
-import fs from "fs";
-import path from "path";
+import { generateText, extractJson } from "@/lib/llm";
+import { PRD_TEMPLATE, PRD_TEMPLATE_FALLBACK, BASE_SYSTEM_PROMPT } from "@/lib/prompts";
+import { getOwnedProject } from "@/lib/projectHelpers";
+import { checkRateLimit, RateLimitWindows } from "@/lib/rateLimit";
+import { getDailyAiCallLimit } from "@/lib/planQuota";
+import { parseBody, projectIdSchema, strukturSchema } from "@/lib/validation";
+import { fixMermaidBlocks } from "@/lib/mermaidFix";
 
 // Allow execution up to 60 seconds on Vercel
 export const maxDuration = 60;
@@ -17,22 +19,32 @@ export async function POST(req: NextRequest) {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { projectId } = body;
+    const { projectId } = await parseBody(req, projectIdSchema);
 
-    if (!projectId) {
-      return NextResponse.json({ error: "Missing projectId" }, { status: 400 });
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { tier: true, email: true },
+    });
+
+    const dailyLimit = getDailyAiCallLimit(user?.tier, user?.email);
+    const rl = await checkRateLimit({
+      userId: session.user.id,
+      scope: "generate:struktur",
+      limit: dailyLimit,
+      windowSeconds: RateLimitWindows.DAY,
+    });
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "DAILY_LIMIT_REACHED", message: `Batas generate harian tercapai. Coba lagi besok.` }, { status: 429 });
     }
 
     // 1. Check Redis Cache
     const cacheKeyStruktur = `project:${projectId}:struktur`;
-    const cacheKeyPrd = `project:${projectId}:prd`;
-    
+
     try {
       const cached = await redis.get(cacheKeyStruktur);
       if (cached) {
@@ -42,21 +54,14 @@ export async function POST(req: NextRequest) {
       console.warn("Redis Cache Miss/Error:", err);
     }
 
-    // 2. Check Database
-    const project = await (prisma.project as any).findUnique({
-      where: { id: projectId, userId: session.user.id },
-      select: {
-        id: true,
-        userId: true,
-        appName: true,
-        appIdea: true,
-        formInputs: true,
-        strukturData: true,
-        prdData: true,
-        taskData: true,
-        designData: true,
-        status: true,
-      },
+    // 2. Check Database (typed ownership)
+    const project = await getOwnedProject(session.user.id, projectId, {
+      id: true,
+      userId: true,
+      appName: true,
+      appIdea: true,
+      formInputs: true,
+      strukturData: true,
     });
 
     if (!project) {
@@ -70,30 +75,6 @@ export async function POST(req: NextRequest) {
     }
 
     const formInputs = project.formInputs ? JSON.parse(project.formInputs) : {};
-
-    const keys = [
-      process.env.GEMINI_API_KEY,
-      process.env.GEMINI_API_KEY_SECONDARY,
-    ].filter(Boolean) as string[];
-
-    if (keys.length === 0) {
-      return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
-    }
-
-    const settings: any = (await redis.get("app:settings")) || {};
-    const geminiModel = settings.geminiModel || "gemini-3.6-flash";
-    const openRouterModel = settings.openRouterModel || "nvidia/nemotron-3-ultra-550b-a55b:free";
-
-    const fallbackModels = [
-      "gemini-3.6-flash",
-      "gemini-3.5-flash",
-      "gemini-3.5-flash-lite",
-      "gemini-3.1-flash-lite",
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite"
-    ];
-    // Pastikan model pilihan user dicoba pertama, lalu fallback urut ke bawah tanpa duplikat
-    const models = Array.from(new Set([geminiModel, ...fallbackModels]));
 
     // ==========================================
     // STRUKTUR GENERATION SETUP
@@ -150,32 +131,16 @@ Database: ${formInputs.stacks?.database || "N/A"}
 Deployment: ${formInputs.stacks?.deployment || "N/A"}
 Design Preference: ${formInputs.designPreference || "N/A"}
 
-IMPORTANT: The nodes you generate will be used as the feature structure for the PRD. Make sure each node maps to a real section of features in the product.`;
+IMPORTANT: The nodes you generate will be used as the feature structure for the PRD. Make sure each node maps to a real section of features in the product.
+`;
 
     // ==========================================
     // PRD GENERATION SETUP
     // ==========================================
-    let template = "";
-    try {
-      const templatePath = path.join(process.cwd(), "public", "contoh-prd.md");
-      template = fs.readFileSync(templatePath, "utf-8");
-    } catch (error) {
-      console.warn("Could not read public/contoh-prd.md, using fallback structure", error);
-      template = "# PRODUCT REQUIREMENTS DOCUMENT (PRD)\n\n## 1. Overview\n\n## 2. Objectives\n\n...";
-    }
-
-    let baseSystemPrompt = "You are an expert Product Manager and System Architect.\nYour task is to generate a comprehensive, professional Product Requirements Document (PRD) strictly based on the user's inputs.";
-    try {
-      const promptPath = path.join(process.cwd(), "system-prompt.txt");
-      baseSystemPrompt = fs.readFileSync(promptPath, "utf-8");
-    } catch (error) {
-      console.warn("Could not read system-prompt.txt, using fallback base prompt", error);
-    }
-
-    const prdSystemPrompt = `${baseSystemPrompt}
+    const prdSystemPrompt = `${BASE_SYSTEM_PROMPT}
 
 === TEMPLATE START ===
-${template}
+${PRD_TEMPLATE || PRD_TEMPLATE_FALLBACK}
 === TEMPLATE END ===`;
 
     let answersStr = "";
@@ -217,104 +182,52 @@ For each integration above, include a dedicated sub-section or detailed bullet i
 `;
 
     // ==========================================
-    // PARALLEL EXECUTION
+    // PARALLEL EXECUTION (Gemini → OpenRouter fallback)
     // ==========================================
-    
-    // Function to run a prompt with fallback models and keys
-    const generateWithFallback = async (sysPrompt: string, usrPrompt: string) => {
-      let responseText = "";
-      let success = false;
-      let lastError = null;
-      for (const apiKey of keys) {
-        const ai = new GoogleGenAI({ apiKey });
-        for (const model of models) {
-          try {
-            const response = await generateWithGeminiContextCache({
-              ai,
-              model,
-              systemInstruction: sysPrompt,
-              userPrompt: usrPrompt,
-            });
-            responseText = response.text?.trim() || "";
-            success = true;
-            const provider = apiKey === process.env.GEMINI_API_KEY ? "gemini_key_1" : "gemini_key_2";
-            await incrementUsage(provider);
-            break;
-          } catch (err: any) {
-            lastError = err;
-            console.warn(`[Fallback] ${model}:`, err.message);
-          }
-        }
-        if (success) break;
-      }
-
-      if (!success && process.env.OPENROUTER_API_KEY) {
-        console.log("Both Gemini keys failed, falling back to OpenRouter");
-        try {
-          const { default: OpenAI } = await import("openai");
-          const openai = new OpenAI({
-            baseURL: "https://openrouter.ai/api/v1",
-            apiKey: process.env.OPENROUTER_API_KEY,
-          });
-
-          const completion = await openai.chat.completions.create({
-            model: openRouterModel,
-            messages: [
-              { role: "system", content: sysPrompt },
-              { role: "user", content: usrPrompt }
-            ]
-          });
-          
-          responseText = completion.choices[0].message.content?.trim() || "";
-          success = true;
-          await incrementUsage("openrouter");
-        } catch (err: any) {
-          lastError = err;
-          console.warn(`[OpenRouter Fallback] Failed:`, err.message);
-        }
-      }
-
-      if (!success || !responseText) throw new Error("Generation failed: " + lastError?.message);
-      return responseText;
-    };
-
-    // Run both simultaneously
     console.log("Starting parallel generation of Struktur and PRD...");
-    const [strukturTextRaw, prdTextRaw] = await Promise.all([
-      generateWithFallback(strukturSystemPrompt, strukturUserPrompt),
-      generateWithFallback(prdSystemPrompt, prdUserPrompt)
+    const [strukturResult, prdResult] = await Promise.all([
+      generateText({
+        systemPrompt: strukturSystemPrompt,
+        userPrompt: strukturUserPrompt,
+      }).catch((err) => { console.error("[Struktur] generation failed:", err); return null; }),
+      generateText({
+        systemPrompt: prdSystemPrompt,
+        userPrompt: prdUserPrompt,
+      }).catch((err) => { console.error("[PRD] generation failed:", err); return null; }),
     ]);
+
+    if (!prdResult || !strukturResult) {
+      return NextResponse.json({ error: "Failed to generate project structure/PRD" }, { status: 500 });
+    }
     console.log("Parallel generation complete.");
 
-    // Process Struktur
-    let strukturText = strukturTextRaw;
-    strukturText = strukturText.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
+    // Process Struktur (extract + validate JSON)
+    const strukturJson = extractJson(strukturResult.text);
+    if (!strukturJson) {
+      console.error("Failed to extract struktur JSON:", strukturResult.text);
+      return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
+    }
     let parsedStruktur;
     try {
-      parsedStruktur = JSON.parse(strukturText);
+      parsedStruktur = strukturSchema.parse(JSON.parse(strukturJson));
     } catch {
-      console.error("Failed to parse struktur JSON:", strukturText);
+      console.error("Failed to parse/validate struktur JSON:", strukturJson);
       return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
     }
 
-    // Process PRD (clean up code blocks if it wrapped the markdown)
-    let prdText = prdTextRaw;
-    if (prdText.startsWith("\`\`\`markdown")) {
-        prdText = prdText.replace(/^\`\`\`markdown\n?/, "").replace(/\n?\`\`\`$/, "");
+    // Process PRD (clean up code blocks + auto-fix mermaid)
+    let prdText = prdResult.text;
+    if (prdText.startsWith("```markdown")) {
+      prdText = prdText.replace(/^```markdown\n?/, "").replace(/\n?```$/, "");
     }
-    // Validate mermaid blocks for PRD
-    prdText = prdText.replace(/```mermaid\n([\s\S]*?)```/g, (match, content) => {
-      let cleaned = content;
-      cleaned = cleaned.replace(/-->\s*([^{}[\]()|]+)\s*-->/g, "-->|\"$1\"|-->"); 
-      return `\`\`\`mermaid\n${cleaned}\n\`\`\``;
-    });
+    prdText = await fixMermaidBlocks(prdText);
 
     // Save both to Database
     await prisma.project.update({
       where: { id: projectId },
-      data: { 
+      data: {
         strukturData: JSON.stringify(parsedStruktur),
-        prdData: prdText 
+        prdData: prdText,
       },
       select: { id: true },
     });
@@ -322,14 +235,15 @@ For each integration above, include a dedicated sub-section or detailed bullet i
     // Save both to Redis Cache
     try {
       await redis.set(cacheKeyStruktur, parsedStruktur);
-      await redis.set(cacheKeyPrd, prdText);
+      await redis.set(`project:${projectId}:prd`, prdText);
     } catch (err) {
       console.warn("Redis set error:", err);
     }
 
     return NextResponse.json(parsedStruktur);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Parallel generation error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const status = error?.status ?? 500;
+    return NextResponse.json({ error: status === 400 ? error.message : "Internal Server Error" }, { status });
   }
 }

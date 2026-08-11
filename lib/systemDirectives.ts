@@ -41,7 +41,7 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           "id": "AH-007",
-          "rule": "MANDATORY DESIGN REFERENCE [CRITICAL]: Sebelum membuat komponen Frontend UI, AI Agent WAJIB membaca file `design.md` (atau key `design` di `.piardify/context.json`) untuk mengambil token warna HEX, font, dan komponen UI yang valid.",
+          "rule": "MANDATORY DESIGN REFERENCE [CRITICAL]: Sebelum membuat komponen Frontend UI, AI Agent WAJIB membaca file `design.md` (atau tag `<design_data>` di `.piardify/context.md`) untuk mengambil token warna HEX, font, dan komponen UI yang valid.",
           "validation": "Cross-check seluruh style warna dan tipografi dengan design.md. Dilarang menghalusinasi warna di luar token.",
           "failure_consequence": "Desain UI berantakan dan tidak konsisten (AI Slop)."
         },
@@ -65,14 +65,14 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           "id": "AH-011",
-          "rule": "PROJECT-SPECIFIC DESIGN SKILL ROUTING [CRITICAL]: AI Agent WAJIB memeriksa `design.style`/`vibe` di `.piardify/context.json` (atau `design.md`) sebelum membuat UI dan mengaktifkan Taste Skill yang sesuai.",
+          "rule": "PROJECT-SPECIFIC DESIGN SKILL ROUTING [CRITICAL]: AI Agent WAJIB memeriksa `<design_data>` dan `<taste_skill>` di `.piardify/context.md` (atau `design.md`) sebelum membuat UI dan mengaktifkan Taste Skill yang sesuai.",
           "validation": "Deklarasikan 'Design Skill Active: <selected-skill-name>' di awal respon sebelum menulis komponen Frontend.",
           "failure_consequence": "AI Agent salah menggunakan gaya desain yang tidak sesuai dengan instruksi project user."
         }
       ],
       "designHierarchy": {
         "rule": "HIERARCHY OF AUTHORITY: design.md vs Taste Skill Synergy",
-        "level1_ground_truth": "design.md (atau context.json design): Menentukan WHAT to build (Warna HEX spesifik, font spesifik, dan layout wireframe project). Nilai di design.md SELALU memenangkan prioritas utama jika ada perbedaan warna/font.",
+        "level1_ground_truth": "design.md (atau <design_data> di context.md): Menentukan WHAT to build (Warna HEX spesifik, font spesifik, dan layout wireframe project). Nilai di design.md SELALU memenangkan prioritas utama jika ada perbedaan warna/font.",
         "level2_engineering_quality": "Taste Skill: Menentukan HOW to build (Standar kualitas frontend, anti-slop, kontras WCAG AA, fisika animasi spring, ritme spacing, & anti-klise). Taste Skill digunakan untuk mengimplementasikan design.md secara estetik & presisi, BUKAN untuk menggantikan warna/font dari design.md.",
         "conflictResolution": "Jika design.md menentukan warna tertentu (misal ungu/brand khusus), AI Agent WAJIB menggunakan warna HEX tersebut dari design.md, sembari menerapkan kualitas engineering dari Taste Skill (kontras, padding, & responsivitas)."
       },

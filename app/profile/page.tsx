@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import ProfileProjects from "./ProfileProjects";
 import ApiKeySection from "./ApiKeySection";
 import { getRank, getNextRank, getRankProgress, getExpToNextRank, RANKS } from "@/lib/gamification";
+import { getMonthlyProjectLimit } from "@/lib/planQuota";
 import {
   Sprout, Compass, PenLine, LayoutList, Lightbulb,
   Map, Timer, Telescope, Trophy, Wrench,
@@ -36,8 +37,8 @@ export default async function ProfilePage() {
   const projects         = await prisma.project.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" } });
   const finishedProjects = projects.filter((p) => p.status === "FINISHED");
 
-  const isUnlimited     = session.user.email === "dev.iqbal007@gmail.com";
-  const prdLimit        = isUnlimited ? Infinity : (tier === "PRO" ? 3 : 1);
+  const isUnlimited     = getMonthlyProjectLimit(tier, session.user.email) === Infinity;
+  const prdLimit        = getMonthlyProjectLimit(tier, session.user.email);
   const now             = new Date();
   const firstOfMonth    = new Date(now.getFullYear(), now.getMonth(), 1);
   const thisMonthCount  = projects.filter((p) => new Date(p.createdAt) >= firstOfMonth).length;

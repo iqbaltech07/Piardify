@@ -26,7 +26,7 @@ npx piardify init
 
 This will:
 - Connect the local directory with your Piardify project.
-- Save local blueprint context to `.piardify/context.json` (0ms token-efficient reading).
+- Save local blueprint context to `.piardify/context.md` (hybrid format for optimal AI consumption).
 - Generate zero-overhead native sync scripts (`.piardify/sync`).
 - Install the **Piardify Agent Skill** into `.agents/skills/piardify/SKILL.md`.
 

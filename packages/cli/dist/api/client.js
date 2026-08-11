@@ -26,6 +26,13 @@ async function apiRequest(endpoint, options = {}) {
     }
     try {
         const res = await fetch(url, fetchOptions);
+        // Return raw text for hybrid context format responses
+        if (options.rawText) {
+            if (!res.ok) {
+                throw new Error(`API_ERROR_${res.status}: ${res.statusText || "Request failed"}`);
+            }
+            return await res.text();
+        }
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
             const msg = data.error?.message || data.error || res.statusText || "Request failed";

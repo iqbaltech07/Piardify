@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { GoogleGenAI } from "@google/genai";
 import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { generateWithGeminiContextCache } from "@/lib/geminiCache";
+import { generateGemini } from "@/lib/llm";
+import { PRD_TEMPLATE, PRD_TEMPLATE_FALLBACK, BASE_SYSTEM_PROMPT } from "@/lib/prompts";
+import { getOwnedProject } from "@/lib/projectHelpers";
+import { checkRateLimit, RateLimitWindows } from "@/lib/rateLimit";
+import { getDailyAiCallLimit } from "@/lib/planQuota";
+import { parseBody, projectIdSchema } from "@/lib/validation";
+import { fixMermaidBlocks } from "@/lib/mermaidFix";
+
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,11 +23,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { projectId } = body;
+    const { projectId } = await parseBody(req, projectIdSchema);
 
-    if (!projectId) {
-      return NextResponse.json({ error: "Missing projectId" }, { status: 400 });
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { tier: true, email: true },
+    });
+
+    const dailyLimit = getDailyAiCallLimit(user?.tier, user?.email);
+    const rl = await checkRateLimit({
+      userId: session.user.id,
+      scope: "generate:prd",
+      limit: dailyLimit,
+      windowSeconds: RateLimitWindows.DAY,
+    });
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "DAILY_LIMIT_REACHED", message: `Batas generate harian tercapai. Coba lagi besok.` }, { status: 429 });
     }
 
     // 1. Check Redis Cache
@@ -36,21 +52,14 @@ export async function POST(req: NextRequest) {
       console.warn("Redis Cache Miss/Error:", err);
     }
 
-    // 2. Check Database
-    const project = await (prisma.project as any).findUnique({
-      where: { id: projectId, userId: session.user.id },
-      select: {
-        id: true,
-        userId: true,
-        appName: true,
-        appIdea: true,
-        formInputs: true,
-        strukturData: true,
-        prdData: true,
-        taskData: true,
-        designData: true,
-        status: true,
-      },
+    // 2. Check Database (typed ownership)
+    const project = await getOwnedProject(session.user.id, projectId, {
+      id: true,
+      userId: true,
+      appName: true,
+      appIdea: true,
+      formInputs: true,
+      prdData: true,
     });
 
     if (!project) {
@@ -64,37 +73,10 @@ export async function POST(req: NextRequest) {
 
     const formInputs = project.formInputs ? JSON.parse(project.formInputs) : {};
 
-    // Read the template file
-    let template = "";
-    try {
-      const templatePath = path.join(process.cwd(), "public", "contoh-prd.md");
-      template = fs.readFileSync(templatePath, "utf-8");
-    } catch (error) {
-      console.warn("Could not read public/contoh-prd.md, using fallback structure", error);
-      template = "# PRODUCT REQUIREMENTS DOCUMENT (PRD)\n\n## 1. Overview\n\n## 2. Objectives\n\n...";
-    }
-
-    const keys = [
-      process.env.GEMINI_API_KEY,
-      process.env.GEMINI_API_KEY_SECONDARY
-    ].filter(Boolean) as string[];
-
-    if (keys.length === 0) {
-      return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
-    }
-
-    let baseSystemPrompt = "You are an expert Product Manager and System Architect.\nYour task is to generate a comprehensive, professional Product Requirements Document (PRD) strictly based on the user's inputs.";
-    try {
-      const promptPath = path.join(process.cwd(), "system-prompt.txt");
-      baseSystemPrompt = fs.readFileSync(promptPath, "utf-8");
-    } catch (error) {
-      console.warn("Could not read system-prompt.txt, using fallback base prompt", error);
-    }
-
-    const systemPrompt = `${baseSystemPrompt}
+    const systemPrompt = `${BASE_SYSTEM_PROMPT}
 
 === TEMPLATE START ===
-${template}
+${PRD_TEMPLATE || PRD_TEMPLATE_FALLBACK}
 === TEMPLATE END ===`;
 
     let answersStr = "";
@@ -136,43 +118,19 @@ ${integrationsList}
 For each integration above, include a dedicated sub-section or detailed bullet inside the relevant feature section explaining HOW it is used (e.g. OAuth flow, API calls, webhook handling, SDK usage, etc.).
 `;
 
-    const settings: any = (await redis.get("app:settings")) || {};
-    const geminiModel = settings.geminiModel || "gemini-3.6-flash";
-    const fallbackModels = [
-      "gemini-3.6-flash",
-      "gemini-3.5-flash",
-      "gemini-3.5-flash-lite",
-      "gemini-3.1-flash-lite",
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite"
-    ];
-    // Pastikan model pilihan user dicoba pertama, lalu fallback urut ke bawah tanpa duplikat
-    const models = Array.from(new Set([geminiModel, ...fallbackModels]));
-
     let response: any;
     let success = false;
     let lastError = null;
 
-    for (const apiKey of keys) {
-      const ai = new GoogleGenAI({ apiKey });
-
-      for (const model of models) {
-        try {
-          response = await generateWithGeminiContextCache({
-            ai,
-            model,
-            systemInstruction: systemPrompt,
-            userPrompt
-          });
-
-          success = true;
-          break; // break model loop
-        } catch (err: any) {
-          lastError = err;
-          console.warn(`[Fallback] Failed with key ${apiKey.substring(0, 15)}... and model ${model}:`, err.message);
-        }
-      }
-      if (success) break; // break key loop
+    try {
+      response = await generateGemini({
+        systemPrompt,
+        userPrompt,
+      });
+      success = true;
+    } catch (err: any) {
+      lastError = err;
+      console.warn("[PRD] All Gemini fallback combinations failed:", err.message);
     }
 
     if (!success || !response) {
@@ -184,79 +142,7 @@ For each integration above, include a dedicated sub-section or detailed bullet i
 
     // Validate and auto-fix mermaid blocks before sending to client
     if (text) {
-      const { parse: mermaidParse } = await import("@mermaid-js/parser");
-
-      /**
-       * Safe auto-quoting for flowchart node labels.
-       * Mermaid v11 requires labels with special chars to be wrapped in double quotes.
-       * This function quotes unquoted labels in [], {}, () shapes.
-       * It is careful NOT to modify:
-       *   - already quoted labels: A["label"]
-       *   - special shapes: A[(cylinder)], A[[subroutine]], A[/parallelogram/]
-       *   - edge label text: -->|label|
-       *   - diagram type declaration line
-       */
-      function autoQuoteFlowchartLabels(code: string): string {
-        const codeLines = code.split('\n');
-        return codeLines.map((line, idx) => {
-          // Skip: diagram type line, comments
-          if (idx === 0) return line;
-          if (line.trim().startsWith('%%')) return line;
-
-          // Fix unquoted [label] — skip ["..."], [(...)], [[...]], [/...]
-          line = line.replace(
-            /([A-Za-z0-9_]+)\[(?!["\[(\//])([^\]\n"]+)\]/g,
-            (_m, id, label) => `${id}["${label}"]`
-          );
-
-          // Fix unquoted {label} — skip {"..."} and {{...}}
-          line = line.replace(
-            /([A-Za-z0-9_]+)\{(?!["\{])([^}\n"]+)\}/g,
-            (_m, id, label) => `${id}{"${label}"}`
-          );
-
-          // Fix unquoted (label) — skip ("..."), ((circle)), ([ asymmetric )
-          line = line.replace(
-            /([A-Za-z0-9_]+)\((?!["\(\[])([^)\n"]+)\)/g,
-            (_m, id, label) => `${id}("${label}")`
-          );
-
-          return line;
-        }).join('\n');
-      }
-
-      const blockRegex = /```mermaid\n([\s\S]*?)```/g;
-      let match;
-      const blocks: { original: string, code: string }[] = [];
-      while ((match = blockRegex.exec(text)) !== null) {
-        blocks.push({ original: match[0], code: match[1] });
-      }
-
-      for (const block of blocks) {
-        let code = block.code;
-
-        // 1. Remove markdown formatting (bold/italic/backtick are always invalid inside mermaid)
-        code = code.replace(/\*\*/g, "").replace(/__/g, "").replace(/`/g, "");
-
-        // 2. Fix unquoted node labels for flowchart/graph diagrams
-        const diagramFirstLine = code.trim().split('\n')[0].trim();
-        const diagramType = diagramFirstLine.split(' ')[0];
-        if (diagramType === 'flowchart' || diagramType === 'graph') {
-          code = autoQuoteFlowchartLabels(code);
-        }
-
-        // 3. Validate with @mermaid-js/parser for Langium-based diagram types
-        const supportedTypes = ["pie", "info", "gitGraph", "architecture", "packet", "radar", "railroad", "cynefin", "mindmap", "timeline"];
-        if (supportedTypes.includes(diagramType)) {
-          try {
-            await mermaidParse(diagramType as any, code);
-          } catch (e: any) {
-            console.warn(`Mermaid parser validation failed for ${diagramType}:`, e.message);
-          }
-        }
-
-        text = text.replace(block.original, '```mermaid\n' + code + '\n```');
-      }
+      text = await fixMermaidBlocks(text);
     }
 
     // Save to Database
@@ -275,8 +161,9 @@ For each integration above, include a dedicated sub-section or detailed bullet i
 
     return NextResponse.json({ markdown: text });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating PRD:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const status = error?.status ?? 500;
+    return NextResponse.json({ error: status === 400 ? error.message : "Internal Server Error" }, { status });
   }
 }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-
-const ADMIN_EMAIL = "dev.iqbal007@gmail.com";
+import { isAdminEmail } from "@/lib/planQuota";
 
 // Non-text/non-chat model keywords to exclude (audio, music, speech, image-only, embedding, etc.)
 const NON_CHAT_KEYWORDS = [
@@ -35,7 +34,7 @@ export async function GET() {
       headers: await headers(),
     });
 
-    if (!session || !session.user || session.user.email !== ADMIN_EMAIL) {
+    if (!session || !session.user || !isAdminEmail(session.user.email)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

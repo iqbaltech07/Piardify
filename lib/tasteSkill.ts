@@ -9,7 +9,7 @@ export const TASTE_SKILL_DIRECTIVES = {
   // AUTOMATED SKILL ROUTER (AH-011)
   // ==========================================
   designSkillRouter: {
-    rule: "AI Agent MUST match project design style from design.style/vibe in .piardify/context.json to the exact skill key in directives.tasteSkill.skills",
+    rule: "AI Agent MUST match project design style from <design_data> in .piardify/context.md to the exact skill key in <system_directives> taste_skill",
     skillMapping: [
       { keywords: ["minimalist", "editorial", "calm", "document", "document-style", "clean"], targetSkill: "skills.minimalistUi" },
       { keywords: ["luxury", "high-end", "vanguard", "agency", "150k", "apple"], targetSkill: "skills.highEndVisualDesign" },

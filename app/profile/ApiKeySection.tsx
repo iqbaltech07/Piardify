@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Key, Copy, Check, RefreshCw, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
 
 export default function ApiKeySection() {
-  const [apiKey, setApiKey] = useState<string>("");
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [hasApiKey, setHasApiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
   const [showKey, setShowKey] = useState(false);
@@ -23,9 +24,10 @@ export default function ApiKeySection() {
       const res = await fetch("/api/user/api-key");
       if (res.ok) {
         const data = await res.json();
-        setApiKey(data.apiKey || "");
+        setHasApiKey(Boolean(data.hasApiKey));
+        setApiKey(null); // only meaningful when freshly created
       } else {
-        setErrorMsg("Gagal memuat API Key.");
+        setErrorMsg("Gagal memuat status API Key.");
       }
     } catch (err) {
       setErrorMsg("Koneksi gagal saat mengambil API Key.");
@@ -41,7 +43,8 @@ export default function ApiKeySection() {
       const res = await fetch("/api/user/api-key", { method: "POST" });
       if (res.ok) {
         const data = await res.json();
-        setApiKey(data.apiKey || "");
+        setApiKey(data.apiKey || null);
+        setHasApiKey(Boolean(data.apiKey));
         setConfirmRegenerate(false);
         setShowKey(true); // Automatically reveal new key
       } else {
@@ -79,7 +82,9 @@ export default function ApiKeySection() {
 
   const maskedKey = apiKey
     ? `${apiKey.slice(0, 10)}${"•".repeat(16)}${apiKey.slice(-4)}`
-    : "••••••••••••••••••••••••••••••••";
+    : hasApiKey
+      ? "••••••••••••••••••••••••••••••••"
+      : "Belum ada API Key — klik \"Buat API Key\" untuk membuat.";
 
   return (
     <div
@@ -228,7 +233,7 @@ export default function ApiKeySection() {
                 wordBreak: "break-all",
               }}
             >
-              {isLoading ? "Memuat API Key..." : showKey ? apiKey : maskedKey}
+              {isLoading ? "Memuat status API Key..." : apiKey ? (showKey ? apiKey : maskedKey) : maskedKey}
             </div>
           </div>
 
@@ -296,7 +301,7 @@ export default function ApiKeySection() {
               lineHeight: 1.5,
             }}
           >
-            ⚠️ Regenerasi API Key akan membatalkan API Key sebelumnya. Token pada CLI `npx piardify login` perlu diperbarui dengan API key baru.
+            ⚠️ API Key hanya ditampilkan SEKALI saat dibuat. Simpan sebelum menutup halaman. Regenerasi membatalkan key lama; token CLI `npx piardify login` perlu diperbarui dengan key baru.
           </p>
 
           {!confirmRegenerate ? (
@@ -321,12 +326,12 @@ export default function ApiKeySection() {
               }}
             >
               <RefreshCw size={13} />
-              Regenerate Key
+              {hasApiKey ? "Regenerate Key" : "Buat API Key"}
             </button>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "#ff6b6b", fontWeight: 600 }}>
-                Yakin buat ulang?
+                {hasApiKey ? "Yakin buat ulang? Key lama langsung hangus." : "Buat API Key baru?"}
               </span>
               <button
                 onClick={handleRegenerate}

@@ -1,27 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { generateWithGeminiContextCache } from "@/lib/geminiCache";
+import { generateGemini, generateOpenRouter } from "@/lib/llm";
+import { getAiChatLimit } from "@/lib/planQuota";
+import { parseBody, editPrdSchema } from "@/lib/validation";
+import { fixMermaidBlocks } from "@/lib/mermaidFix";
+
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await parseBody(req, editPrdSchema);
     const { projectId, currentPrd, prompt, selectedModel } = body;
-
-    if (!currentPrd || !prompt) {
-      return NextResponse.json({ error: "Missing currentPrd or prompt" }, { status: 400 });
-    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -31,9 +31,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const isUnlimited = user.email === "dev.iqbal007@gmail.com";
-    const tier = user.tier || "FREE";
-    const chatLimit = isUnlimited ? Infinity : (tier === "PRO" ? 20 : 5);
+    const chatLimit = getAiChatLimit(user.tier, user.email);
 
     // Track chat count per project in Redis
     const chatKey = projectId ? `project:${projectId}:chats:${session.user.id}` : `user:${session.user.id}:chats`;
@@ -47,11 +45,11 @@ export async function POST(req: NextRequest) {
 
     if (currentChats >= chatLimit) {
       return NextResponse.json({
-        error: `Batas chat tercapai (${currentChats}/${chatLimit}). User ${tier} hanya mendapatkan ${chatLimit}x chat AI. Upgrade ke ${tier === "FREE" ? "PRO" : "unlimited"} untuk menambah kuota chat!`,
+        error: `Batas chat tercapai (${currentChats}/${chatLimit}). User ${user.tier} hanya mendapatkan ${chatLimit === Infinity ? "unlimited" : chatLimit}x chat AI. Upgrade ke ${user.tier === "FREE" ? "PRO" : "unlimited"} untuk menambah kuota chat!`,
         chatLimitReached: true,
         chatCount: currentChats,
         chatLimit,
-        tier
+        tier: user.tier,
       }, { status: 403 });
     }
 
@@ -85,81 +83,27 @@ Respond in valid JSON according to the instructions.`;
     const modelToUse = selectedModel || "gemini-3.5-flash";
 
     if (modelToUse.startsWith("gemini-")) {
-      const keys = [
-        process.env.GEMINI_API_KEY,
-        process.env.GEMINI_API_KEY_SECONDARY
-      ].filter(Boolean) as string[];
-
-      if (keys.length === 0) {
-        return NextResponse.json({ error: "Gemini API Keys not configured" }, { status: 500 });
-      }
-
-      const modelsToTry = [modelToUse, "gemini-2.5-flash-lite"];
-
-      let success = false;
-      let lastError = null;
-
-      for (const apiKey of keys) {
-        const ai = new GoogleGenAI({ apiKey });
-
-        for (const model of modelsToTry) {
-          try {
-            const response = await generateWithGeminiContextCache({
-              ai,
-              model: model,
-              systemInstruction: systemPrompt,
-              userPrompt
-            });
-
-            if (response && response.text) {
-              rawText = response.text;
-              success = true;
-              break;
-            }
-          } catch (err: any) {
-            lastError = err;
-            console.warn(`[Edit PRD Fallback] Failed with model ${model}:`, err.message);
-          }
-        }
-        if (success) break;
-      }
-
-      if (!success || !rawText) {
-        return NextResponse.json({ error: "Failed to process prompt using Gemini model" }, { status: 500 });
-      }
+      const res = await generateGemini({
+        systemPrompt,
+        userPrompt,
+        preferredModel: modelToUse,
+      });
+      rawText = res.text;
     } else {
       // OpenRouter Model
-      if (!process.env.OPENROUTER_API_KEY) {
-        return NextResponse.json({ error: "OpenRouter API Key not configured" }, { status: 500 });
-      }
-
-      try {
-        const { default: OpenAI } = await import("openai");
-        const openai = new OpenAI({
-          baseURL: "https://openrouter.ai/api/v1",
-          apiKey: process.env.OPENROUTER_API_KEY,
-        });
-
-        const completion = await openai.chat.completions.create({
-          model: modelToUse,
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ]
-        });
-
-        rawText = completion.choices[0]?.message?.content?.trim() || "";
-        if (!rawText) {
-          return NextResponse.json({ error: "Empty response from OpenRouter model" }, { status: 500 });
-        }
-      } catch (err: any) {
-        console.error("OpenRouter edit error:", err);
-        return NextResponse.json({ error: `OpenRouter edit failed: ${err.message}` }, { status: 500 });
-      }
+      const res = await generateOpenRouter({
+        systemPrompt,
+        userPrompt,
+        model: modelToUse,
+        jsonObject: true,
+      });
+      rawText = res.text;
     }
 
-    // Parse JSON with robust fallback
+    if (!rawText) {
+      return NextResponse.json({ error: "Failed to process prompt" }, { status: 500 });
+    }
+
     function parseOrExtractJsonResponse(text: string): { reply: string; isPrdUpdated: boolean; updatedMarkdown?: string | null } {
       const cleanJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
 
@@ -220,54 +164,36 @@ Respond in valid JSON according to the instructions.`;
 
     // Auto fix mermaid syntax if PRD was updated
     if (parsed.isPrdUpdated && updatedMarkdown) {
-      try {
-        const { parse: mermaidParse } = await import("@mermaid-js/parser");
-        function autoQuoteFlowchartLabels(code: string): string {
-          const codeLines = code.split('\n');
-          return codeLines.map((line, idx) => {
-            if (idx === 0) return line;
-            if (line.trim().startsWith('%%')) return line;
-            line = line.replace(/([A-Za-z0-9_]+)\[(?!["\[(\//])([^\]\n"]+)\]/g, (_m, id, label) => `${id}["${label}"]`);
-            line = line.replace(/([A-Za-z0-9_]+)\{(?!["\{])([^}\n"]+)\}/g, (_m, id, label) => `${id}{"${label}"}`);
-            line = line.replace(/([A-Za-z0-9_]+)\((?!["\(\[])([^)\n"]+)\)/g, (_m, id, label) => `${id}("${label}")`);
-            return line;
-          }).join('\n');
-        }
-
-        const blockRegex = /```mermaid\n([\s\S]*?)```/g;
-        let match;
-        const blocks: { original: string, code: string }[] = [];
-        while ((match = blockRegex.exec(updatedMarkdown)) !== null) {
-          blocks.push({ original: match[0], code: match[1] });
-        }
-
-        for (const block of blocks) {
-          let code = block.code.replace(/\*\*/g, "").replace(/__/g, "").replace(/`/g, "");
-          const diagramFirstLine = code.trim().split('\n')[0].trim();
-          const diagramType = diagramFirstLine.split(' ')[0];
-          if (diagramType === 'flowchart' || diagramType === 'graph') {
-            code = autoQuoteFlowchartLabels(code);
-          }
-          const supportedTypes = ["pie", "info", "gitGraph", "architecture", "packet", "radar", "railroad", "cynefin", "mindmap", "timeline"];
-          if (supportedTypes.includes(diagramType)) {
-            try { await mermaidParse(diagramType as any, code); } catch (e) {}
-          }
-          updatedMarkdown = updatedMarkdown.replace(block.original, '```mermaid\n' + code + '\n```');
-        }
-      } catch (e) {
-        console.warn("Mermaid auto-fix error:", e);
-      }
+      updatedMarkdown = await fixMermaidBlocks(updatedMarkdown);
 
       // Save to Database & Redis if projectId is provided
       if (projectId) {
         try {
+          const project = await prisma.project.findFirst({
+            where: { id: projectId, userId: session.user.id },
+            select: { formInputs: true },
+          });
+
+          const updateData: any = { prdData: updatedMarkdown };
+
+          // Smart-sync: editing the PRD makes the generated task list outdated
+          if (project?.formInputs) {
+            try {
+              const formInputsObj = JSON.parse(project.formInputs);
+              formInputsObj._tasksOutdated = true;
+              updateData.formInputs = JSON.stringify(formInputsObj);
+            } catch {}
+          }
+
           await prisma.project.update({
             where: { id: projectId },
-            data: { prdData: updatedMarkdown },
+            data: updateData,
             select: { id: true },
           });
+
           const cacheKey = `project:${projectId}:prd`;
           await redis.set(cacheKey, updatedMarkdown);
+          await redis.del(`project:${projectId}:tasks`);
         } catch (e) {
           console.warn("Database/Redis update warn:", e);
         }
@@ -286,10 +212,11 @@ Respond in valid JSON according to the instructions.`;
       isPrdUpdated: parsed.isPrdUpdated,
       markdown: parsed.isPrdUpdated ? updatedMarkdown : null,
       chatCount: currentChats + 1,
-      chatLimit: isUnlimited ? null : chatLimit
+      chatLimit: chatLimit === Infinity ? null : chatLimit,
     });
   } catch (error: any) {
     console.error("Error editing/brainstorming PRD:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    const status = error?.status ?? 500;
+    return NextResponse.json({ error: status === 400 ? error.message : error?.message || "Internal Server Error" }, { status });
   }
 }

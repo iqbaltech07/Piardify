@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { SYSTEM_DIRECTIVES } from "@/lib/systemDirectives";
 import { TASTE_SKILL_DIRECTIVES, getFilteredTasteSkill } from "@/lib/tasteSkill";
 import { parseDesignMarkdown } from "@/lib/designParser";
+import { serializeContextToHybrid } from "@/lib/contextSerializer";
 
 export async function GET(req: NextRequest) {
   try {
@@ -160,8 +161,7 @@ export async function GET(req: NextRequest) {
       // Filter tasteSkill to include ONLY the 1 matching skill for this project
       const selectiveTasteSkill = getFilteredTasteSkill(rawText, requestedSkill);
 
-      return NextResponse.json({
-        success: true,
+      const contextPayload = {
         project: {
           id: project.id,
           appName: project.appName,
@@ -184,6 +184,19 @@ export async function GET(req: NextRequest) {
           codeQuality: SYSTEM_DIRECTIVES.systemDirectives.codeQuality,
           tasteSkill: selectiveTasteSkill,
         },
+      };
+
+      // Backward compatibility: ?format=json returns the legacy pure JSON
+      const format = searchParams.get("format");
+      if (format === "json") {
+        return NextResponse.json({ success: true, ...contextPayload });
+      }
+
+      // Default: Hybrid format (XML + Markdown + JSON) for optimal AI Agent consumption
+      const hybridOutput = serializeContextToHybrid(contextPayload as any);
+      return new NextResponse(hybridOutput, {
+        status: 200,
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
       });
     }
 

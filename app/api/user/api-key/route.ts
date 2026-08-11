@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import crypto from "crypto";
-
-function generateApiKey(): string {
-  return `piar_live_${crypto.randomBytes(16).toString("hex")}`;
-}
+import { generateApiKey, hashApiKey } from "@/lib/apiKey";
 
 export async function GET() {
   try {
@@ -27,16 +23,9 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    let apiKey = user.apiKey;
-    if (!apiKey) {
-      apiKey = generateApiKey();
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { apiKey },
-      });
-    }
-
-    return NextResponse.json({ apiKey });
+    // The plaintext key is never stored; only its hash. So GET can only
+    // report existence — the key is shown once at creation/regeneration time.
+    return NextResponse.json({ hasApiKey: Boolean(user.apiKey), apiKey: null });
   } catch (error: any) {
     console.error("Error fetching API Key:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -53,13 +42,14 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const newApiKey = generateApiKey();
+    const apiKey = generateApiKey();
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { apiKey: newApiKey },
+      data: { apiKey: hashApiKey(apiKey) },
     });
 
-    return NextResponse.json({ apiKey: newApiKey });
+    // Return the plaintext exactly once for the user to copy.
+    return NextResponse.json({ apiKey });
   } catch (error: any) {
     console.error("Error regenerating API Key:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

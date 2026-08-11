@@ -54,7 +54,7 @@ export const RELEASES: Release[] = [
         type: "improvement",
         title: "Context Persistence & Mandatory Chunk-Read (AH-015 & AH-016)",
         description:
-          "Mencegah AI lupa konteks saat percakapan panjang dengan mewajibkan pemanggilan view_file pada context.json sebelum setiap task, serta mewajibkan pembacaan bertahap (chunk-read) untuk file >800 baris.",
+          "Mencegah AI lupa konteks saat percakapan panjang dengan mewajibkan pemanggilan view_file pada context.md sebelum setiap task, serta mewajibkan pembacaan bertahap (chunk-read) untuk file >800 baris.",
         tags: ["Memory Persistence", "No-Loss Context"],
       },
     ],
@@ -92,7 +92,7 @@ export const RELEASES: Release[] = [
         type: "improvement",
         title: "Hidden Background Skill Injection & English Console Logs",
         description:
-          "Taste Skill dan direktif sistem disuntikkan secara tersembunyi (hidden) di latar belakang melalui .piardify/context.json & .agents/skills/ tanpa mengotori tampilan terminal/UI manusia. Seluruh CLI log distandarisasi ke Bahasa Inggris.",
+          "Taste Skill dan direktif sistem disuntikkan secara tersembunyi (hidden) di latar belakang melalui .piardify/context.md & .agents/skills/ tanpa mengotori tampilan terminal/UI manusia. Seluruh CLI log distandarisasi ke Bahasa Inggris.",
         tags: ["CLI", "UX", "Hidden Directives"],
       },
     ],
