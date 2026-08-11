@@ -89,7 +89,7 @@ export default function ChangelogPage() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-signal)]"></span>
               </span>
               <span className="font-mono text-xs font-semibold text-[var(--fg-primary)]">
-                v1.2.0 Active
+                {RELEASES[0].version} Active
               </span>
             </div>
           </div>

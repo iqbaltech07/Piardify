@@ -22,10 +22,47 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "v2.2.3",
+    date: "11 Agustus 2026",
+    title: "Hybrid Context XML, Token Optimization, & Lazy Loaded Taste Skill",
+    badge: "Latest Release",
+    summary:
+      "Memperkenalkan format konteks baru (Hybrid XML + Markdown + CDATA) yang memangkas penggunaan token secara drastis, serta optimasi Taste Skill dengan mekanisme On-Demand Fetching via CLI.",
+    highlights: [
+      {
+        type: "feat",
+        title: "Hybrid Context Serialization",
+        description:
+          "Semua JSON stringified payloads pada PRD dan Design kini dikonversi menjadi format XML CDATA + Compact JSON. Ini menghilangkan masalah escape characters dan memangkas penggunaan token hingga 20-30%.",
+        tags: ["Token Optimization", "XML", "CDATA"],
+      },
+      {
+        type: "feat",
+        title: "Lazy Loading Taste Skill (AH-013 Update)",
+        description:
+          "Taste Skill kini tidak lagi di-embed penuh di context.md, melainkan dipotong (truncate) menjadi maksimal 140 baris. AI Agent diwajibkan (Mandatory Critical Gate) untuk memanggil npx piardify project taste-skill sebelum melakukan UI coding.",
+        tags: ["Lazy Load", "CLI Fetch", "Anti-Hallucination"],
+      },
+      {
+        type: "improvement",
+        title: "Personalization Inputs & Freshness Marker",
+        description:
+          "Menambahkan data jawaban pengguna (Personalization Inputs) ke dalam payload konteks, serta penanda Snapshot Freshness (AH-017) untuk mendeteksi apakah context yang dibaca AI sudah basi atau belum.",
+        tags: ["Personalization", "AH-017"],
+      },
+      {
+        type: "improvement",
+        title: "Centralized System Directives",
+        description:
+          "Seluruh aturan AH-00x (Anti-Hallucination) yang sebelumnya di-hardcode pada SKILL.md kini dipindahkan ke backend systemDirectives.ts agar dapat di-inject secara dinamis ke context.md.",
+        tags: ["Refactoring", "Clean Code"],
+      },
+    ],
+  },
+  {
     version: "v2.2.0",
     date: "10 Agustus 2026",
     title: "100% Zero-Slop Mandate, AH-016 Chunk-Read, & Full GSAP Kinetic Restoration",
-    badge: "Latest Release",
     summary:
       "Penegakan hukum visual mutlak (Zero-Slop & Zero-Hallucination) via AH-014, perlindungan lupa konteks dengan Mandatory Chunk-Read (AH-016), dan pemulihan 100% kemampuan animasi Advanced GSAP Motion pada gptTaste tanpa kompromi.",
     highlights: [
