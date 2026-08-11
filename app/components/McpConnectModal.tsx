@@ -49,6 +49,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
 
 2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
    Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.md yang otomatis terpasang di workspace.
+   Verifikasi freshness konteks (AH-017): jika <project_context>.updatedAt lebih baru dari generatedAt di komentar header context.md, refresh dulu dengan: .piardify/sync context > .piardify/context.md, lalu baca ulang.
 
 3. EKSEKUSI TASK & AUTOMATIC KANBAN SYNC:
    - Cek task aktif dengan: .piardify/sync current

@@ -77,9 +77,9 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           "id": "AH-013",
-          "rule": "MANDATORY SKILL FOCUS & PRE-FLIGHT COMPREHENSION GATE [CRITICAL]: Sebelum menulis 1 baris kode UI, AI Agent WAJIB deklarasikan: 1) `🎨 Active Design Skill: <name>`, 2) `<skill_comprehension>` (3 prinsip eksekusi), 3) `<design_plan>` (mapping token dari design.md & math).",
-          "validation": "Jangan outputkan komponen React sebelum memunculkan blok verifikasi tersebut.",
-          "failure_consequence": "AI Agent membuat desain yang tidak selaras dengan instruksi proyek."
+          "rule": "MANDATORY SKILL FOCUS & PRE-FLIGHT COMPREHENSION GATE [CRITICAL]: Sebelum menulis 1 baris kode UI, AI Agent WAJIB MUTLAK memanggil command `.piardify/sync taste <active_key>` di terminal untuk membaca sisa instruksi Taste Skill yang dipotong. Setelah itu baru deklarasikan: 1) `🎨 Active Design Skill: <name>`, 2) `<skill_comprehension>`, 3) `<design_plan>`. Melanggar ini adalah CRITICAL FAILURE.",
+          "validation": "Dilarang output komponen UI jika tidak ada bukti eksekusi `.piardify/sync taste <active_key>` di terminal/log.",
+          "failure_consequence": "AI Agent berhalusinasi desain karena tidak membaca full Taste Skill (AI Slop)."
         },
         {
           "id": "AH-014",
@@ -98,6 +98,12 @@ export const SYSTEM_DIRECTIVES = {
           "rule": "MANDATORY CHUNK-READ FOR LARGE FILES [CRITICAL]: Saat membaca file berukuran besar (>800 baris) seperti `.piardify/context.md`, `design.md`, atau file *source code*, AI Agent WAJIB menggunakan `view_file` secara bertahap (chunk: baris 1-800, 801-1600, dst) sampai seluruh baris terbaca tuntas.",
           "validation": "Jangan pernah klaim 'sudah baca' jika tidak menggunakan argument `StartLine` dan `EndLine` untuk membaca keseluruhan file besar.",
           "failure_consequence": "AI Agent berhalusinasi atau melewati aturan kritikal karena teks terpotong oleh batasan `view_file`."
+        },
+        {
+          "id": "AH-017",
+          "rule": "CONTEXT FRESHNESS GATE [CRITICAL]: Bandingkan timestamp di komentar header `<!-- Piardify Context Snapshot -->` (generatedAt) dengan `<project_context>.updatedAt` di `.piardify/context.md`. Jika `updatedAt` LEBIH BARU dari `generatedAt`, konteks lokal sudah basi — AI Agent WAJIB me-refresh dulu (`npx piardify init` atau `.piardify/sync context > .piardify/context.md`) SEBELUM mengeksekusi task.",
+          "validation": "Jangan pernah mengerjakan task berdasarkan PRD/design/task yang mungkin sudah diubah user di Web. Verifikasi freshness pada awal sesi dan setelah user mengumumkan edit.",
+          "failure_consequence": "AI Agent membangun fitur lama/basi, konflik dengan perubahan terbaru user, dan hasil akhir tidak sinkron dengan Piardify web app."
         }
       ],
       "designHierarchy": {

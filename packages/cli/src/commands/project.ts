@@ -17,9 +17,14 @@ export async function projectCommand(section?: string, options: { project?: stri
       url += `&skill=${encodeURIComponent(options.skill)}`;
     }
 
-    const res = await apiRequest(url);
+    // section=context returns the hybrid format as plain text (not JSON),
+    // so it must be fetched raw and printed verbatim.
+    const isContext = sec === "context";
+    const res = await apiRequest(url, { rawText: isContext });
 
-    if (options.json) {
+    if (isContext) {
+      console.log(res);
+    } else if (options.json) {
       console.log(JSON.stringify(res, null, 2));
     } else {
       console.log(`\n--- Piardify Project [${sec.toUpperCase()}] ---`);

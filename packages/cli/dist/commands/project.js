@@ -16,8 +16,14 @@ async function projectCommand(section, options = {}) {
         if (options.skill) {
             url += `&skill=${encodeURIComponent(options.skill)}`;
         }
-        const res = await (0, client_js_1.apiRequest)(url);
-        if (options.json) {
+        // section=context returns the hybrid format as plain text (not JSON),
+        // so it must be fetched raw and printed verbatim.
+        const isContext = sec === "context";
+        const res = await (0, client_js_1.apiRequest)(url, { rawText: isContext });
+        if (isContext) {
+            console.log(res);
+        }
+        else if (options.json) {
             console.log(JSON.stringify(res, null, 2));
         }
         else {

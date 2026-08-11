@@ -6,6 +6,48 @@ import { TASTE_SKILL_DIRECTIVES, getFilteredTasteSkill } from "@/lib/tasteSkill"
 import { parseDesignMarkdown } from "@/lib/designParser";
 import { serializeContextToHybrid } from "@/lib/contextSerializer";
 
+/**
+ * Parse stored designData — which may be a raw markdown string OR a JSON
+ * wrapper ({ rawMarkdown, colorTokens, sections }) — into a normalized shape.
+ * Single implementation shared by section=design and section=context so the
+ * two can never drift apart.
+ */
+function parseStoredDesign(stored: string) {
+  let rawText = stored || "";
+  let structured: any = null;
+
+  if (rawText.startsWith("{") && rawText.includes("rawMarkdown")) {
+    try {
+      structured = JSON.parse(rawText);
+      rawText = structured.rawMarkdown || rawText;
+    } catch {}
+  }
+
+  if (!structured) {
+    structured = parseDesignMarkdown(rawText);
+  }
+
+  return {
+    rawText,
+    design: {
+      colorTokens: structured.colorTokens || [],
+      sections: structured.sections || [],
+      rawMarkdown: structured.rawMarkdown || rawText || "",
+    },
+  };
+}
+
+/** Best-effort parse of formInputs (JSON string) into an object. */
+function parseFormInputs(stored: string | null): Record<string, unknown> | null {
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const authResult = await authenticateAgentRequest(req);
@@ -106,9 +148,16 @@ export async function GET(req: NextRequest) {
     }
 
     if (section === "taste-skill") {
-      const proj = project as any;
-      const rawDesignText = proj.designData || "";
-      const filteredSkill = getFilteredTasteSkill(rawDesignText, requestedSkill);
+      const { rawText } = parseStoredDesign(project.designData || "");
+      const formInputs = parseFormInputs(project.formInputs);
+      const routingText = [
+        rawText,
+        formInputs?.designPreference,
+        (formInputs?.dynamicAnswers as Record<string, unknown> | undefined)?.designPreference,
+      ]
+        .filter((v): v is string => typeof v === "string" && Boolean(v))
+        .join("\n\n");
+      const filteredSkill = getFilteredTasteSkill(routingText, requestedSkill);
       return NextResponse.json({
         success: true,
         tasteSkill: filteredSkill,
@@ -116,50 +165,30 @@ export async function GET(req: NextRequest) {
     }
 
     if (section === "design") {
-      const proj = project as any;
-      let rawText = proj.designData || "";
-      let structured: any = null;
-
-      if (rawText.startsWith("{") && rawText.includes("rawMarkdown")) {
-        try {
-          structured = JSON.parse(rawText);
-          rawText = structured.rawMarkdown || rawText;
-        } catch {}
-      }
-
-      if (!structured) {
-        structured = parseDesignMarkdown(rawText);
-      }
-
+      const { design } = parseStoredDesign(project.designData || "");
       return NextResponse.json({
         success: true,
-        design: {
-          colorTokens: structured.colorTokens || [],
-          sections: structured.sections || [],
-          rawMarkdown: structured.rawMarkdown || rawText || "",
-        },
+        design,
       });
     }
 
     if (section === "context") {
-      const proj = project as any;
-      let rawText = proj.designData || "";
-      let structuredDesign: any = null;
-
-      if (rawText.startsWith("{") && rawText.includes("rawMarkdown")) {
-        try {
-          structuredDesign = JSON.parse(rawText);
-          rawText = structuredDesign.rawMarkdown || rawText;
-        } catch {}
-      }
-
-      if (!structuredDesign) {
-        structuredDesign = parseDesignMarkdown(rawText);
-      }
+      const { rawText, design } = parseStoredDesign(project.designData || "");
+      const formInputs = parseFormInputs(project.formInputs);
 
       // SELECTIVE TASTE SKILL PAYLOAD REDUCTION
-      // Filter tasteSkill to include ONLY the 1 matching skill for this project
-      const selectiveTasteSkill = getFilteredTasteSkill(rawText, requestedSkill);
+      // Filter tasteSkill to include ONLY the 1 matching skill for this project,
+      // and embed only an EXCERPT of it (fullContent:false) so .piardify/context.md
+      // stays token-efficient (the default skill file is ~89 KB). The agent can
+      // fetch the complete skill on demand via section=taste-skill&skill=<key>.
+      const routingText = [
+        rawText,
+        formInputs?.designPreference,
+        (formInputs?.dynamicAnswers as Record<string, unknown> | undefined)?.designPreference,
+      ]
+        .filter((v): v is string => typeof v === "string" && Boolean(v))
+        .join("\n\n");
+      const selectiveTasteSkill = getFilteredTasteSkill(routingText, requestedSkill, { fullContent: false });
 
       const contextPayload = {
         project: {
@@ -170,13 +199,10 @@ export async function GET(req: NextRequest) {
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
         },
+        formInputs,
         structure,
         prd: project.prdData || "",
-        design: {
-          colorTokens: structuredDesign.colorTokens || [],
-          sections: structuredDesign.sections || [],
-          rawMarkdown: structuredDesign.rawMarkdown || rawText || "",
-        },
+        design,
         tasks,
         taskStatuses: savedStatus,
         directives: {

@@ -20,6 +20,7 @@ The Piardify CLI (`npx piardify init`) pre-generates lightweight 10ms native hel
 | **Start Task (`IN_PROGRESS`)** | `.piardify/sync start <id>` | `npx piardify task start <id>` |
 | **Complete Task (`DONE`)** | `.piardify/sync complete <id>` | `npx piardify task complete <id>` |
 | **Record Task Failure (`FAILED`)** | `.piardify/sync fail <id> "<reason>"` | `npx piardify task fail <id> --reason "<r>"` |
+| **Fetch Complete Taste Skill** | `.piardify/sync taste <skill-key>` | `npx piardify project taste-skill --skill <skill-key>` |
 
 ---
 
@@ -33,13 +34,19 @@ Read Local Context ──► Start Task (10ms) ──► Inspect & Code ──�
 
 Follow these exact steps when working on a Piardify project:
 
-### Step 1: Read Blueprint in Order (Structure ──► PRD ──► Design ──► Active Task)
+### Step 1: Read Blueprint in Order (Personalization ──► Structure ──► PRD ──► Design ──► Active Task)
 - Read local blueprint file `.piardify/context.md` using `view_file` (0ms token-efficient reading).
+- **FRESHNESS GATE (AH-017)**: Bandingkan `generatedAt` di komentar header `<!-- Piardify Context Snapshot -->` dengan `<project_context>.updatedAt`. Jika `updatedAt` LEBIH BARU dari `generatedAt`, konteks sudah basi — refresh dulu:
+  ```bash
+  .piardify/sync context > .piardify/context.md
+  ```
+  lalu baca ulang file tersebut.
 - Digest the project blueprint in this exact hierarchical sequence:
-  1. **`<structure>`**: Visual feature hierarchy, mindmap nodes, and architectural components.
-  2. **`<prd_document>`**: Product Requirements Document (specs, user flow, data flow, API contracts).
-  3. **`<design_data>`**: Color tokens, typography, layout rules, and UI anti-slop guidelines.
-  4. **`<task_list>`**: Current task ID, acceptance criteria, and status.
+  1. **`<personalization_inputs>`**: Jawaban 7-step personalization & tech stack (target user, platform, core features, monetisasi, skala, integrasi, design preference).
+  2. **`<structure>`**: Visual feature hierarchy, mindmap nodes, dan architectural components.
+  3. **`<prd_document>`**: Product Requirements Document (specs, user flow, data flow, API contracts).
+  4. **`<design_data>`**: Color tokens, typography, layout rules, dan UI anti-slop guidelines.
+  5. **`<task_list>`**: Current task ID, acceptance criteria, dan status.
 - Query active task:
   ```bash
   .piardify/sync current
@@ -55,6 +62,11 @@ Before starting code modifications, update the Kanban status to `IN_PROGRESS`:
 - Inspect the codebase (`grep_search`, `list_dir`, `view_file`).
 - Write clean, production-ready code adhering strictly to the PRD specifications.
 - Do NOT invent unmentioned libraries, frameworks, or database schemas (**AH-001 Zero Invention**).
+- **Complete Taste Skill**: The `<taste_skill>` in `.piardify/context.md` may embed hanya excerpt skill (untuk hemat token). Sebelum pekerjaan UI yang kompleks, fetch skill LENGKAP-nya:
+  ```bash
+  .piardify/sync taste <active_key>
+  ```
+  atau `npx piardify project taste-skill --skill <active_key>`.
 
 ### Step 4: Local Verification (CRITICAL GATE)
 **DO NOT claim completion or mark a task as DONE before running local checks.**
