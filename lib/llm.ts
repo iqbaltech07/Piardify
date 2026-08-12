@@ -63,6 +63,7 @@ export async function generateGemini(opts: {
   systemPrompt: string;
   userPrompt: string;
   preferredModel?: string;
+  jsonObject?: boolean;
   /** Extra per-request Gemini config, e.g. responseMimeType/responseSchema. */
   geminiConfig?: {
     responseMimeType?: string;
@@ -77,6 +78,11 @@ export async function generateGemini(opts: {
   const models = orderedModels(opts.preferredModel);
   let lastError: any = null;
 
+  const geminiConfig = {
+    ...opts.geminiConfig,
+    ...(opts.jsonObject ? { responseMimeType: "application/json" } : {}),
+  };
+
   for (const apiKey of keys) {
     for (const model of models) {
       try {
@@ -86,6 +92,7 @@ export async function generateGemini(opts: {
           model,
           systemInstruction: opts.systemPrompt,
           userPrompt: opts.userPrompt,
+          geminiConfig,
         });
         const text = response.text ?? "";
         if (text.length === 0) throw new Error("Empty Gemini response");
@@ -184,6 +191,7 @@ export async function generateText(opts: {
         systemPrompt: opts.systemPrompt,
         userPrompt: opts.userPrompt,
         preferredModel: geminiModel,
+        jsonObject: opts.jsonObject,
       });
       return { text: res.text, provider: res.provider, model: res.model };
     } catch (err: any) {
@@ -223,18 +231,139 @@ export async function generateText(opts: {
   return result;
 }
 
-/** Strips code fences and extracts the first JSON object/array from LLM output. */
-export function extractJson(raw: string): string | null {
-  const cleaned = raw
-    .trim()
-    .replace(/^```json\n?/i, "")
-    .replace(/^```\n?/, "")
-    .replace(/\n?```$/, "");
+export interface ParseJsonOptions {
+  expectArray?: boolean;
+}
 
-  const objectMatch = cleaned.match(/\{[\s\S]*\}/);
-  if (objectMatch) return objectMatch[0];
-  const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
-  if (arrayMatch) return arrayMatch[0];
+/**
+ * Robustly parses and repairs JSON from LLM output.
+ * Handles:
+ * 1. Markdown code fences (` ```json ... ``` `) and trailing markdown text.
+ * 2. Unbracketed comma-separated JSON objects (e.g. `{...}, {...}` -> `[{...}, {...}]`).
+ * 3. Trailing commas before `}` or `]`.
+ * 4. Arrays wrapped inside objects (e.g. `{ "questions": [...] }`).
+ * 5. Extracting JSON sub-strings via regex.
+ */
+export function parseAndRepairJson<T = any>(raw: string, options?: ParseJsonOptions): T | null {
+  if (!raw || typeof raw !== "string") return null;
+
+  const tryParse = (str: string): any => {
+    try {
+      return JSON.parse(str);
+    } catch {
+      // Try stripping trailing commas: e.g. ", }" or ", ]" -> "}" or "]"
+      const cleanedCommas = str.replace(/,\s*([\}\]])/g, "$1");
+      try {
+        return JSON.parse(cleanedCommas);
+      } catch {
+        return null;
+      }
+    }
+  };
+
+  const extractArrayFromObject = (obj: any): any[] | null => {
+    if (Array.isArray(obj)) return obj;
+    if (obj && typeof obj === "object") {
+      const keys = ["questions", "data", "items", "results", "phases", "nodes", "list", "tasks"];
+      for (const k of keys) {
+        if (Array.isArray(obj[k])) return obj[k];
+      }
+      const objectKeys = Object.keys(obj);
+      if (objectKeys.length === 1 && Array.isArray(obj[objectKeys[0]])) {
+        return obj[objectKeys[0]];
+      }
+      for (const key of objectKeys) {
+        if (Array.isArray(obj[key])) return obj[key];
+      }
+    }
+    return null;
+  };
+
+  // Step 1: Basic cleaning of markdown fences & whitespace
+  let cleaned = raw
+    .trim()
+    .replace(/^```(?:json|markdown)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  // Remove potential introductory header text before the first [ or { if present
+  const firstBrace = cleaned.search(/[\{\[]/);
+  if (firstBrace > 0) {
+    const prefix = cleaned.substring(0, firstBrace).trim();
+    if (!prefix.startsWith("{") && !prefix.startsWith("[")) {
+      cleaned = cleaned.substring(firstBrace);
+    }
+  }
+
+  // Step 2: Direct parse attempt
+  let parsed = tryParse(cleaned);
+  if (parsed !== null) {
+    if (options?.expectArray) {
+      const arr = extractArrayFromObject(parsed);
+      if (arr) return arr as T;
+    } else {
+      return parsed as T;
+    }
+  }
+
+  // Step 3: Check for unbracketed comma-separated objects (e.g. `{ "a": 1 }, { "b": 2 }`)
+  if (cleaned.includes("}") && cleaned.includes("{")) {
+    const wrappedArrayAttempt = tryParse(`[${cleaned}]`);
+    if (wrappedArrayAttempt !== null && Array.isArray(wrappedArrayAttempt)) {
+      if (options?.expectArray) {
+        return wrappedArrayAttempt as T;
+      } else {
+        return wrappedArrayAttempt as T;
+      }
+    }
+  }
+
+  // Step 4: Regex Extraction
+  if (options?.expectArray) {
+    const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      const p = tryParse(arrayMatch[0]);
+      if (p !== null && Array.isArray(p)) return p as T;
+    }
+
+    const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (objectMatch) {
+      const pObj = tryParse(objectMatch[0]);
+      if (pObj !== null) {
+        const arr = extractArrayFromObject(pObj);
+        if (arr) return arr as T;
+      }
+      const wrappedMatch = tryParse(`[${objectMatch[0]}]`);
+      if (wrappedMatch !== null && Array.isArray(wrappedMatch)) {
+        return wrappedMatch as T;
+      }
+    }
+  } else {
+    const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (objectMatch) {
+      const pObj = tryParse(objectMatch[0]);
+      if (pObj !== null) return pObj as T;
+    }
+
+    const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      const pArr = tryParse(arrayMatch[0]);
+      if (pArr !== null) return pArr as T;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Strips code fences and extracts/repairs valid JSON from LLM output.
+ * Returns valid JSON string or null if unparseable.
+ */
+export function extractJson(raw: string): string | null {
+  const parsed = parseAndRepairJson(raw);
+  if (parsed !== null) {
+    return JSON.stringify(parsed);
+  }
   return null;
 }
 

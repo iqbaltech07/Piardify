@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { generateText, extractJson } from "@/lib/llm";
+import { generateText, parseAndRepairJson } from "@/lib/llm";
 import { PRD_TEMPLATE, PRD_TEMPLATE_FALLBACK, BASE_SYSTEM_PROMPT } from "@/lib/prompts";
 import { getOwnedProject } from "@/lib/projectHelpers";
 import { checkRateLimit, RateLimitWindows } from "@/lib/rateLimit";
@@ -189,6 +189,7 @@ For each integration above, include a dedicated sub-section or detailed bullet i
       generateText({
         systemPrompt: strukturSystemPrompt,
         userPrompt: strukturUserPrompt,
+        jsonObject: true,
       }).catch((err) => { console.error("[Struktur] generation failed:", err); return null; }),
       generateText({
         systemPrompt: prdSystemPrompt,
@@ -202,16 +203,16 @@ For each integration above, include a dedicated sub-section or detailed bullet i
     console.log("Parallel generation complete.");
 
     // Process Struktur (extract + validate JSON)
-    const strukturJson = extractJson(strukturResult.text);
-    if (!strukturJson) {
-      console.error("Failed to extract struktur JSON:", strukturResult.text);
+    const rawStrukturObj = parseAndRepairJson(strukturResult.text);
+    if (!rawStrukturObj) {
+      console.error("Failed to extract/repair struktur JSON:", strukturResult.text);
       return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
     }
     let parsedStruktur;
     try {
-      parsedStruktur = strukturSchema.parse(JSON.parse(strukturJson));
-    } catch {
-      console.error("Failed to parse/validate struktur JSON:", strukturJson);
+      parsedStruktur = strukturSchema.parse(rawStrukturObj);
+    } catch (err: any) {
+      console.error("Failed to parse/validate struktur JSON:", err?.message || err);
       return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
     }
 

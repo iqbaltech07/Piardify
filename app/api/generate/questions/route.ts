@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { generateText, extractJson } from "@/lib/llm";
+import { generateText, parseAndRepairJson } from "@/lib/llm";
 import { checkRateLimit, RateLimitWindows } from "@/lib/rateLimit";
 import { getDailyAiCallLimit } from "@/lib/planQuota";
 import { questionsSchema } from "@/lib/validation";
@@ -18,7 +18,18 @@ CRITICAL INSTRUCTIONS:
 2. The questions must be highly tailored to the user's specific app idea, NOT generic questions.
 3. Each question must have a 'key' (camelCase string), 'title' (the question itself), 'subtitle' (a brief explanation), 'type' (either "single" for one choice or "multiple" for multiple choices), and 'options' (an array of 4-7 possible answers).
 4. Do not ask for the app name, idea, or tech stack, as we already have those.
-5. Return the result strictly as a JSON array matching the schema.`;
+5. Return the result strictly as a JSON array matching the schema, wrapped in [ and ].`;
+
+function parseAndValidateQuestions(text: string) {
+  const parsedData = parseAndRepairJson(text, { expectArray: true });
+  if (!parsedData) return null;
+  try {
+    return questionsSchema.parse(parsedData);
+  } catch (err: any) {
+    console.warn("[Questions] Zod validation failed for parsed JSON:", err?.message);
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -76,20 +87,28 @@ Tech Stack: Frontend (${stacks?.frontend || "N/A"}), Backend (${stacks?.backend 
       console.warn("[Questions] generation failed:", err?.message);
     }
 
-    if (!result) {
-      return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });
+    let questions = result ? parseAndValidateQuestions(result.text) : null;
+
+    // Auto-retry once if parsing or validation failed
+    if (!questions) {
+      console.warn("[Questions] Initial parsing/validation failed. Retrying with explicit repair prompt...");
+      try {
+        const retryResult = await generateText({
+          systemPrompt: sysPromptWithFormat + "\n\nCRITICAL: Return ONLY valid JSON array with 7 question objects. Wrap the array in [ and ]. Do not omit brackets or add trailing commas.",
+          userPrompt,
+          priority: "openrouter",
+          jsonObject: true,
+        });
+        if (retryResult?.text) {
+          questions = parseAndValidateQuestions(retryResult.text);
+        }
+      } catch (err: any) {
+        console.warn("[Questions] Retry failed:", err?.message);
+      }
     }
 
-    const jsonText = extractJson(result.text);
-    if (!jsonText) {
-      return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });
-    }
-
-    let questions;
-    try {
-      questions = questionsSchema.parse(JSON.parse(jsonText));
-    } catch (err) {
-      console.error("Invalid questions JSON from AI:", jsonText);
+    if (!questions) {
+      console.error("Invalid questions JSON from AI after repair & retry:", result?.text ?? "no output");
       return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });
     }
 

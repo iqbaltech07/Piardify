@@ -9,6 +9,10 @@ export interface GenerateWithCacheParams {
   userPrompt: string;
   cacheKeyPrefix?: string;
   ttlSeconds?: number;
+  geminiConfig?: {
+    responseMimeType?: string;
+    responseSchema?: unknown;
+  };
 }
 
 /**
@@ -22,7 +26,8 @@ export async function generateWithGeminiContextCache({
   systemInstruction,
   userPrompt,
   cacheKeyPrefix = "gemini:ctx-cache",
-  ttlSeconds = 300 // default 5 minutes
+  ttlSeconds = 300, // default 5 minutes
+  geminiConfig,
 }: GenerateWithCacheParams) {
   let cachedContentName: string | null = null;
 
@@ -69,6 +74,11 @@ export async function generateWithGeminiContextCache({
     }
   }
 
+  const extraConfig: Record<string, any> = {};
+  if (geminiConfig?.responseMimeType) {
+    extraConfig.responseMimeType = geminiConfig.responseMimeType;
+  }
+
   // 3. Generate content using cachedContent if available
   if (cachedContentName) {
     try {
@@ -76,7 +86,8 @@ export async function generateWithGeminiContextCache({
         model: model,
         contents: userPrompt,
         config: {
-          cachedContent: cachedContentName
+          cachedContent: cachedContentName,
+          ...extraConfig,
         }
       });
     } catch (genErr: any) {
@@ -93,7 +104,8 @@ export async function generateWithGeminiContextCache({
     model: model,
     contents: userPrompt,
     config: {
-      systemInstruction: systemInstruction
+      systemInstruction: systemInstruction,
+      ...extraConfig,
     }
   });
 }

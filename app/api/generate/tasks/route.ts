@@ -3,7 +3,7 @@ import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { generateText, extractJson } from "@/lib/llm";
+import { generateText, parseAndRepairJson } from "@/lib/llm";
 import { getOwnedProject } from "@/lib/projectHelpers";
 import { checkRateLimit, RateLimitWindows } from "@/lib/rateLimit";
 import { getDailyAiCallLimit } from "@/lib/planQuota";
@@ -281,10 +281,10 @@ Please return the fully synchronized 6-Phase Task List with Checkpoints in JSON 
 
 /** Parses & validates the AI task-list JSON; returns null on any failure. */
 function parseAndValidateTasks(raw: string): { phases: any[] } | null {
-  const jsonText = extractJson(raw);
-  if (!jsonText) return null;
+  const parsedData = parseAndRepairJson(raw);
+  if (!parsedData) return null;
   try {
-    const parsed = tasksSchema.parse(JSON.parse(jsonText));
+    const parsed = tasksSchema.parse(parsedData);
     if (!parsed.phases || !Array.isArray(parsed.phases)) return null;
     return parsed as unknown as { phases: any[] };
   } catch {

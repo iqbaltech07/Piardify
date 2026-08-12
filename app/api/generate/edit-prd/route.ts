@@ -3,7 +3,7 @@ import { redis } from "@/lib/redis";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { generateGemini, generateOpenRouter } from "@/lib/llm";
+import { generateGemini, generateOpenRouter, parseAndRepairJson } from "@/lib/llm";
 import { getAiChatLimit } from "@/lib/planQuota";
 import { parseBody, editPrdSchema } from "@/lib/validation";
 import { fixMermaidBlocks } from "@/lib/mermaidFix";
@@ -107,18 +107,14 @@ Respond in valid JSON according to the instructions.`;
     function parseOrExtractJsonResponse(text: string): { reply: string; isPrdUpdated: boolean; updatedMarkdown?: string | null } {
       const cleanJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
 
-      // 1. Try standard JSON parse
-      try {
-        const obj = JSON.parse(cleanJson);
-        if (obj && typeof obj === "object") {
-          return {
-            reply: typeof obj.reply === "string" ? obj.reply : "Respons diterima.",
-            isPrdUpdated: Boolean(obj.isPrdUpdated),
-            updatedMarkdown: typeof obj.updatedMarkdown === "string" ? obj.updatedMarkdown : null,
-          };
-        }
-      } catch (e) {
-        // Fallthrough to regex extraction
+      // 1. Try robust parseAndRepairJson
+      const repairedObj = parseAndRepairJson(text);
+      if (repairedObj && typeof repairedObj === "object") {
+        return {
+          reply: typeof repairedObj.reply === "string" ? repairedObj.reply : "Respons diterima.",
+          isPrdUpdated: Boolean(repairedObj.isPrdUpdated),
+          updatedMarkdown: typeof repairedObj.updatedMarkdown === "string" ? repairedObj.updatedMarkdown : null,
+        };
       }
 
       // 2. Fallback: Extract "reply" value via regex if JSON syntax was malformed
