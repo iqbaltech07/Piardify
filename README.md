@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Piardify — AI PRD Architect & System Architecture Tracking Platform (v2.7.0)
 
-## Getting Started
+**Piardify** is an AI-powered platform for generating **Product Requirements Documents (PRDs)**, tracking System Architecture, and enforcing Anti-Slop Visual Governance for AI Agents and software developers.
+
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.2.3-black.svg)](https://nextjs.org/)
+[![CLI Version](https://img.shields.io/npm/v/piardify.svg)](https://www.npmjs.com/package/piardify)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## ⚡ Key Platform Features
+
+- 📝 **AI PRD Generator**: Synthesize structured PRDs with tech stack recommendations powered by Google Gemini 3.6 Flash.
+- 🗺️ **Visual Architecture Mindmap**: Interactive graph canvas with `@xyflow/react` for visual-to-JSON system structure.
+- 🪝 **Piardify CLI v2.7.0**: Autonomous Agent Skill & CLI package for 10ms realtime Kanban task sync (`npx piardify`).
+- 🛡️ **AST Anti-Slop Linter**: Static code analysis engine (`npx piardify validate-ui`) blocking AI slop visual patterns.
+- 🎨 **Multi-Archetype Component Generator**: Scaffold 100% Anti-Slop UI components (`card`, `hero`, `table`, `form`, `modal`, `bento`).
+- 🔒 **Automated Guardrail Hooks**: Git pre-commit & NPM pre-build hooks via `npx piardify hook`.
+
+---
+
+## 🛠️ Development & Local Setup
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to explore Piardify.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Piardify CLI & Agent Skill Usage
 
-## Learn More
+```bash
+# Authenticate CLI
+npx piardify login --token <YOUR_TOKEN>
 
-To learn more about Next.js, take a look at the following resources:
+# Connect workspace to project
+npx piardify init [--target web|mobile|iot|backend]
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Fetch live design tokens
+npx piardify design
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Run AST Anti-Slop Linter
+npx piardify validate-ui
 
-## Deploy on Vercel
+# Scaffold Anti-Slop UI component
+npx piardify generate hero LandingHero
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Install automated Git pre-commit & build guardrails
+npx piardify hook
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📋 License
+
+MIT © [Piardify](https://piardify.com)
