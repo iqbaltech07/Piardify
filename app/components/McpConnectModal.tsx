@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Copy, Check, Terminal, X, ShieldCheck, Cpu, MessageSquareText } from "lucide-react";
+import { Sparkles, Copy, Check, Terminal, X, ShieldCheck, Cpu, MessageSquareText, Key, Lock } from "lucide-react";
 
 interface McpConnectModalProps {
   projectId: string;
@@ -12,6 +12,7 @@ interface McpConnectModalProps {
 export default function McpConnectModal({ projectId, appName, onClose }: McpConnectModalProps) {
   const [apiKey, setApiKey] = useState<string>("");
   const [isLoadingKey, setIsLoadingKey] = useState(true);
+  const [isCopiedKey, setIsCopiedKey] = useState(false);
   const [isCopiedCommand, setIsCopiedCommand] = useState(false);
   const [isCopiedPrompt, setIsCopiedPrompt] = useState(false);
 
@@ -22,7 +23,18 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
         const res = await fetch("/api/user/api-key");
         if (res.ok) {
           const data = await res.json();
-          setApiKey(data.apiKey || "");
+          if (data.apiKey) {
+            setApiKey(data.apiKey);
+          } else if (!data.hasApiKey) {
+            // Auto generate API key if user doesn't have one yet
+            const postRes = await fetch("/api/user/api-key", { method: "POST" });
+            if (postRes.ok) {
+              const postData = await postRes.json();
+              if (postData.apiKey) {
+                setApiKey(postData.apiKey);
+              }
+            }
+          }
         }
       } catch (err) {
         console.warn("Failed to fetch API key:", err);
@@ -35,9 +47,21 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
 
   const keyToUse = apiKey || "<YOUR_API_KEY>";
 
+  // Masked string representation for UI display (always sensored on UI, no eye toggle)
+  const sensoredApiKeyDisplay = isLoadingKey
+    ? "Memuat API Key..."
+    : apiKey
+      ? `${apiKey.slice(0, 10)}${"•".repeat(20)}${apiKey.slice(-4)}`
+      : "piar_live_••••••••••••••••••••••••••••••••";
+
+  // CLI command strings
   const cliCommands = `npx piardify login --token ${keyToUse}
 npx piardify init --project ${projectId}`;
 
+  const cliCommandsDisplay = `npx piardify login --token ${sensoredApiKeyDisplay}
+npx piardify init --project ${projectId}`;
+
+  // AI Prompt strings
   const aiPrompt = `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
 
 Tolong jalankan alur kerja otomatisasi berikut:
@@ -45,6 +69,27 @@ Tolong jalankan alur kerja otomatisasi berikut:
 1. SETUP CLI & INSTALL SKILL (Terminal):
    Jalankan 2 perintah berikut di terminal:
    npx piardify login --token ${keyToUse}
+   npx piardify init --project ${projectId}
+
+2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
+   Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.md yang otomatis terpasang di workspace.
+   Verifikasi freshness konteks (AH-017): jika <project_context>.updatedAt lebih baru dari generatedAt di komentar header context.md, refresh dulu dengan: .piardify/sync context > .piardify/context.md, lalu baca ulang.
+
+3. EKSEKUSI TASK & AUTOMATIC KANBAN SYNC:
+   - Cek task aktif dengan: .piardify/sync current
+   - Sebelum mulai mengedit kode, tandai status task sebagai IN_PROGRESS dengan: .piardify/sync start <task-id>
+   - Implementasikan solusi sesuai PRD dan aturan Anti-Hallucination.
+   - WAJIB jalankan verifikasi lokal di terminal: npm run lint && npm run build
+   - Jika verifikasi lulus: tandai DONE dengan: .piardify/sync complete <task-id>
+   - Jika verifikasi gagal: tandai FAILED dengan: .piardify/sync fail <task-id> "alasan error"`;
+
+  const aiPromptDisplay = `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
+
+Tolong jalankan alur kerja otomatisasi berikut:
+
+1. SETUP CLI & INSTALL SKILL (Terminal):
+   Jalankan 2 perintah berikut di terminal:
+   npx piardify login --token ${sensoredApiKeyDisplay}
    npx piardify init --project ${projectId}
 
 2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
@@ -181,6 +226,93 @@ Tolong jalankan alur kerja otomatisasi berikut:
 
         {/* Content */}
         <div style={{ padding: "20px 24px", overflowY: "auto", maxHeight: "calc(80vh - 120px)" }}>
+          {/* API Key Sensored Box & Copy Button */}
+          <div
+            style={{
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border-hairline)",
+              borderRadius: "var(--radius-md)",
+              padding: "12px 16px",
+              marginBottom: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <Key size={12} style={{ color: "var(--color-signal)" }} />
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "var(--fg-muted)",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  User Secret API Key
+                </span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontFamily: "var(--font-mono)",
+                    color: "var(--color-mist)",
+                    background: "rgba(255,255,255,0.05)",
+                    padding: "1px 6px",
+                    borderRadius: "var(--radius-xs)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 3,
+                  }}
+                >
+                  <Lock size={9} /> Sensored on UI
+                </span>
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: "var(--color-signal)",
+                  letterSpacing: "0.12em",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  userSelect: "none",
+                }}
+              >
+                {sensoredApiKeyDisplay}
+              </div>
+            </div>
+
+            <button
+              onClick={() => copyToClipboard(keyToUse, setIsCopiedKey)}
+              disabled={isLoadingKey}
+              style={{
+                padding: "8px 14px",
+                borderRadius: "var(--radius-md)",
+                border: isCopiedKey ? "1px solid var(--color-circuit)" : "1px solid var(--color-signal)",
+                background: isCopiedKey ? "rgba(79,209,197,0.15)" : "rgba(255,182,39,0.12)",
+                color: isCopiedKey ? "var(--color-circuit)" : "var(--color-signal)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                cursor: isLoadingKey ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                whiteSpace: "nowrap",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {isCopiedKey ? <Check size={14} /> : <Copy size={14} />}
+              {isCopiedKey ? "API Key Disalin!" : "Salin API Key"}
+            </button>
+          </div>
+
           <p
             style={{
               fontFamily: "var(--font-body)",
@@ -234,7 +366,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
                 padding: "4px 0",
               }}
             >
-              {isLoadingKey ? "# Memuat API Key milik Anda...\nnpx piardify login\nnpx piardify init" : cliCommands}
+              {isLoadingKey ? "# Memuat API Key milik Anda...\nnpx piardify login\nnpx piardify init" : cliCommandsDisplay}
             </pre>
           </div>
 
@@ -280,7 +412,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
                 overflowY: "auto",
               }}
             >
-              {isLoadingKey ? "Memuat prompt setup..." : aiPrompt}
+              {isLoadingKey ? "Memuat prompt setup..." : aiPromptDisplay}
             </pre>
           </div>
 
@@ -379,3 +511,4 @@ Tolong jalankan alur kerja otomatisasi berikut:
     </div>
   );
 }
+
