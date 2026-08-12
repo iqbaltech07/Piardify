@@ -22,7 +22,7 @@ interface AiSettings {
 
 export async function getAiSettings(): Promise<AiSettings> {
   try {
-    const raw = await redis.get<any>("app:settings");
+    const raw = await redis.get<AiSettings>("app:settings");
     return raw || {};
   } catch {
     return {};
@@ -76,7 +76,7 @@ export async function generateGemini(opts: {
   }
 
   const models = orderedModels(opts.preferredModel);
-  let lastError: any = null;
+  let lastError: Error | unknown = null;
 
   const geminiConfig = {
     ...opts.geminiConfig,
@@ -98,14 +98,16 @@ export async function generateGemini(opts: {
         if (text.length === 0) throw new Error("Empty Gemini response");
         await incrementUsage(pickProvider(apiKey));
         return { text, model, provider: pickProvider(apiKey) };
-      } catch (err: any) {
+      } catch (err: unknown) {
         lastError = err;
-        console.warn(`[Gemini] key=...${apiKey.slice(-6)} model=${model}:`, err?.message);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn(`[Gemini] key=...${apiKey.slice(-6)} model=${model}:`, msg);
       }
     }
   }
 
-  throw new Error(lastError?.message || "All Gemini keys/models failed");
+  const errorMsg = lastError instanceof Error ? lastError.message : "All Gemini keys/models failed";
+  throw new Error(errorMsg);
 }
 
 /**
@@ -134,15 +136,16 @@ export async function generateOpenRouter(opts: {
     { role: "user", content: opts.userPrompt },
   ];
 
-  let completion: any;
+  let completion: unknown;
   try {
     completion = await openai.chat.completions.create({
       model,
       messages,
       ...(opts.jsonObject ? { response_format: { type: "json_object" as const } } : {}),
     });
-  } catch (e: any) {
-    if (opts.jsonObject && (e.status === 400 || e.message?.includes("json_object"))) {
+  } catch (e: unknown) {
+    const errObj = e as { status?: number; message?: string };
+    if (opts.jsonObject && (errObj.status === 400 || errObj.message?.includes("json_object"))) {
       console.log("Model doesn't support json_object, retrying without it...");
       completion = await openai.chat.completions.create({ model, messages });
     } else {
@@ -150,7 +153,8 @@ export async function generateOpenRouter(opts: {
     }
   }
 
-  const text = completion?.choices?.[0]?.message?.content?.trim() ?? "";
+  const comp = completion as { choices?: Array<{ message?: { content?: string } }> };
+  const text = comp?.choices?.[0]?.message?.content?.trim() ?? "";
   if (!text) throw new Error("Empty response from OpenRouter");
 
   await incrementUsage("openrouter");
@@ -182,7 +186,7 @@ export async function generateText(opts: {
   const geminiModel = opts.preferredModel || settings.geminiModel;
   const orModel = opts.openRouterModel || settings.openRouterModel;
 
-  let lastError: any = null;
+  let lastError: Error | unknown = null;
 
   const tryGemini = async (): Promise<GenerateResult | null> => {
     if (!hasGeminiKeys()) return null;
@@ -194,9 +198,10 @@ export async function generateText(opts: {
         jsonObject: opts.jsonObject,
       });
       return { text: res.text, provider: res.provider, model: res.model };
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastError = err;
-      console.warn("[generateText] Gemini failed:", err?.message);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[generateText] Gemini failed:", msg);
       return null;
     }
   };
@@ -211,9 +216,10 @@ export async function generateText(opts: {
         jsonObject: opts.jsonObject,
       });
       return { text: res.text, provider: res.provider, model: res.model };
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastError = err;
-      console.warn("[generateText] OpenRouter failed:", err?.message);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[generateText] OpenRouter failed:", msg);
       return null;
     }
   };
@@ -226,7 +232,8 @@ export async function generateText(opts: {
   }
 
   if (!result) {
-    throw new Error(lastError?.message || "All AI providers failed");
+    const errMsg = lastError instanceof Error ? lastError.message : "All AI providers failed";
+    throw new Error(errMsg);
   }
   return result;
 }
