@@ -274,14 +274,17 @@ export function parseAndRepairJson<T = unknown>(raw: string, options?: ParseJson
       const rec = obj as Record<string, unknown>;
       const keys = ["questions", "data", "items", "results", "phases", "nodes", "list", "tasks"];
       for (const k of keys) {
-        if (Array.isArray(rec[k])) return rec[k];
+        const val = rec[k];
+        if (Array.isArray(val)) return val;
       }
       const objectKeys = Object.keys(rec);
-      if (objectKeys.length === 1 && Array.isArray(rec[objectKeys[0]])) {
-        return rec[objectKeys[0]];
+      if (objectKeys.length === 1) {
+        const firstVal = rec[objectKeys[0]];
+        if (Array.isArray(firstVal)) return firstVal;
       }
       for (const key of objectKeys) {
-        if (Array.isArray(rec[key])) return rec[key];
+        const val = rec[key];
+        if (Array.isArray(val)) return val;
       }
     }
     return null;
