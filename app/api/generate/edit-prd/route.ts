@@ -108,7 +108,7 @@ Respond in valid JSON according to the instructions.`;
       const cleanJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
 
       // 1. Try robust parseAndRepairJson
-      const repairedObj = parseAndRepairJson(text);
+      const repairedObj = parseAndRepairJson<Record<string, unknown>>(text);
       if (repairedObj && typeof repairedObj === "object") {
         return {
           reply: typeof repairedObj.reply === "string" ? repairedObj.reply : "Respons diterima.",
