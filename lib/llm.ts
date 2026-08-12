@@ -244,10 +244,10 @@ export interface ParseJsonOptions {
  * 4. Arrays wrapped inside objects (e.g. `{ "questions": [...] }`).
  * 5. Extracting JSON sub-strings via regex.
  */
-export function parseAndRepairJson<T = any>(raw: string, options?: ParseJsonOptions): T | null {
+export function parseAndRepairJson<T = unknown>(raw: string, options?: ParseJsonOptions): T | null {
   if (!raw || typeof raw !== "string") return null;
 
-  const tryParse = (str: string): any => {
+  const tryParse = (str: string): unknown => {
     try {
       return JSON.parse(str);
     } catch {
@@ -261,19 +261,20 @@ export function parseAndRepairJson<T = any>(raw: string, options?: ParseJsonOpti
     }
   };
 
-  const extractArrayFromObject = (obj: any): any[] | null => {
+  const extractArrayFromObject = (obj: unknown): unknown[] | null => {
     if (Array.isArray(obj)) return obj;
     if (obj && typeof obj === "object") {
+      const rec = obj as Record<string, unknown>;
       const keys = ["questions", "data", "items", "results", "phases", "nodes", "list", "tasks"];
       for (const k of keys) {
-        if (Array.isArray(obj[k])) return obj[k];
+        if (Array.isArray(rec[k])) return rec[k];
       }
-      const objectKeys = Object.keys(obj);
-      if (objectKeys.length === 1 && Array.isArray(obj[objectKeys[0]])) {
-        return obj[objectKeys[0]];
+      const objectKeys = Object.keys(rec);
+      if (objectKeys.length === 1 && Array.isArray(rec[objectKeys[0]])) {
+        return rec[objectKeys[0]];
       }
       for (const key of objectKeys) {
-        if (Array.isArray(obj[key])) return obj[key];
+        if (Array.isArray(rec[key])) return rec[key];
       }
     }
     return null;
@@ -296,7 +297,7 @@ export function parseAndRepairJson<T = any>(raw: string, options?: ParseJsonOpti
   }
 
   // Step 2: Direct parse attempt
-  let parsed = tryParse(cleaned);
+  const parsed = tryParse(cleaned);
   if (parsed !== null) {
     if (options?.expectArray) {
       const arr = extractArrayFromObject(parsed);

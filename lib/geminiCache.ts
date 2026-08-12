@@ -68,13 +68,14 @@ export async function generateWithGeminiContextCache({
           console.warn("[Gemini Cache] Redis set error:", rErr);
         }
       }
-    } catch (cacheErr: any) {
-      console.warn(`[Gemini Cache] Context cache creation skipped/failed (${model}):`, cacheErr?.message || cacheErr);
+    } catch (cacheErr: unknown) {
+      const msg = cacheErr instanceof Error ? cacheErr.message : String(cacheErr);
+      console.warn(`[Gemini Cache] Context cache creation skipped/failed (${model}):`, msg);
       // Fail silently for cache creation; cachedContentName remains null so fallback will run
     }
   }
 
-  const extraConfig: Record<string, any> = {};
+  const extraConfig: Record<string, unknown> = {};
   if (geminiConfig?.responseMimeType) {
     extraConfig.responseMimeType = geminiConfig.responseMimeType;
   }
@@ -90,8 +91,9 @@ export async function generateWithGeminiContextCache({
           ...extraConfig,
         }
       });
-    } catch (genErr: any) {
-      console.warn(`[Gemini Cache] generateContent with cachedContent failed: ${genErr?.message || genErr}. Executing fallback.`);
+    } catch (genErr: unknown) {
+      const msg = genErr instanceof Error ? genErr.message : String(genErr);
+      console.warn(`[Gemini Cache] generateContent with cachedContent failed: ${msg}. Executing fallback.`);
       // Invalidate broken cache key in Redis
       try {
         await redis.del(redisCacheKey);
