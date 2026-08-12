@@ -21,6 +21,8 @@ The Piardify CLI (`npx piardify init`) pre-generates lightweight 10ms native hel
 | **Complete Task (`DONE`)** | `.piardify/sync complete <id>` | `npx piardify task complete <id>` |
 | **Record Task Failure (`FAILED`)** | `.piardify/sync fail <id> "<reason>"` | `npx piardify task fail <id> --reason "<r>"` |
 | **Fetch Complete Taste Skill** | `.piardify/sync taste <skill-key>` | `npx piardify project taste-skill --skill <skill-key>` |
+| **Fetch Modular Design Tokens** | `.piardify/sync design` | `npx piardify project design` |
+| **Fetch Full Modular PRD** | `.piardify/sync prd` | `npx piardify project prd` |
 
 ---
 

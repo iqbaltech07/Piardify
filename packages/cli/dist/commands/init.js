@@ -106,6 +106,14 @@ if "%ACTION%"=="context" (
   curl -s "%API_URL%/api/agent/project?projectId=%PROJECT_ID%&section=context" -H "Authorization: Bearer %TOKEN%"
   exit /b
 )
+if "%ACTION%"=="design" (
+  curl -s "%API_URL%/api/agent/project?projectId=%PROJECT_ID%&section=design" -H "Authorization: Bearer %TOKEN%"
+  exit /b
+)
+if "%ACTION%"=="prd" (
+  curl -s "%API_URL%/api/agent/project?projectId=%PROJECT_ID%&section=prd" -H "Authorization: Bearer %TOKEN%"
+  exit /b
+)
 if "%ACTION%"=="taste" (
   curl -s "%API_URL%/api/agent/project?projectId=%PROJECT_ID%&section=taste-skill&skill=%TASK_ID%" -H "Authorization: Bearer %TOKEN%"
   exit /b
@@ -131,6 +139,10 @@ elif [ "$ACTION" = "current" ]; then
   curl -s "$API_URL/api/agent/tasks/current?projectId=$PROJECT_ID" -H "Authorization: Bearer $TOKEN"
 elif [ "$ACTION" = "context" ]; then
   curl -s "$API_URL/api/agent/project?projectId=$PROJECT_ID&section=context" -H "Authorization: Bearer $TOKEN"
+elif [ "$ACTION" = "design" ]; then
+  curl -s "$API_URL/api/agent/project?projectId=$PROJECT_ID&section=design" -H "Authorization: Bearer $TOKEN"
+elif [ "$ACTION" = "prd" ]; then
+  curl -s "$API_URL/api/agent/project?projectId=$PROJECT_ID&section=prd" -H "Authorization: Bearer $TOKEN"
 elif [ "$ACTION" = "taste" ]; then
   curl -s "$API_URL/api/agent/project?projectId=$PROJECT_ID&section=taste-skill&skill=$TASK_ID" -H "Authorization: Bearer $TOKEN"
 fi
