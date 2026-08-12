@@ -104,6 +104,12 @@ export const SYSTEM_DIRECTIVES = {
           "rule": "CONTEXT FRESHNESS GATE [CRITICAL]: Bandingkan timestamp di komentar header `<!-- Piardify Context Snapshot -->` (generatedAt) dengan `<project_context>.updatedAt` di `.piardify/context.md`. Jika `updatedAt` LEBIH BARU dari `generatedAt`, konteks lokal sudah basi — AI Agent WAJIB me-refresh dulu (`npx piardify init` atau `.piardify/sync context > .piardify/context.md`) SEBELUM mengeksekusi task.",
           "validation": "Jangan pernah mengerjakan task berdasarkan PRD/design/task yang mungkin sudah diubah user di Web. Verifikasi freshness pada awal sesi dan setelah user mengumumkan edit.",
           "failure_consequence": "AI Agent membangun fitur lama/basi, konflik dengan perubahan terbaru user, dan hasil akhir tidak sinkron dengan Piardify web app."
+        },
+        {
+          "id": "AH-018",
+          "rule": "MANDATORY FULL READ & 100% UNCOMPROMISED COMPLIANCE OF DESIGN CONTEXT [CRITICAL & ZERO TOLERANCE]: Sebelum membuat, mengubah, atau merancang komponen UI/frontend APAPUN, AI Agent WAJIB membaca 100% Konteks Desain & Token Warna (`npx piardify design` / `.piardify/sync design` atau `<design_data>` & `<critical_design_locks>`) TANPA ADA SATUPUN ATURAN, ATRIBUT, ATAU TOKEN YANG TERABAIKAN. AI Agent DILARANG KERAS mengasumsikan, melewati, mengabaikan, atau memodifikasi warna HEX, tracking tipografi, radius hierarchy, layout governance, atau aturan Anti-Slop secara sepihak.",
+          "validation": "Bukti pemanggilan `npx piardify design` atau pembacaan `<critical_design_locks>` harus tercatat sebelum penulisan kode UI. Seluruh token warna HEX, tracking, dan radius wajib diterapkan 100% presisi.",
+          "failure_consequence": "Kode UI yang dihasilkan dianggap INVALID dan REJECTED jika mengabaikan satu pun token atau aturan dari Design Context."
         }
       ],
       "designHierarchy": {

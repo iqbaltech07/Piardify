@@ -44,6 +44,7 @@ async function initCommand(options) {
         const globalConfig = (0, store_js_1.getGlobalConfig)();
         const token = globalConfig.token || process.env.PIARDIFY_API_KEY || "";
         const baseUrl = (globalConfig.apiUrl || constants_js_1.DEFAULT_API_URL).replace(/\/$/, "");
+        const targetDomain = (options.target || "web").toLowerCase();
         const statusRes = await (0, client_js_1.apiRequest)("/api/agent/status");
         if (!statusRes.authenticated) {
             throw new Error("NOT_AUTHENTICATED: Run 'npx piardify login --token <TOKEN>' first.");
@@ -71,10 +72,53 @@ async function initCommand(options) {
         if (!fs.existsSync(piardifyDir)) {
             fs.mkdirSync(piardifyDir, { recursive: true });
         }
-        // Save full project context locally in hybrid format (XML + Markdown + JSON)
+        // Save project target domain config (.piardify/config.json)
+        const configData = {
+            projectId: project.id,
+            appName: project.appName,
+            target: targetDomain,
+            initializedAt: new Date().toISOString(),
+        };
+        fs.writeFileSync(path.join(piardifyDir, "config.json"), JSON.stringify(configData, null, 2), "utf-8");
+        // Fetch and save full project context locally in hybrid format (XML + Markdown + JSON)
+        let fullContextRes = "";
         try {
-            const fullContextRes = await (0, client_js_1.apiRequest)(`/api/agent/project?projectId=${projectId}&section=context`, { rawText: true });
+            fullContextRes = await (0, client_js_1.apiRequest)(`/api/agent/project?projectId=${projectId}&section=context`, { rawText: true });
             fs.writeFileSync(path.join(piardifyDir, "context.md"), fullContextRes, "utf-8");
+        }
+        catch { }
+        // Modular Context Architecture (Solusi 3)
+        try {
+            // 1. Tokens JSON
+            const tokensData = {
+                bgMain: "#090A0C",
+                bgSurface: "#121318",
+                bgElevated: "#181A22",
+                borderSubtle: "#222634",
+                accentPrimary: "#6366F1",
+                textPrimary: "#F3F4F6",
+                textMuted: "#9CA3AF",
+                currencyRules: {
+                    billion: "Rp X,XX M",
+                    million: "Rp X,XX Jt",
+                    thousand: "Rp XXX Rb"
+                }
+            };
+            fs.writeFileSync(path.join(piardifyDir, "tokens.json"), JSON.stringify(tokensData, null, 2), "utf-8");
+            // 2. Anti-Slop Rules MD
+            const antiSlopRules = `# 🛡️ Piardify Anti-Slop Rules (${targetDomain.toUpperCase()})
+- FORBIDDEN: Pure Black (#000000) or Navy (#0F172A). Use Obsidian (#090A0C).
+- FORBIDDEN: Gradient Text fill on headlines (text-transparent bg-gradient-to-r).
+- FORBIDDEN: Card-inside-card nested > 2 levels deep.
+- FORBIDDEN: Fixed 'h-screen' viewport. Use 'min-h-[100dvh]' or 'min-h-screen'.
+- FORBIDDEN: Headline biscuit pills with pulsing dots.
+- REQUIRED: Compact currency formatting for IDR amounts >= 100.000.
+`;
+            fs.writeFileSync(path.join(piardifyDir, "anti_slop_rules.md"), antiSlopRules, "utf-8");
+            // 3. PRD Summary
+            if (project.prdData) {
+                fs.writeFileSync(path.join(piardifyDir, "prd_summary.md"), project.prdData, "utf-8");
+            }
         }
         catch { }
         // Generate Windows CMD 10ms native helper
@@ -118,6 +162,14 @@ if "%ACTION%"=="taste" (
   curl -s "%API_URL%/api/agent/project?projectId=%PROJECT_ID%&section=taste-skill&skill=%TASK_ID%" -H "Authorization: Bearer %TOKEN%"
   exit /b
 )
+if "%ACTION%"=="validate" (
+  npx piardify validate-ui
+  exit /b
+)
+if "%ACTION%"=="theme" (
+  npx piardify init-theme
+  exit /b
+)
 `;
         fs.writeFileSync(path.join(piardifyDir, "sync.cmd"), cmdScript, "utf-8");
         // Generate POSIX shell 10ms native helper
@@ -145,6 +197,10 @@ elif [ "$ACTION" = "prd" ]; then
   curl -s "$API_URL/api/agent/project?projectId=$PROJECT_ID&section=prd" -H "Authorization: Bearer $TOKEN"
 elif [ "$ACTION" = "taste" ]; then
   curl -s "$API_URL/api/agent/project?projectId=$PROJECT_ID&section=taste-skill&skill=$TASK_ID" -H "Authorization: Bearer $TOKEN"
+elif [ "$ACTION" = "validate" ]; then
+  npx piardify validate-ui
+elif [ "$ACTION" = "theme" ]; then
+  npx piardify init-theme
 fi
 `;
         const shPath = path.join(piardifyDir, "sync");
@@ -173,6 +229,7 @@ fi
                 project: {
                     id: project.id,
                     appName: project.appName,
+                    target: targetDomain,
                 },
                 nativeHelpers: [path.join(piardifyDir, "sync.cmd"), shPath],
                 localContext: path.join(piardifyDir, "context.md"),
@@ -182,11 +239,13 @@ fi
         }
         else {
             console.log("\n==========================================");
-            console.log("  Piardify CLI - Project Initialized");
+            console.log("  Piardify CLI v2.0 - Project Initialized");
             console.log("==========================================");
             console.log(`  Project Name  : ${project.appName}`);
             console.log(`  Project ID    : ${project.id}`);
-            console.log("  Local Context : Saved -> .piardify/context.md (hybrid format)");
+            console.log(`  Target Domain : ${targetDomain.toUpperCase()}`);
+            console.log("  Local Context : Saved -> .piardify/context.md (3-Layer Hybrid)");
+            console.log("  Modular Context: Saved -> .piardify/tokens.json & anti_slop_rules.md");
             console.log("  Native Helper : Generated -> .piardify/sync (10ms)");
             console.log("  Agent Skill   : Installed -> .agents/skills/piardify/SKILL.md");
             console.log(`  Authentication: Connected (${statusRes.user?.email})`);

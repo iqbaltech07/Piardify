@@ -22,10 +22,68 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "v2.7.0",
+    date: "13 Agustus 2026",
+    title: "AST Anti-Slop Linter Engine, Multi-Archetype Generators, & Live Design Context Router",
+    badge: "Latest Release",
+    summary:
+      "Perombakan arsitektur besar Piardify CLI v2.7 dengan 5 perintah baru (design, validate-ui, init-theme, generate, hook), AST Anti-Slop Linter, Multi-Domain target adapter, 6 scaffold archetype UI, Git/NPM guardrail hooks, dan direktif AH-018.",
+    highlights: [
+      {
+        type: "feat",
+        title: "AST Static Analysis Anti-Slop Linter (validate-ui)",
+        description:
+          "Memindai source code tanpa runtime overhead untuk mendeteksi gradient headlines, over-nested cards >2 level, warna slop navy/black, icon container syndrome, dan indiscriminate rounded-2xl.",
+        tags: ["AST Linter", "Anti-Slop", "Visual Governance"],
+      },
+      {
+        type: "feat",
+        title: "Live Design Context Router & SSOT Hierarchy (npx piardify design)",
+        description:
+          "Memanggil live remote API untuk mengambil token warna dan aturan desain paling baru dari server Web App, dilengkapi fallback lokal .piardify/tokens.json dan hirarki SSOT.",
+        tags: ["Design Context", "SSOT", "Remote API First"],
+      },
+      {
+        type: "feat",
+        title: "Multi-Archetype Component Generator (npx piardify generate)",
+        description:
+          "Menghasilkan berkas komponen UI Anti-Slop modular 1 file per archetype dengan 6 pilihan pola UI: card, hero, table, form, modal, dan bento.",
+        tags: ["Component Scaffolding", "Multi-Archetype", "Clean Code"],
+      },
+      {
+        type: "feat",
+        title: "Automated Pre-Commit & Pre-Build Guardrail Hooks (npx piardify hook)",
+        description:
+          "Memasang Git Pre-Commit Hook (.git/hooks/pre-commit) dan NPM Pre-Build Step (package.json prebuild script) yang otomatis membatalkan commit/build jika ada pelanggaran Anti-Slop.",
+        tags: ["CI/CD Guardrails", "Git Hook", "Automated QA"],
+      },
+      {
+        type: "improvement",
+        title: "Mandatory Design Context Gate (AH-018 Mandate)",
+        description:
+          "Penegakan hukum aturan AH-018 yang memwajibkan AI Agent membaca 100% Konteks Desain sebelum membuat/mengubah komponen UI tanpa ada satu pun token/aturan yang terabaikan.",
+        tags: ["AH-018", "System Directives", "Mandatory Gate"],
+      },
+    ],
+    codeSnippet: {
+      language: "bash",
+      code: `# Fetch live design context & tokens
+npx piardify design
+
+# Run AST Anti-Slop Linter on workspace
+npx piardify validate-ui
+
+# Scaffold component archetype
+npx piardify generate hero LandingHero
+
+# Install automated pre-commit & build guardrails
+npx piardify hook`,
+    },
+  },
+  {
     version: "v2.2.3",
     date: "11 Agustus 2026",
     title: "Hybrid Context XML, Token Optimization, & Lazy Loaded Taste Skill",
-    badge: "Latest Release",
     summary:
       "Memperkenalkan format konteks baru (Hybrid XML + Markdown + CDATA) yang memangkas penggunaan token secara drastis, serta optimasi Taste Skill dengan mekanisme On-Demand Fetching via CLI.",
     highlights: [

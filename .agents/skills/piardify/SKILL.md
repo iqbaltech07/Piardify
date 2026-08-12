@@ -86,9 +86,9 @@ Before starting code modifications, update the Kanban status to `IN_PROGRESS`:
 ### Step 4: Local Verification (CRITICAL GATE)
 **DO NOT claim completion or mark a task as DONE before running local checks.**
 Execute the following in the terminal:
-1. `npm run lint` (or project linter)
-2. `npm run build` (or relevant compiler/type check)
-3. Relevant unit/integration tests if available.
+1. `npx piardify validate-ui` (or `.piardify/sync validate`)
+2. `npm run lint` (or project linter)
+3. `npm run build` (or relevant compiler/type check)
 
 ### Step 5: Complete or Fail Task
 - **If all verifications pass:**
@@ -117,5 +117,3 @@ Execute the following in the terminal:
 >
 > **You MUST read and strictly obey the `<system_directives>` XML tag located at the very top of `.piardify/context.md`.**
 > The rules listed there are non-negotiable and carry the highest execution priority.
-
-

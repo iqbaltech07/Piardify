@@ -6,6 +6,11 @@ import { statusCommand } from "./commands/status.js";
 import { projectCommand } from "./commands/project.js";
 import { taskCommand } from "./commands/task.js";
 import { kanbanCommand } from "./commands/kanban.js";
+import { validateCommand } from "./commands/validate.js";
+import { themeCommand } from "./commands/theme.js";
+import { hookCommand } from "./commands/hook.js";
+import { generateCommand } from "./commands/generate.js";
+import { designCommand } from "./commands/design.js";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -23,6 +28,9 @@ async function main() {
     }
     if (args[i] === "--project" && args[i + 1]) {
       options.project = args[i + 1];
+    }
+    if (args[i] === "--target" && args[i + 1]) {
+      options.target = args[i + 1];
     }
     if (args[i] === "--status" && args[i + 1]) {
       options.status = args[i + 1];
@@ -55,12 +63,38 @@ async function main() {
       await projectCommand(args[1], options);
       break;
 
+    case "design":
+    case "design-context":
+      await designCommand(options);
+      break;
+
     case "task":
       await taskCommand(args[1], args[2], options);
       break;
 
     case "kanban":
       await kanbanCommand(options);
+      break;
+
+    case "validate-ui":
+    case "validate":
+    case "validate-mobile":
+    case "validate-hardware":
+    case "validate-api":
+      await validateCommand(options);
+      break;
+
+    case "init-theme":
+    case "theme":
+      await themeCommand(options);
+      break;
+
+    case "hook":
+      await hookCommand(options);
+      break;
+
+    case "generate":
+      await generateCommand(args[1], args[2], options);
       break;
 
     case "help":
@@ -70,25 +104,32 @@ async function main() {
       if (options.json) {
         console.log(JSON.stringify({
           name: "piardify",
-          version: "1.0.0",
-          commands: ["login", "init", "status", "project", "task", "kanban"],
+          version: "2.2.4",
+          commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "init-theme", "hook", "generate"],
         }));
       } else {
-        console.log("\n  Piardify AI Agent CLI");
-        console.log("  =====================");
+        console.log("\n  Piardify AI Agent CLI v2.0");
+        console.log("  ==========================");
         console.log("  Usage: npx piardify <command> [options]\n");
         console.log("  Core Developer Commands:");
-        console.log("    npx piardify login --token <TOKEN>   Save auth token");
-        console.log("    npx piardify init                    Connect project & install Agent Skill");
-        console.log("    npx piardify status                  Display health & connection status\n");
+        console.log("    npx piardify login --token <TOKEN>         Save auth token");
+        console.log("    npx piardify init [--target web|mobile...] Connect project & setup Agent Skill");
+        console.log("    npx piardify status                        Display health & connection status\n");
+        console.log("  Anti-Slop Visual Governance & Tooling (v2.0):");
+        console.log("    npx piardify design                        Fetch design context & tokens");
+        console.log("    npx piardify validate-ui                   Run AST Anti-Slop Linter on workspace");
+        console.log("    npx piardify init-theme                    Generate Tailwind preset & CSS tokens");
+        console.log("    npx piardify hook                          Install Git pre-commit & build hooks");
+        console.log("    npx piardify generate <ComponentName>     Scaffold 100% Anti-Slop compliant component\n");
         console.log("  AI Agent Commands:");
-        console.log("    npx piardify project [section]       Fetch project context (prd, mindmap, directives)");
-        console.log("    npx piardify task <action> [id]      Task lifecycle (list, current, start, complete, fail)");
-        console.log("    npx piardify kanban                  Fetch full Kanban board state\n");
+        console.log("    npx piardify project [tokens|rules|prd...] Fetch modular context or full hybrid");
+        console.log("    npx piardify task <action> [id]            Task lifecycle (list, current, start, complete, fail)");
+        console.log("    npx piardify kanban                        Fetch full Kanban board state\n");
         console.log("  Flags:");
-        console.log("    --json                              Machine-readable JSON output");
-        console.log("    --project <id>                      Specify project ID explicitly");
-        console.log("    --force                             Force state transitions\n");
+        console.log("    --target <web|mobile|iot|backend>          Specify multi-domain target ecosystem");
+        console.log("    --json                                    Machine-readable JSON output");
+        console.log("    --project <id>                            Specify project ID explicitly");
+        console.log("    --force                                   Force state transitions\n");
       }
       break;
   }

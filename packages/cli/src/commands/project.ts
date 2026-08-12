@@ -1,15 +1,40 @@
+import * as fs from "fs";
+import * as path from "path";
 import { getProjectConfig } from "../config/store.js";
 import { apiRequest } from "../api/client.js";
 
 export async function projectCommand(section?: string, options: { project?: string; skill?: string; json?: boolean } = {}) {
   try {
+    const workspaceRoot = process.cwd();
+    const piardifyDir = path.join(workspaceRoot, ".piardify");
+
+    let sec = (section || "overview").toLowerCase();
+
+    // Check local modular files first (Solusi 3)
+    if (sec === "tokens") {
+      const tokensFile = path.join(piardifyDir, "tokens.json");
+      if (fs.existsSync(tokensFile)) {
+        const tokens = JSON.parse(fs.readFileSync(tokensFile, "utf-8"));
+        console.log(options.json ? JSON.stringify(tokens) : JSON.stringify(tokens, null, 2));
+        return;
+      }
+    }
+
+    if (sec === "rules") {
+      const rulesFile = path.join(piardifyDir, "anti_slop_rules.md");
+      if (fs.existsSync(rulesFile)) {
+        const rules = fs.readFileSync(rulesFile, "utf-8");
+        console.log(rules);
+        return;
+      }
+    }
+
     const projectId = options.project || getProjectConfig().projectId;
 
     if (!projectId) {
       throw new Error("NO_PROJECT_LINKED: Run 'npx piardify init' or specify '--project <projectId>' first.");
     }
 
-    let sec = section || "overview";
     if (sec === "current") sec = "overview";
 
     let url = `/api/agent/project?projectId=${projectId}&section=${sec}`;
