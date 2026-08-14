@@ -22,10 +22,72 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "v2.8.0",
+    date: "14 Agustus 2026",
+    title: "Tri-Combo Zero-Redundancy Context Engine, Gemini 3.7 Flash, & AI Tech Stack Auto-Recommend",
+    badge: "Latest Release",
+    summary:
+      "Pembaruan arsitektur besar untuk optimasi token context hingga 84%, integrasi model Gemini 3.7 Flash, engine rekomendasi tech stack otomatis oleh AI, preset stack Vanilla Web/Mobile/IoT, dan parser PRD multi-tier tangguh.",
+    highlights: [
+      {
+        type: "feat",
+        title: "Tri-Combo Zero-Redundancy Context Engine (84% Token Reduction)",
+        description:
+          "Memangkas ukuran context payload dari 1050+ baris (~32KB) menjadi ~165 baris (~4.5KB) melalui lazy-loaded Taste Skill pointers (`npx piardify skill`), minified 1-line Anti-Hallucination tags (AH-001..AH-021), dan windowing task queue.",
+        tags: ["Token Reduction", "Zero Redundancy", "Performance", "Context Engine"],
+      },
+      {
+        type: "feat",
+        title: "Gemini 3.7 Flash Engine Integration",
+        description:
+          "Dukungan penuh untuk model reasoning tinggi Google Gemini 3.7 Flash sebagai model default pada pembuatan PRD, chat modifier, dan engine rekomendasi arsitektur.",
+        tags: ["Gemini 3.7 Flash", "AI Engine", "LLM"],
+      },
+      {
+        type: "feat",
+        title: "AI Tech Stack & Color Palette Auto-Recommend",
+        description:
+          "Fitur rekomendasi otomatis cerdas yang menganalisis ide produk secara instan dan mengisi seluruh 4 layer teknologi (frontend, backend, database, deployment) serta tema visual dalam satu klik.",
+        tags: ["AI Recommendation", "Architecture", "Design System"],
+      },
+      {
+        type: "feat",
+        title: "Preset Baru: Vanilla Web, Flutter Mobile, & IoT ESP32",
+        description:
+          "Menambahkan pilihan preset bawaan untuk Vanilla HTML+CSS+JS (Zero DB, LocalStorage), Flutter Mobile App cross-platform, IoT Hardware (ESP32/MQTT Broker), dan React Native Expo.",
+        tags: ["Presets", "Vanilla JS", "Flutter", "IoT ESP32"],
+      },
+      {
+        type: "improvement",
+        title: "Adaptive React Bits Component Directives (reactbits.dev)",
+        description:
+          "AI Agent secara adaptif mengintegrasikan komponen interaktif, aurora animated background, spotlight cards, dan magnet buttons dari reactbits.dev agar antarmuka web app hidup, modern, dan bebas AI slop.",
+        tags: ["React Bits", "UI/UX", "Anti-Slop", "Modern Design"],
+      },
+      {
+        type: "fix",
+        title: "Multi-Tier Resilient PRD Chat Modifier & Live Kanban Sync",
+        description:
+          "Memperbaiki parser chat AI pada preview PRD dengan format XML tagged delimiter `<updated_prd>` dan auto-repair JSON, serta sinkronisasi cascading otomatis lintas PRD, mindmap struktur, dan kanban task.",
+        tags: ["Bug Fix", "PRD Chat", "Live Kanban Sync"],
+      },
+    ],
+    codeSnippet: {
+      language: "bash",
+      code: `# Initialize Tri-Combo Zero-Redundancy Context
+npx piardify init
+
+# Fetch full Taste Skill on-demand (10ms)
+npx piardify skill
+
+# Run AST Anti-Slop Linter
+npx piardify validate-ui`,
+    },
+  },
+  {
     version: "v2.7.0",
     date: "13 Agustus 2026",
     title: "AST Anti-Slop Linter Engine, Multi-Archetype Generators, & Live Design Context Router",
-    badge: "Latest Release",
     summary:
       "Perombakan arsitektur besar Piardify CLI v2.7 dengan 5 perintah baru (design, validate-ui, init-theme, generate, hook), AST Anti-Slop Linter, Multi-Domain target adapter, 6 scaffold archetype UI, Git/NPM guardrail hooks, dan direktif AH-018.",
     highlights: [
