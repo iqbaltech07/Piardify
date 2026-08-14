@@ -22,7 +22,7 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
-    version: "v2.8.0",
+    version: "v2.12.3",
     date: "14 Agustus 2026",
     title: "Tri-Combo Zero-Redundancy Context Engine, Gemini 3.7 Flash, & AI Tech Stack Auto-Recommend",
     badge: "Latest Release",

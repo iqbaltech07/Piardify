@@ -1,4 +1,4 @@
-# Piardify CLI & Visual Governance Engine (v2.8.0)
+# Piardify CLI & Visual Governance Engine (v2.12.3)
 
 Official CLI & Agent Skill package for **Piardify** — AI PRD Generator, System Architecture Tracker, & Anti-Slop Visual Governance Engine.
 
@@ -7,12 +7,14 @@ Official CLI & Agent Skill package for **Piardify** — AI PRD Generator, System
 
 ---
 
-## ⚡ What's New in v2.8.0
+## ⚡ What's New in v2.12.3
 
 - **🚀 Tri-Combo Zero-Redundancy Context Engine**: Reduces AI Agent context payload by **~84%** (from 1050+ lines to ~165 lines) via lazy-loaded Taste Skill pointers (`<active_skill fetch_cmd="...">`), minified 1-line Anti-Hallucination rule tags (`AH-001`..`AH-021`), and active task windowing.
-- **💎 Gemini 3.7 Flash Ready**: Full support for high-reasoning Gemini 3.7 Flash models.
+- **💎 Gemini 3.7 Flash & Preview Models**: Full support for high-reasoning Gemini 3.7 Flash, Gemini 3.1 Pro Preview, and Gemini 3 Flash Preview.
 - **🎨 Anti-Slop Visual Governance & React Bits Directives**: AST-based UI linter (`npx piardify validate-ui`) and mandatory adaptive integration with `reactbits.dev` for animated backgrounds, micro-interactions, and obsidian surfaces.
 - **📦 Multi-Platform Stack Presets**: Out-of-the-box presets for Vanilla Web (HTML+CSS+JS, LocalStorage), Flutter Mobile App, IoT Hardware (ESP32/MQTT), and React Native Expo.
+- **🤖 AI Tech Stack Auto-Recommend**: Instant architectural reasoning & 1-click stack and palette population.
+- **🔧 Multi-Tier Resilient PRD Parser & Live Sync**: XML delimiter `<updated_prd>` + auto-repair JSON parser for error-free instant modifications.
 
 ---
 
