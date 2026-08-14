@@ -104,11 +104,11 @@ async function main() {
       if (options.json) {
         console.log(JSON.stringify({
           name: "piardify",
-          version: "2.2.4",
+          version: "2.7.1",
           commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "init-theme", "hook", "generate"],
         }));
       } else {
-        console.log("\n  Piardify AI Agent CLI v2.0");
+        console.log("\n  Piardify AI Agent CLI v2.7.1 (Anti-Slop Architecture)");
         console.log("  ==========================");
         console.log("  Usage: npx piardify <command> [options]\n");
         console.log("  Core Developer Commands:");

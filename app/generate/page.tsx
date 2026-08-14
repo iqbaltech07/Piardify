@@ -133,6 +133,8 @@ export default function GeneratePage() {
             stackMode={form.stackMode}
             stacks={form.stacks}
             designData={form.designData}
+            appName={form.appName}
+            appIdea={form.appIdea}
             setStackMode={setStackMode}
             setStack={setStack}
             setDesignData={setDesignData}

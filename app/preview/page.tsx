@@ -8,7 +8,7 @@ import MarkdownRenderer, { TocItem } from "../components/MarkdownRenderer";
 import { MessageRenderer } from "../components/ai/MessageRenderer";
 import StepNavbar from "../components/StepNavbar";
 import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
-import { Sparkles, Send, Bot, Loader2, Lightbulb, Scale, PenLine, Database } from "lucide-react";
+import { Send, Bot, Loader2, Lightbulb, Scale, PenLine, Database } from "lucide-react";
 import { toast } from "sonner";
 
 function PreviewPageContent() {
@@ -31,16 +31,17 @@ function PreviewPageContent() {
   const [chatMessages, setChatMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string; timestamp: string }>>([]);
   const [aiPrompt, setAiPrompt] = useState("");
   const [isAiEditing, setIsAiEditing] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("gemini-3.5-flash");
+  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash-lite");
   const [freeModels, setFreeModels] = useState<any[]>([]);
 
   const GEMINI_MODELS = [
+    { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
+    { id: "gemini-3.7-flash", name: "Gemini 3.7 Flash" },
     { id: "gemini-3.6-flash", name: "Gemini 3.6 Flash" },
     { id: "gemini-3.5-flash", name: "Gemini 3.5 Flash" },
     { id: "gemini-3.5-flash-lite", name: "Gemini 3.5 Flash Lite" },
     { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite" },
     { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
-    { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
   ];
 
   useEffect(() => {
@@ -63,7 +64,14 @@ function PreviewPageContent() {
       if (!res.ok || data.error) {
         setChatMessages(prev => [...prev, { id: (Date.now()+1).toString(), role: "assistant", content: `❌ ${data.error || "Error"}`, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
       } else {
-        if (data.isPrdUpdated && data.markdown) { setMarkdown(data.markdown); setEditContent(data.markdown); }
+        if (data.isPrdUpdated && data.markdown) {
+          setMarkdown(data.markdown);
+          setEditContent(data.markdown);
+          toast.success("PRD berhasil diperbarui!");
+          try {
+            window.dispatchEvent(new CustomEvent("prdUpdated", { detail: { prdData: data.markdown } }));
+          } catch {}
+        }
         let reply = data.reply || "Done.";
         if (reply.trim().startsWith("{") && reply.includes('"reply"')) { try { const m = reply.match(/"reply"\s*:\s*"([\s\S]*?)"/); if (m?.[1]) reply = m[1].replace(/\\n/g,"\n").replace(/\\"/g,'"'); } catch(_){} }
         setChatMessages(prev => [...prev, { id: (Date.now()+1).toString(), role: "assistant", content: reply, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
@@ -262,7 +270,7 @@ function PreviewPageContent() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "var(--color-circuit)",
                 }}>
-                  <Sparkles size={13} />
+                  <Bot size={13} />
                 </div>
                 <div>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 700, color: "var(--fg-primary)", margin: 0 }}>AI Assistant</p>
@@ -283,7 +291,7 @@ function PreviewPageContent() {
                 {/* Welcome */}
                 <div style={{ padding: "14px", border: "1px solid var(--border-hairline)", borderRadius: "var(--radius-md)", background: "var(--bg-elevated)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
-                    <Sparkles size={13} style={{ color: "var(--color-signal)" }} />
+                    <Bot size={13} style={{ color: "var(--color-signal)" }} />
                     <span style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 700, color: "var(--fg-primary)" }}>Halo! Saya AI-mu.</span>
                   </div>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "var(--color-mist)", lineHeight: 1.65, margin: 0 }}>

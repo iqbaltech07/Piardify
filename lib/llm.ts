@@ -5,10 +5,13 @@ import { generateWithGeminiContextCache } from "./geminiCache";
 
 /** Shared default fallback chain used across all AI routes. */
 export const GEMINI_FALLBACK_MODELS = [
+  "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-3.5-flash",
   "gemini-3.5-flash-lite",
+  "gemini-3.1-pro-preview",
   "gemini-3.1-flash-lite",
+  "gemini-3-flash-preview",
   "gemini-2.5-flash",
   "gemini-2.5-flash-lite",
 ];
@@ -46,7 +49,7 @@ function pickProvider(apiKey: string): AIProvider {
 
 /** Dedupe while keeping the configured model first. */
 function orderedModels(preferred?: string): string[] {
-  return Array.from(new Set([preferred || "gemini-3.6-flash", ...GEMINI_FALLBACK_MODELS]));
+  return Array.from(new Set([preferred || "gemini-3.7-flash", ...GEMINI_FALLBACK_MODELS]));
 }
 
 export interface GeminiGenerateResult {

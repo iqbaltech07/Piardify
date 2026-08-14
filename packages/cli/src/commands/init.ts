@@ -83,7 +83,8 @@ export async function initCommand(options: { project?: string; target?: string; 
       fs.writeFileSync(path.join(piardifyDir, "tokens.json"), JSON.stringify(tokensData, null, 2), "utf-8");
 
       // 2. Anti-Slop Rules MD
-      const antiSlopRules = `# 🛡️ Piardify Anti-Slop Rules (${targetDomain.toUpperCase()})
+      const antiSlopRules = `# 🛡️ Piardify Anti-Slop & UI Framework Rules (${targetDomain.toUpperCase()})
+- REQUIRED MANDATE: ALWAYS use shadcn/ui primitives (@/components/ui/*) for all UI components (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge).
 - FORBIDDEN: Pure Black (#000000) or Navy (#0F172A). Use Obsidian (#090A0C).
 - FORBIDDEN: Gradient Text fill on headlines (text-transparent bg-gradient-to-r).
 - FORBIDDEN: Card-inside-card nested > 2 levels deep.
@@ -227,6 +228,7 @@ fi
       console.log(`  Project Name  : ${project.appName}`);
       console.log(`  Project ID    : ${project.id}`);
       console.log(`  Target Domain : ${targetDomain.toUpperCase()}`);
+      console.log("  UI Framework  : Required -> shadcn/ui (@/components/ui/*)");
       console.log("  Local Context : Saved -> .piardify/context.md (3-Layer Hybrid)");
       console.log("  Modular Context: Saved -> .piardify/tokens.json & anti_slop_rules.md");
       console.log("  Native Helper : Generated -> .piardify/sync (10ms)");

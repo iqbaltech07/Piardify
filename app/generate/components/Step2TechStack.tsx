@@ -7,6 +7,8 @@ interface Step2TechStackProps {
   stackMode: FormData["stackMode"];
   stacks: FormData["stacks"];
   designData?: string;
+  appName?: string;
+  appIdea?: string;
   setStackMode: (mode: FormData["stackMode"]) => void;
   setStack: (category: StackCategory, label: string) => void;
   setDesignData?: (val: string) => void;
@@ -310,6 +312,8 @@ export default function Step2TechStack({
   stackMode,
   stacks,
   designData,
+  appName,
+  appIdea,
   setStackMode,
   setStack,
   setDesignData,
@@ -318,6 +322,71 @@ export default function Step2TechStack({
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const [selectedPaletteId, setSelectedPaletteId] = useState<string | null>(null);
   const [showCustomMarkdown, setShowCustomMarkdown] = useState(false);
+
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState<{
+    stacks: Record<StackCategory, string>;
+    paletteId: string;
+    badge: string;
+    reasoning: string;
+  } | null>(null);
+  const [aiApplied, setAiApplied] = useState(false);
+
+  const fetchAiRecommendation = async () => {
+    if (!appIdea) return;
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/generate/recommend-stack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appName, appIdea }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setAiRecommendation(json);
+        if (json.stacks) {
+          Object.entries(json.stacks).forEach(([cat, label]) => {
+            setStack(cat as StackCategory, label as string);
+          });
+        }
+        if (json.paletteId) {
+          const pal = COLOR_PALETTE_PRESETS.find(p => p.id === json.paletteId);
+          if (pal && setDesignData) {
+            setSelectedPaletteId(pal.id);
+            setDesignData(generatePaletteMarkdown(pal));
+          }
+        }
+        setAiApplied(true);
+      }
+    } catch (e) {
+      console.warn("AI recommendation failed:", e);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (stackMode === "ai" && !aiRecommendation && !aiLoading && appIdea) {
+      fetchAiRecommendation();
+    }
+  }, [stackMode, appIdea]);
+
+  const handleApplyRecommendation = () => {
+    if (!aiRecommendation) return;
+    if (aiRecommendation.stacks) {
+      Object.entries(aiRecommendation.stacks).forEach(([cat, label]) => {
+        setStack(cat as StackCategory, label as string);
+      });
+    }
+    if (aiRecommendation.paletteId) {
+      const pal = COLOR_PALETTE_PRESETS.find(p => p.id === aiRecommendation.paletteId);
+      if (pal && setDesignData) {
+        setSelectedPaletteId(pal.id);
+        setDesignData(generatePaletteMarkdown(pal));
+      }
+    }
+    setAiApplied(true);
+  };
 
   const handlePresetSelect = (preset: typeof POPULAR_STACK_PRESETS[0]) => {
     setSelectedPresetId(preset.id);
@@ -755,39 +824,190 @@ export default function Step2TechStack({
       ) : (
         <div
           style={{
-            padding: "32px",
+            padding: "24px",
             border: "1px solid var(--border-hairline)",
             borderRadius: "var(--radius-lg)",
-            textAlign: "center",
             background: "var(--bg-elevated)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 20,
           }}
         >
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "3px 10px",
-              border: "1px solid var(--border-hairline)",
-              borderRadius: "var(--radius-xs)",
-              fontFamily: "var(--font-mono)",
-              fontSize: "9px",
-              fontWeight: 700,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--color-signal)",
-              marginBottom: 12,
-            }}
-          >
-            <Construction size={10} />
-            Coming Soon
-          </div>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, color: "var(--fg-primary)", marginBottom: 6 }}>
-            AI Stack Recommendation
-          </p>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-mist)" }}>
-            Our AI will analyze your idea and recommend the optimal tech stack. Use Manual / Presets for now.
-          </p>
+          {aiLoading ? (
+            <div style={{ padding: "40px 20px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "var(--radius-lg)",
+                  border: "1px solid var(--color-signal)",
+                  background: "rgba(255, 182, 39, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  animation: "spin 0.8s linear infinite",
+                }}
+              >
+                <Bot size={22} style={{ color: "var(--color-signal)" }} />
+              </div>
+              <div>
+                <p style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: 700, color: "var(--fg-primary)", margin: "0 0 4px" }}>
+                  Menganalisis Ide & Arsitektur Produk…
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-mist)", margin: 0 }}>
+                  AI sedang merancang kombinasi tech stack, database, dan palette warna yang paling optimal.
+                </p>
+              </div>
+            </div>
+          ) : aiRecommendation ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              {/* Header Badge & Title */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: "var(--radius-md)", background: "rgba(255,182,39,0.12)", border: "1px solid rgba(255,182,39,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Bot size={15} style={{ color: "var(--color-signal)" }} />
+                  </div>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: 800, color: "var(--fg-primary)" }}>
+                        Rekomendasi AI Terpilih
+                      </span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "var(--radius-xs)", background: "rgba(79, 209, 197, 0.15)", color: "var(--color-circuit)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                        {aiRecommendation.badge || "AI Tailored"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={fetchAiRecommendation}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "5px 10px", borderRadius: "var(--radius-md)",
+                    border: "1px solid var(--border-hairline)",
+                    background: "var(--bg-base)", color: "var(--fg-muted)",
+                    fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  🔄 Analisis Ulang
+                </button>
+              </div>
+
+              {/* Reasoning */}
+              {aiRecommendation.reasoning && (
+                <div style={{ padding: "12px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)", background: "var(--bg-base)" }}>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--fg-primary)", lineHeight: 1.6, margin: 0 }}>
+                    💡 <span style={{ color: "var(--color-signal)", fontWeight: 600 }}>Alasan AI: </span>
+                    {aiRecommendation.reasoning}
+                  </p>
+                </div>
+              )}
+
+              {/* 4 Layer Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+                {([
+                  { label: "Frontend", val: stacks.frontend || aiRecommendation.stacks?.frontend, color: "#3b82f6" },
+                  { label: "Backend", val: stacks.backend || aiRecommendation.stacks?.backend, color: "#10b981" },
+                  { label: "Database", val: stacks.database || aiRecommendation.stacks?.database, color: "#eab308" },
+                  { label: "Deployment", val: stacks.deployment || aiRecommendation.stacks?.deployment, color: "#a855f7" },
+                ]).map((layer, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: "12px",
+                      borderRadius: "var(--radius-md)",
+                      border: "1px solid var(--border-hairline)",
+                      background: "var(--bg-base)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: layer.color }}>
+                      {layer.label}
+                    </span>
+                    <span style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 700, color: "var(--fg-primary)" }}>
+                      {layer.val || "Recommended"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Palette Recommendation Preview */}
+              {selectedPaletteId && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-hairline)", background: "var(--bg-base)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Palette size={14} style={{ color: "var(--color-circuit)" }} />
+                    <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600, color: "var(--fg-primary)" }}>
+                      Theme: {COLOR_PALETTE_PRESETS.find(p => p.id === selectedPaletteId)?.name || "Cyber Slate"}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {COLOR_PALETTE_PRESETS.find(p => p.id === selectedPaletteId) && (
+                      <>
+                        <div style={{ width: 14, height: 14, borderRadius: "50%", background: COLOR_PALETTE_PRESETS.find(p => p.id === selectedPaletteId)?.primary }} />
+                        <div style={{ width: 14, height: 14, borderRadius: "50%", background: COLOR_PALETTE_PRESETS.find(p => p.id === selectedPaletteId)?.bg, border: "1px solid var(--border-hairline)" }} />
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Active Application Notice */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: "var(--radius-md)", background: "rgba(79, 209, 197, 0.08)", border: "1px solid rgba(79, 209, 197, 0.25)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <CheckCircle2 size={14} style={{ color: "var(--color-circuit)" }} />
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600, color: "var(--color-circuit)" }}>
+                    Rekomendasi tech stack & desain telah otomatis diterapkan ke formulir.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setStackMode("manual")}
+                  style={{
+                    padding: "4px 8px", borderRadius: "var(--radius-xs)",
+                    border: "none", background: "transparent",
+                    color: "var(--color-circuit)", fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 700,
+                    cursor: "pointer", textDecoration: "underline",
+                  }}
+                >
+                  Ubah di Mode Manual →
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", padding: "30px 20px" }}>
+              <Bot size={28} style={{ color: "var(--color-signal)", margin: "0 auto 12px" }} />
+              <h4 style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: 700, color: "var(--fg-primary)", marginBottom: 6 }}>
+                AI Tech Stack & Design Recommendation
+              </h4>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-mist)", maxWidth: 440, margin: "0 auto 18px", lineHeight: 1.6 }}>
+                Biarkan AI menganalisis ide produk Anda dan memilihkan arsitektur teknologi, database, serta tema visual yang paling pas.
+              </p>
+              <button
+                onClick={fetchAiRecommendation}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--color-signal)",
+                  background: "var(--color-signal)",
+                  color: "var(--color-graphite)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Bot size={13} />
+                Analisis & Rekomendasikan Stack Sekarang
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

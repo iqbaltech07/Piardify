@@ -15,7 +15,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ src, alt, title }) => {
 
   if (!src || error) {
     return (
-      <div className="my-3 p-4 border border-dashed border-slate-800 rounded-xl bg-slate-900/40 text-center text-xs text-slate-500 font-mono">
+      <div className="my-3 p-4 border border-dashed border-slate-800 rounded-xl bg-[#121318]/40 text-center text-xs text-slate-500 font-mono">
         🖼️ Image unavailable ({alt || "no description"})
       </div>
     );
@@ -37,14 +37,14 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ src, alt, title }) => {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="absolute top-3 right-3 p-1.5 rounded-lg bg-slate-900/80 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-md"
+          className="absolute top-3 right-3 p-1.5 rounded-lg bg-[#121318]/80 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-md"
           title="Zoom image"
         >
           <Maximize2 className="w-4 h-4" />
         </button>
 
         {alt && (
-          <div className="p-2 text-center text-xs text-slate-400 bg-slate-900/80 border-t border-slate-800/60 italic font-mono">
+          <div className="p-2 text-center text-xs text-slate-400 bg-[#121318]/80 border-t border-slate-800/60 italic font-mono">
             {alt}
           </div>
         )}
@@ -53,7 +53,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ src, alt, title }) => {
       {/* Lightbox modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#090A0C]/90 backdrop-blur-md p-4 animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         >
           <button

@@ -32,9 +32,10 @@ export const editPrdSchema = z.object({
   selectedModel: z.string().optional(),
 });
 
-/** Request body for /api/generate/* routes that only need a projectId. */
+/** Request body for /api/generate/* routes that need a projectId and optional forceSync. */
 export const projectIdSchema = z.object({
   projectId: z.string().min(1),
+  forceSync: z.boolean().optional(),
 });
 
 /** Validates the AI's mind-map (struktur) JSON before persistence. */

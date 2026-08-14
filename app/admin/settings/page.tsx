@@ -13,7 +13,7 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [geminiModel, setGeminiModel] = useState("gemini-3.5-flash");
+  const [geminiModel, setGeminiModel] = useState("gemini-3.7-flash");
   const [openRouterModel, setOpenRouterModel] = useState("nvidia/nemotron-3-ultra-550b-a55b:free");
   
   const [freeModels, setFreeModels] = useState<any[]>([]);
@@ -23,6 +23,7 @@ export default function AdminSettingsPage() {
   const [usagesLoading, setUsagesLoading] = useState(true);
 
   const GEMINI_MODELS = [
+    { id: "gemini-3.7-flash", name: "Gemini 3.7 Flash" },
     { id: "gemini-3.6-flash", name: "Gemini 3.6 Flash" },
     { id: "gemini-3.5-flash", name: "Gemini 3.5 Flash" },
     { id: "gemini-3.5-flash-lite", name: "Gemini 3.5 Flash Lite" },

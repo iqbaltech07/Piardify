@@ -110,6 +110,12 @@ export const SYSTEM_DIRECTIVES = {
           "rule": "MANDATORY FULL READ & 100% UNCOMPROMISED COMPLIANCE OF DESIGN CONTEXT [CRITICAL & ZERO TOLERANCE]: Sebelum membuat, mengubah, atau merancang komponen UI/frontend APAPUN, AI Agent WAJIB membaca 100% Konteks Desain & Token Warna (`npx piardify design` / `.piardify/sync design` atau `<design_data>` & `<critical_design_locks>`) TANPA ADA SATUPUN ATURAN, ATRIBUT, ATAU TOKEN YANG TERABAIKAN. AI Agent DILARANG KERAS mengasumsikan, melewati, mengabaikan, atau memodifikasi warna HEX, tracking tipografi, radius hierarchy, layout governance, atau aturan Anti-Slop secara sepihak.",
           "validation": "Bukti pemanggilan `npx piardify design` atau pembacaan `<critical_design_locks>` harus tercatat sebelum penulisan kode UI. Seluruh token warna HEX, tracking, dan radius wajib diterapkan 100% presisi.",
           "failure_consequence": "Kode UI yang dihasilkan dianggap INVALID dan REJECTED jika mengabaikan satu pun token atau aturan dari Design Context."
+        },
+        {
+          "id": "AH-021",
+          "rule": "MANDATORY SHADCN/UI COMPONENT SYSTEM [CRITICAL]: AI Agent WAJIB MUTLAK menggunakan `shadcn/ui` primitives (`@/components/ui/*`) sebagai pustaka komponen fondasi utama untuk seluruh pembuatan dan pengeditan komponen UI/Frontend (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge). DILARANG KERAS mengarang komponen raw HTML polos dari nol tanpa fondasi shadcn/ui.",
+          "validation": "Pastikan seluruh komponen UI yang dibuat mengimpor atau menurunkan dari `@/components/ui/*`.",
+          "failure_consequence": "Komponen UI tidak terstandarisasi, berantakan, dan ditolak oleh linter governance."
         }
       ],
       "designHierarchy": {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Sparkles, Upload } from "lucide-react";
+import { FileText, Upload } from "lucide-react";
 import { ProjectDetailData } from "../types";
 
 interface ProjectHeaderCardProps {
@@ -63,7 +63,7 @@ export default function ProjectHeaderCard({
               marginBottom: 10,
             }}
           >
-            <Sparkles size={11} /> Project Overview & Design Specs
+            <FileText size={11} /> Project Overview & Design Specs
           </div>
           <h1
             style={{

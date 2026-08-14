@@ -1,5 +1,5 @@
 import React from "react";
-import { Sparkles, Terminal, Zap, Network, ClipboardList, Layers, Download } from "lucide-react";
+import { Cpu, Terminal, Zap, Network, ClipboardList, Layers, Download } from "lucide-react";
 
 export interface Feature {
   id: string;
@@ -24,7 +24,7 @@ export const FEATURES: Feature[] = [
     statLabel: "Faster than manual spec writing",
     accent: "var(--color-signal)",
     size: "large",
-    icon: <Sparkles size={24} strokeWidth={1.5} />,
+    icon: <Cpu size={24} strokeWidth={1.5} />,
     tag: "Powered by Gemini 3.6 Flash",
   },
   {

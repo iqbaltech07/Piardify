@@ -93,17 +93,23 @@ export async function POST(req: NextRequest) {
 
     if (prdData !== undefined) {
       updateData.prdData = prdData;
-      // Update redis cache for PRD
-      try { await redis.set(`project:${projectId}:prd`, prdData); } catch (e) { console.warn("Redis PRD update error", e); }
+      tasksOutdated = true;
+      // Update redis cache for PRD & invalidate tasks cache
+      try {
+        await redis.set(`project:${projectId}:prd`, prdData);
+        await redis.del(`project:${projectId}:tasks`);
+      } catch (e) { console.warn("Redis PRD update error", e); }
     }
 
     if (strukturData !== undefined) {
       // Expecting raw JSON string or object
       const strukturStr = typeof strukturData === 'string' ? strukturData : JSON.stringify(strukturData);
       updateData.strukturData = strukturStr;
-      // Update redis cache for Struktur
+      tasksOutdated = true;
+      // Update redis cache for Struktur & invalidate tasks cache
       try {
         await redis.set(`project:${projectId}:struktur`, typeof strukturData === 'string' ? JSON.parse(strukturData) : strukturData);
+        await redis.del(`project:${projectId}:tasks`);
       } catch (e) { console.warn("Redis Struktur update error", e); }
     }
 

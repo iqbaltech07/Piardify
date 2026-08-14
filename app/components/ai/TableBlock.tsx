@@ -29,7 +29,7 @@ export const TableBody: React.FC<{ children?: React.ReactNode }> = ({ children }
 );
 
 export const TableRow: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
-  <tr className="hover:bg-indigo-950/20 transition-colors duration-150 even:bg-slate-900/30">
+  <tr className="hover:bg-indigo-950/20 transition-colors duration-150 even:bg-[#121318]/30">
     {children}
   </tr>
 );

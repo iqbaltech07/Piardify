@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Copy, Check, Terminal, X, ShieldCheck, Cpu, MessageSquareText, Key, Lock } from "lucide-react";
+import { Copy, Check, Terminal, X, ShieldCheck, Cpu, MessageSquareText, Key, Lock } from "lucide-react";
 
 interface McpConnectModalProps {
   projectId: string;

@@ -46,7 +46,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   return (
     <div className="group relative my-4 rounded-xl border border-slate-800 bg-[#0d1117] overflow-hidden shadow-xl transition-all">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-900/90 border-b border-slate-800/80 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#121318]/90 border-b border-slate-800/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <Code2 className="w-4 h-4 text-indigo-400" />
           <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-400">

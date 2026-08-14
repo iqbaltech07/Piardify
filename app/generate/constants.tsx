@@ -7,25 +7,25 @@ export const TECH_CATEGORIES = [
     id: "frontend" as StackCategory, title: "Frontend", subtitle: "UI & tampilan user",
     icon: <LayoutTemplate size={20} strokeWidth={2} />,
     color: "#3b82f6", bg: "rgba(59,130,246,0.15)",
-    options: ["Next.js", "React", "Vue.js", "Svelte", "Flutter", "React Native", "Astro", "Angular", "HTMX"],
+    options: ["Next.js", "React", "HTML5 / Vanilla JS", "Vue.js", "Svelte", "Flutter (Dart)", "React Native (Expo)", "Swift / SwiftUI", "Kotlin (Jetpack Compose)", "Embedded C/C++ (ESP32)", "Astro", "Angular", "HTMX"],
   },
   {
     id: "backend" as StackCategory, title: "Backend", subtitle: "Logic & API server",
     icon: <Server size={20} strokeWidth={2} />,
     color: "#10b981", bg: "rgba(16,185,129,0.15)",
-    options: ["Next.js (API Routes)", "Node.js", "Python (FastAPI/Django)", "Laravel", "NestJS", "Spring Boot", "Go", "Ruby on Rails", "Rust (Actix/Axum)", "Elixir (Phoenix)"],
+    options: ["Next.js (API Routes)", "None (Client-Side Only)", "Node.js", "Python (FastAPI/Django)", "Laravel", "NestJS", "Node.js (MQTT Broker)", "Firebase Cloud Functions", "Spring Boot", "Go", "Ruby on Rails", "Rust (Actix/Axum)", "MicroPython / C++", "Elixir (Phoenix)"],
   },
   {
     id: "database" as StackCategory, title: "Database", subtitle: "Penyimpanan data",
     icon: <Database size={20} strokeWidth={2} />,
     color: "#eab308", bg: "rgba(234,179,8,0.15)",
-    options: ["PostgreSQL", "MySQL", "MongoDB", "Supabase", "Firebase", "Redis", "SQLite / Turso", "DynamoDB", "ClickHouse"],
+    options: ["PostgreSQL", "LocalStorage / IndexedDB", "MySQL", "MongoDB", "Supabase", "Firebase Firestore", "SQLite (Offline-First)", "Redis", "InfluxDB / TimescaleDB", "DynamoDB", "ClickHouse"],
   },
   {
     id: "deployment" as StackCategory, title: "Deployment", subtitle: "Hosting & infra",
     icon: <Cloud size={20} strokeWidth={2} />,
     color: "#a855f7", bg: "rgba(168,85,247,0.15)",
-    options: ["Vercel", "AWS", "Google Cloud", "Azure", "Railway", "Docker", "Cloudflare Workers / Pages", "Fly.io", "Render"],
+    options: ["Vercel", "GitHub Pages", "Google Play & App Store", "AWS", "Railway", "PlatformIO / OTA", "EAS (Expo)", "Cloudflare Workers / Pages", "Google Cloud", "Azure", "Docker", "Fly.io", "Render"],
   }
 ];
 
@@ -43,15 +43,39 @@ export const POPULAR_STACK_PRESETS = [
     }
   },
   {
-    id: "t3-stack",
-    label: "T3 / Node Stack",
-    desc: "Next.js + Node.js + Postgres",
-    badge: "Enterprise",
+    id: "vanilla-web",
+    label: "HTML + CSS + JS",
+    desc: "Vanilla Web + LocalStorage + GitHub Pages",
+    badge: "Zero Backend",
     stacks: {
-      frontend: "Next.js",
-      backend: "Node.js",
-      database: "PostgreSQL",
-      deployment: "Vercel"
+      frontend: "HTML5 / Vanilla JS",
+      backend: "None (Client-Side Only)",
+      database: "LocalStorage / IndexedDB",
+      deployment: "GitHub Pages"
+    }
+  },
+  {
+    id: "flutter-mobile",
+    label: "Flutter Mobile App",
+    desc: "Flutter (Dart) + Firebase + App Stores",
+    badge: "Mobile App",
+    stacks: {
+      frontend: "Flutter (Dart)",
+      backend: "Firebase Cloud Functions",
+      database: "Firebase Firestore",
+      deployment: "Google Play & App Store"
+    }
+  },
+  {
+    id: "iot-esp32",
+    label: "IoT & Hardware Stack",
+    desc: "ESP32 (C++) + MQTT + InfluxDB / SQLite",
+    badge: "IoT / Hardware",
+    stacks: {
+      frontend: "Embedded C/C++ (ESP32)",
+      backend: "Node.js (MQTT Broker)",
+      database: "InfluxDB / TimescaleDB",
+      deployment: "PlatformIO / OTA"
     }
   },
   {
@@ -67,6 +91,30 @@ export const POPULAR_STACK_PRESETS = [
     }
   },
   {
+    id: "t3-stack",
+    label: "T3 / Node Stack",
+    desc: "Next.js + Node.js + Postgres",
+    badge: "Enterprise",
+    stacks: {
+      frontend: "Next.js",
+      backend: "Node.js",
+      database: "PostgreSQL",
+      deployment: "Vercel"
+    }
+  },
+  {
+    id: "expo-supabase",
+    label: "React Native Expo",
+    desc: "React Native + Supabase + EAS",
+    badge: "Mobile App",
+    stacks: {
+      frontend: "React Native (Expo)",
+      backend: "Node.js",
+      database: "Supabase",
+      deployment: "EAS (Expo)"
+    }
+  },
+  {
     id: "mern-stack",
     label: "MERN Stack",
     desc: "React + Node.js + Mongo + Railway",
@@ -76,18 +124,6 @@ export const POPULAR_STACK_PRESETS = [
       backend: "Node.js",
       database: "MongoDB",
       deployment: "Railway"
-    }
-  },
-  {
-    id: "expo-supabase",
-    label: "Mobile Expo Stack",
-    desc: "React Native + Supabase + Cloudflare",
-    badge: "Mobile",
-    stacks: {
-      frontend: "React Native",
-      backend: "Node.js",
-      database: "Supabase",
-      deployment: "Cloudflare Workers / Pages"
     }
   }
 ];

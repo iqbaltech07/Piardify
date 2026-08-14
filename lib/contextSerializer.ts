@@ -188,77 +188,23 @@ function renderSnapshotComment(): string {
 }
 
 function renderSystemDirectives(directives: ContextInput["directives"], design?: DesignData): string {
-  const { antiHallucinationRules, codeQuality, tasteSkill } = directives;
+  const { antiHallucinationRules, tasteSkill } = directives;
 
-  // Critical Design Locks & Layout Governance (Top-of-File Pinning - Solusi 1 & 4)
+  // Critical Design Locks & Layout Governance (Top-of-File Pinning)
   const criticalLocksBlock = renderCriticalDesignLocks(design);
   const layoutGovernanceBlock = renderLayoutGovernance();
   const currencyDirectivesBlock = renderCurrencyDirectives();
 
-  // Anti-Hallucination Rules
+  // Minified Anti-Hallucination Rules (1-line per rule for token efficiency)
   const rulesBlock = antiHallucinationRules.rules
-    .map(
-      (r) => `  <rule id="${escapeXml(r.id)}">
-    ${escapeXml(r.rule)}
-    - Validation: ${escapeXml(r.validation)}
-    - Failure: ${escapeXml(r.failure_consequence)}
-  </rule>`
-    )
+    .map((r) => `  <rule id="${escapeXml(r.id)}">${escapeXml(r.rule)}</rule>`)
     .join("\n");
 
-  // Design Hierarchy
-  const dh = antiHallucinationRules.designHierarchy;
-  const hierarchyBlock = `  <design_hierarchy>
-    Rule: ${escapeXml(dh.rule)}
-    Level 1 (Ground Truth): ${escapeXml(dh.level1_ground_truth)}
-    Level 2 (Engineering Quality): ${escapeXml(dh.level2_engineering_quality)}
-    Conflict Resolution: ${escapeXml(dh.conflictResolution)}
-  </design_hierarchy>`;
-
-  const selfCheckBlock = `  <self_check_prompt>${escapeXml(antiHallucinationRules.selfCheckPrompt)}</self_check_prompt>`;
-
-  // Code Quality
-  const tsBlock = `  <code_quality severity="${escapeXml(codeQuality.severity)}">
-    <typescript>
-      <forbidden>
-${codeQuality.typeScript.FORBIDDEN.map((f) => `        - ${escapeXml(f)}`).join("\n")}
-      </forbidden>
-      <required>
-${codeQuality.typeScript.REQUIRED.map((r) => `        - ${escapeXml(r)}`).join("\n")}
-      </required>
-    </typescript>
-    <architecture>
-${codeQuality.architecture.rules.map((r) => `      - ${escapeXml(r)}`).join("\n")}
-    </architecture>
-    <component_structure>
-${codeQuality.componentStructure.order.map((o) => `      ${escapeXml(o)}`).join("\n")}
-    </component_structure>
-    <example>
-${cdata(codeQuality.typeScript.example)}
-    </example>
-  </code_quality>`;
-
-  // Taste Skill — active skill content as raw Markdown (CDATA-wrapped)
+  // Lazy-Loaded Taste Skill Pointer (Zero-Redundancy: On-Demand Fetch via .piardify/sync taste <key>)
   const ts = tasteSkill;
-  const tasteBlock = `  <taste_skill name="${escapeXml(ts.name)}" version="${escapeXml(ts.version)}" active_key="${escapeXml(ts.activeSkillKey)}">
-    <router_info>
-      Selected Reason: ${escapeXml(ts.routerInfo.selectedReason)}
-      Available Skills: ${escapeXml(ts.routerInfo.availableSkills.join(", "))}
-      Fetch Other: ${escapeXml(ts.routerInfo.fetchOtherSkillInstruction)}
-    </router_info>
-    <active_skill_content>
-${cdata(ts.activeSkillContent)}
-    </active_skill_content>
-    <taste_directives>
-${cdata(compactJson(ts.tasteSkillDirectives))}
-    </taste_directives>
-    <code_skeletons>
-${renderCodeSkeletons(ts.codeSkeletons)}
-    </code_skeletons>
-    <examples>
-${renderExamples(ts.examples)}
-    </examples>
-  </taste_skill>`;
+  const tasteBlock = `  <active_skill key="${escapeXml(ts.activeSkillKey)}" fetch_cmd=".piardify/sync taste ${escapeXml(ts.activeSkillKey)}">
+    Selected: ${escapeXml(ts.routerInfo.selectedReason)} | Standard: Obsidian Surface (#090A0C), 150-250ms spring motion, shadcn/ui mandatory, zero-slop.
+  </active_skill>`;
 
   return `<system_directives>
 ${criticalLocksBlock}
@@ -267,15 +213,9 @@ ${layoutGovernanceBlock}
 
 ${currencyDirectivesBlock}
 
-  <anti_hallucination_rules severity="${escapeXml(antiHallucinationRules.severity)}">
+  <anti_hallucination_rules>
 ${rulesBlock}
   </anti_hallucination_rules>
-
-${hierarchyBlock}
-
-${selfCheckBlock}
-
-${tsBlock}
 
 ${tasteBlock}
 </system_directives>`;
@@ -308,6 +248,10 @@ function renderCriticalDesignLocks(design?: DesignData): string {
       - PLACEMENT: "Self-standing inline icons or inside action buttons"
       - FORBIDDEN: "Icon Container Syndrome (p-3 rounded-xl bg-purple-500/10 boxes above headings)"
     </iconography_discipline>
+    <component_framework_mandate>
+      - MANDATORY_LIBRARY: "ALWAYS use shadcn/ui primitives (@/components/ui/*) for UI component creation and editing (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge)"
+      - FORBIDDEN: "Do NOT create raw unstyled HTML buttons/inputs from scratch when shadcn/ui primitives exist"
+    </component_framework_mandate>
     <motion_subsystem>
       - DURATION: "150ms - 250ms with spring physics or cubic-bezier(0.16, 1, 0.3, 1)"
       - FORBIDDEN: "Slow 800ms fade-in-up scroll delays, typewriter loops, or glitch cursor slop"
@@ -400,49 +344,26 @@ ${cdata(prd)}
 }
 
 function renderDesignData(design: DesignData): string {
-  // Color tokens (compact, fast-lookup index) + raw design markdown (CDATA).
-  // design_sections is intentionally omitted: it is derived from the same
-  // raw markdown, so shipping it again is pure token waste.
+  // Color tokens (compact, fast-lookup index).
+  // raw_design_markdown is omitted to eliminate token waste since colorTokens & critical_design_locks cover all design system rules.
   return `<design_data>
   <color_tokens>
 ${cdata(compactJson(design.colorTokens))}
   </color_tokens>
-
-  <raw_design_markdown>
-${cdata(design.rawMarkdown)}
-  </raw_design_markdown>
 </design_data>`;
 }
 
 function renderTaskList(tasks: unknown, taskStatuses: Record<string, string>): string {
+  // Active task filtering for zero-redundancy: focus on active and pending tasks
+  const activeStatuses: Record<string, string> = {};
+  for (const [id, status] of Object.entries(taskStatuses || {})) {
+    const s = String(status).toLowerCase();
+    if (s === "in_progress" || s === "pending" || s === "current") {
+      activeStatuses[id] = status;
+    }
+  }
+
   return `<task_list>
-${cdata(compactJson({ phases: tasks, taskStatuses }))}
+${cdata(compactJson({ activeTaskStatuses: activeStatuses, taskSummary: tasks }))}
 </task_list>`;
-}
-
-function renderCodeSkeletons(skeletons: Record<string, string>): string {
-  return Object.entries(skeletons)
-    .map(
-      ([name, code]) => `      <skeleton name="${escapeXml(name)}">
-${cdata(code)}
-      </skeleton>`
-    )
-    .join("\n");
-}
-
-function renderExamples(examples: Record<string, Record<string, string>>): string {
-  return Object.entries(examples)
-    .map(([category, items]) => {
-      const itemsStr = Object.entries(items)
-        .map(
-          ([name, code]) => `        <example name="${escapeXml(name)}">
-${cdata(code)}
-        </example>`
-        )
-        .join("\n");
-      return `      <category name="${escapeXml(category)}">
-${itemsStr}
-      </category>`;
-    })
-    .join("\n");
 }

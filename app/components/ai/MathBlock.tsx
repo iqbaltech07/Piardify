@@ -34,7 +34,7 @@ export const MathBlock: React.FC<MathBlockProps> = ({ math, block = false }) => 
     return (
       <div
         dangerouslySetInnerHTML={{ __html: html }}
-        className="my-4 py-3 px-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center overflow-x-auto text-slate-100 shadow-inner"
+        className="my-4 py-3 px-4 rounded-xl bg-[#121318]/60 border border-slate-800 text-center overflow-x-auto text-slate-100 shadow-inner"
       />
     );
   }

@@ -47,8 +47,8 @@ Phase 2: Setup Base
 Phase 3: UI Frontend
 - Granular UI tasks (1-by-1 per section/component): Hero Section, Header CTA, Features Grid, Sidebar Navigation, Form Modals, Footer, etc.
 - MUST explicitly instruct in task description: "Wajib membaca design.md (designData) terlebih dahulu untuk token warna, font, dan komponen UI."
-- MANDATORY REACT BITS DIRECTIVE: For Hero Section and UI components, task description MUST state: "Wajib menggunakan React Bits (reactbits.dev) untuk animasi UI, background FX Hero Section (misal: Aurora Background, Grid Pattern, Spotlight Card, Text Animations), & komponen interaktif."
-- MANDATORY SKILL FOCUS & ZERO-SLOP GATE: Task description MUST state: "AI Agent WAJIB fokus & TIDAK BOLEH melewatkan Taste Skill. Setiap UI/komponen/halaman WAJIB 100% eye-catching, bebas dari AI slop, dan DILARANG BERHALUSINASI. Deklarasikan '🎨 Active Design Skill', blok '<skill_comprehension>', dan '<design_plan>' sebelum menulis kode UI."
+- MANDATORY REACT BITS ADAPTIVE DIRECTIVE: For all Web App projects, task description MUST state: "Wajib menggunakan React Bits (reactbits.dev) untuk animasi UI, background FX Hero Section (misal: Aurora Background, Grid Pattern, Spotlight Card, Text Animations), & komponen interaktif. Jangan gunakan komponen default kaku; sesuaikan dan biarkan AI mencari komponen React Bits yang tepat agar desain hidup, modern, dan menarik."
+- MANDATORY SKILL FOCUS & ZERO-SLOP GATE: Task description MUST state: "AI Agent WAJIB fokus & TIDAK BOLEH melewatkan Taste Skill. Setiap UI/komponen/halaman WAJIB 100% eye-catching, modern, hidup (vibrant), bebas dari AI slop, dan DILARANG BERHALUSINASI. Deklarasikan '🎨 Active Design Skill', blok '<skill_comprehension>', dan '<design_plan>' sebelum menulis kode UI."
 - Allowed to use initial mock/dummy data so user can preview and test UI visual interaction first.
 - MUST END WITH CHECKPOINT 2 TASK AS THE VERY LAST TASK OF PHASE 3: "[CHECKPOINT] Review & ACC Tampilan Frontend (Mock Data) dengan User".
 - Description of Checkpoint 2 MUST state: "AI Agent WAJIB STOP di sini setelah menguji seluruh UI Phase 3. Tampilkan UI ke user dan tunggu konfirmasi/ACC dari user sebelum menyentuh Backend atau merubah data mock."
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { projectId } = await parseBody(req, projectIdSchema);
+    const { projectId, forceSync } = await parseBody(req, projectIdSchema);
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -112,15 +112,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "DAILY_LIMIT_REACHED", message: `Batas generate harian tercapai. Coba lagi besok.` }, { status: 429 });
     }
 
-    // 1. Check Redis Cache
+    // 1. Check Redis Cache (Bypassed if forceSync or tasksOutdated)
     const cacheKey = `project:${projectId}:tasks`;
-    try {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        return NextResponse.json(cached);
+    if (!forceSync) {
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return NextResponse.json(cached);
+        }
+      } catch (err) {
+        console.warn("Redis Cache Miss/Error:", err);
       }
-    } catch (err) {
-      console.warn("Redis Cache Miss/Error:", err);
     }
 
     // 2. Check Database (typed ownership)
@@ -141,7 +143,7 @@ export async function POST(req: NextRequest) {
     }
 
     const form = project.formInputs ? JSON.parse(project.formInputs) : {};
-    const isOutdated = form._tasksOutdated === true;
+    const isOutdated = form._tasksOutdated === true || forceSync === true;
 
     if (project.taskData && !isOutdated) {
       const data = JSON.parse(project.taskData);

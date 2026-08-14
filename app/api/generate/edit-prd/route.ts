@@ -53,21 +53,30 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
+    const isEditIntent = /(tambah|ubah|ganti|update|edit|hapus|masukkan|terapkan|buatkan|revisi|sesuaikan|add|remove|change|insert|delete|append|modify|fix|perbaiki)/i.test(prompt);
+
     const systemPrompt = `You are an expert AI Product Manager and Brainstorming Partner.
 You are helping the user refine, discuss, or update their Product Requirements Document (PRD).
 
-Task Instructions:
+TASK INSTRUCTIONS:
 1. Analyze the user's prompt instruction.
-2. Determine if the user is BRAINSTORMING / ASKING A QUESTION / DISCUSSING (e.g. asking for ideas, pros/cons, recommendations, technical advice, feedback, or asking questions about the project).
-   - If BRAINSTORMING: Provide a helpful, clear conversational response in Indonesian answering their question or offering creative PM ideas. Do NOT edit the PRD markdown. Set "isPrdUpdated" to false, and "updatedMarkdown" to null.
-3. Determine if the user explicitly wants to REVISE / EDIT / ADD TO / REMOVE / UPDATE the PRD (e.g. "Tambahkan fitur X", "Hapus section Y", "Ubah bahasa ke Inggris", "Terapkan poin-poin tadi ke PRD").
-   - If EDITING: Provide a short friendly confirmation message in "reply" (e.g., "Saya telah memperbarui PRD dengan menambahkan fitur X!"), set "isPrdUpdated" to true, and generate the FULL updated PRD markdown in "updatedMarkdown".
+2. Determine if the user is BRAINSTORMING / ASKING A QUESTION / DISCUSSING (e.g. asking for ideas, pros/cons, recommendations, technical advice, feedback).
+   - If BRAINSTORMING: Provide a helpful, clear conversational response in Indonesian answering their question. Set isPrdUpdated to false.
+3. Determine if the user wants to REVISE / EDIT / ADD TO / REMOVE / UPDATE / FIX the PRD (e.g. "Tambahkan fitur X", "Hapus section Y", "Ubah bahasa", "Terapkan rekomendasi tadi").
+   - If EDITING: Provide a friendly confirmation message and generate the FULL updated PRD markdown.
 
-You MUST respond strictly with a valid JSON object matching this schema:
+OUTPUT FORMAT (You can use Tagged Format for maximum reliability):
+<reply>Your conversational response, answer, ideas, or edit confirmation in Indonesian.</reply>
+<is_prd_updated>true or false</is_prd_updated>
+<updated_prd>
+(Full updated PRD markdown here if is_prd_updated is true, otherwise leave empty)
+</updated_prd>
+
+Alternatively, you may return strict valid JSON:
 {
-  "reply": "Your conversational response, answer, ideas, or edit confirmation in Indonesian.",
-  "isPrdUpdated": true or false,
-  "updatedMarkdown": "Full updated PRD markdown string IF isPrdUpdated is true, otherwise null."
+  "reply": "Your conversational response in Indonesian.",
+  "isPrdUpdated": true,
+  "updatedMarkdown": "Full updated PRD markdown string"
 }`;
 
     const userPrompt = `=== CURRENT PRD START ===
@@ -77,10 +86,10 @@ ${currentPrd}
 === USER INSTRUCTION ===
 ${prompt}
 
-Respond in valid JSON according to the instructions.`;
+${isEditIntent ? "USER INTENT: The user wants to EDIT/UPDATE the PRD. Please provide the updated PRD with their changes applied." : ""}`;
 
     let rawText = "";
-    const modelToUse = selectedModel || "gemini-3.5-flash";
+    const modelToUse = selectedModel || "gemini-3.7-flash";
 
     if (modelToUse.startsWith("gemini-")) {
       const res = await generateGemini({
@@ -95,7 +104,7 @@ Respond in valid JSON according to the instructions.`;
         systemPrompt,
         userPrompt,
         model: modelToUse,
-        jsonObject: true,
+        jsonObject: false,
       });
       rawText = res.text;
     }
@@ -104,44 +113,78 @@ Respond in valid JSON according to the instructions.`;
       return NextResponse.json({ error: "Failed to process prompt" }, { status: 500 });
     }
 
-    function parseOrExtractJsonResponse(text: string): { reply: string; isPrdUpdated: boolean; updatedMarkdown?: string | null } {
-      const cleanJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+    function parseOrExtractResponse(text: string): { reply: string; isPrdUpdated: boolean; updatedMarkdown?: string | null } {
+      const trimmed = text.trim();
 
-      // 1. Try robust parseAndRepairJson
-      const repairedObj = parseAndRepairJson<Record<string, unknown>>(text);
-      if (repairedObj && typeof repairedObj === "object") {
+      // 1. Check Tagged Delimiter Format (<reply>...</reply>, <updated_prd>...</updated_prd>)
+      const replyTagMatch = trimmed.match(/<reply>([\s\S]*?)<\/reply>/i);
+      const isUpdatedTagMatch = trimmed.match(/<is_prd_updated>([\s\S]*?)<\/is_prd_updated>/i);
+      const prdTagMatch = trimmed.match(/<updated_prd>([\s\S]*?)<\/updated_prd>/i);
+
+      if (replyTagMatch || prdTagMatch) {
+        const reply = replyTagMatch ? replyTagMatch[1].trim() : "Perubahan PRD telah diterapkan.";
+        const isUpdatedStr = isUpdatedTagMatch ? isUpdatedTagMatch[1].trim().toLowerCase() : "";
+        const prdContent = prdTagMatch ? prdTagMatch[1].trim() : "";
+        const isPrdUpdated = isUpdatedStr === "true" || prdContent.length > 50 || isEditIntent;
+
         return {
-          reply: typeof repairedObj.reply === "string" ? repairedObj.reply : "Respons diterima.",
-          isPrdUpdated: Boolean(repairedObj.isPrdUpdated),
-          updatedMarkdown: typeof repairedObj.updatedMarkdown === "string" ? repairedObj.updatedMarkdown : null,
+          reply: reply || "PRD berhasil diperbarui!",
+          isPrdUpdated: isPrdUpdated && prdContent.length > 30,
+          updatedMarkdown: prdContent.length > 30 ? prdContent : null,
         };
       }
 
-      // 2. Fallback: Extract "reply" value via regex if JSON syntax was malformed
-      const replyMatch = cleanJson.match(/"reply"\s*:\s*"([\s\S]*?)"(?:\s*,\s*"isPrdUpdated"|\s*})/);
-      let replyText = replyMatch ? replyMatch[1] : "";
+      // 2. Try JSON Parse
+      const repairedObj = parseAndRepairJson<Record<string, unknown>>(text);
+      if (repairedObj && typeof repairedObj === "object") {
+        const reply = typeof repairedObj.reply === "string" ? repairedObj.reply : "Respons diterima.";
+        const isPrdUpdated = Boolean(repairedObj.isPrdUpdated);
+        const updatedMarkdown = typeof repairedObj.updatedMarkdown === "string" ? repairedObj.updatedMarkdown : null;
 
-      if (!replyText && cleanJson.includes('"reply"')) {
-        const idx = cleanJson.indexOf('"reply"');
-        if (idx !== -1) {
-          const afterReply = cleanJson.substring(idx + 7);
-          const firstQuote = afterReply.indexOf('"');
-          if (firstQuote !== -1) {
-            replyText = afterReply.substring(firstQuote + 1);
-          }
+        if (isPrdUpdated && updatedMarkdown && updatedMarkdown.trim().length > 30) {
+          return {
+            reply,
+            isPrdUpdated: true,
+            updatedMarkdown: updatedMarkdown.trim(),
+          };
         }
       }
 
-      if (replyText) {
+      // 3. Fallback: Regex extraction for JSON strings with unescaped newlines
+      const mdMatch = text.match(/"updatedMarkdown"\s*:\s*"([\s\S]*?)"(?:\s*,\s*"|\s*})/);
+      const replyMatch = text.match(/"reply"\s*:\s*"([\s\S]*?)"(?:\s*,\s*"|\s*})/);
+
+      let extractedMd = mdMatch ? mdMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "";
+      let extractedReply = replyMatch ? replyMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "";
+
+      if (extractedMd && extractedMd.length > 50) {
         return {
-          reply: replyText.replace(/\\n/g, "\n").replace(/\\"/g, '"'),
-          isPrdUpdated: false,
-          updatedMarkdown: null,
+          reply: extractedReply || "Saya telah memperbarui PRD sesuai instruksi Anda.",
+          isPrdUpdated: true,
+          updatedMarkdown: extractedMd,
         };
       }
 
-      // 3. Clean raw text fallback
-      let cleanText = cleanJson;
+      // 4. Fallback: Check if response contains direct Markdown headings (e.g. # PRODUCT REQUIREMENTS DOCUMENT)
+      if (text.includes("# PRODUCT REQUIREMENTS DOCUMENT") || (text.includes("## 1. Overview") && text.length > 200)) {
+        let cleanMd = text;
+        if (cleanMd.includes("```markdown")) {
+          const match = cleanMd.match(/```markdown([\s\S]*?)```/);
+          if (match) cleanMd = match[1];
+        } else if (cleanMd.includes("```")) {
+          const match = cleanMd.match(/```([\s\S]*?)```/);
+          if (match) cleanMd = match[1];
+        }
+
+        return {
+          reply: "PRD telah berhasil diperbarui dan diselaraskan.",
+          isPrdUpdated: true,
+          updatedMarkdown: cleanMd.trim(),
+        };
+      }
+
+      // 5. Pure conversational response
+      let cleanText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
       if (cleanText.startsWith("{") && cleanText.endsWith("}")) {
         cleanText = cleanText.slice(1, -1).trim();
       }
@@ -154,7 +197,7 @@ Respond in valid JSON according to the instructions.`;
       };
     }
 
-    const parsed = parseOrExtractJsonResponse(rawText);
+    const parsed = parseOrExtractResponse(rawText);
 
     let updatedMarkdown = parsed.updatedMarkdown || "";
 

@@ -89,7 +89,7 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({ chart }) => {
           <span>Diagram Render Warning</span>
         </div>
         <p className="text-xs text-amber-300/80 mb-3 font-mono">{error}</p>
-        <pre className="text-[11px] font-mono bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-slate-300 overflow-x-auto">
+        <pre className="text-[11px] font-mono bg-[#121318]/80 p-3 rounded-lg border border-slate-800 text-slate-300 overflow-x-auto">
           {chart}
         </pre>
       </div>

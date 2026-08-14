@@ -92,7 +92,7 @@ const MessageRendererComponent: React.FC<MessageRendererProps> = ({
           className={`relative px-4 py-3 rounded-2xl shadow-xl backdrop-blur-md transition-all min-w-0 max-w-full overflow-hidden wrap-break-word ${
             isUser
               ? "rounded-tr-xs bg-linear-to-br from-indigo-600/30 via-indigo-700/25 to-indigo-900/30 border border-indigo-500/40 text-slate-100"
-              : "rounded-tl-xs bg-slate-900/80 border border-slate-800/90 text-slate-200"
+              : "rounded-tl-xs bg-[#121318]/80 border border-slate-800/90 text-slate-200"
           }`}
         >
           {/* Top Quick Actions (Copy) */}
@@ -114,9 +114,9 @@ const MessageRendererComponent: React.FC<MessageRendererProps> = ({
           {/* Streaming Dot Indicator */}
           {message.isStreaming && (
             <div className="inline-flex items-center gap-1 mt-2">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse delay-75" />
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse delay-150" />
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce" />
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce [animation-delay:300ms]" />
             </div>
           )}
         </div>

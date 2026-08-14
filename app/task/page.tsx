@@ -14,9 +14,10 @@ import {
   Sprout, Compass, PenLine, LayoutList, Lightbulb,
   Map, Timer, Telescope, Trophy, Wrench,
   CheckCircle2, PartyPopper, Award, ArrowRight, Check, Loader2,
-  Plus, MoreHorizontal, LayoutGrid, List, Sparkles, Cpu
+  Plus, MoreHorizontal, LayoutGrid, List, Cpu, RefreshCw
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import StepNavbar from "../components/StepNavbar";
 import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 import McpConnectModal from "../components/McpConnectModal";
@@ -344,54 +345,71 @@ function TaskPageContent() {
   const [finishError, setFinishError] = useState<string | null>(null);
   const [celebration, setCelebration] = useState<FinishResult | null>(null);
   const [isFinished, setIsFinished] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const fetchTasks = async (force = false) => {
+    if (!projectId) return;
+    if (force) setIsSyncing(true);
+    else setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/generate/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, forceSync: force }),
+      });
+      if (!res.ok) {
+        if (force) toast.error("Gagal menyinkronkan task list.");
+        else setError("Gagal membuat task list.");
+        return;
+      }
+      const json = await res.json();
+      if (json.error) {
+        if (force) toast.error(json.error);
+        else setError(json.error);
+      } else {
+        setData(json);
+        if (json.phases?.[0]?.id && !activePhase) setActivePhase(json.phases[0].id);
+
+        const serverSaved = json.savedStatus || {};
+        let initialStatuses: Record<string, ColumnId> = {};
+
+        const localKey = `kanban_status_${projectId}`;
+        let localStatuses: Record<string, ColumnId> = {};
+        try {
+          const localSaved = localStorage.getItem(localKey);
+          if (localSaved) localStatuses = JSON.parse(localSaved);
+        } catch (e) {}
+
+        json.phases.forEach((p: Phase) => {
+          p.tasks.forEach((t: Task) => {
+            if (serverSaved[t.id]) {
+              initialStatuses[t.id] = typeof serverSaved[t.id] === "string" ? serverSaved[t.id] : (serverSaved[t.id] === true ? "done" : "todo");
+            } else if (localStatuses[t.id]) {
+              initialStatuses[t.id] = localStatuses[t.id];
+            } else {
+              initialStatuses[t.id] = (t.status as ColumnId) || "todo";
+            }
+          });
+        });
+
+        setTaskStatus(initialStatuses);
+        try { localStorage.setItem(localKey, JSON.stringify(initialStatuses)); } catch (e) {}
+        if (force) toast.success("Task list berhasil disinkronkan dengan PRD & Struktur!");
+      }
+    } catch {
+      if (force) toast.error("Koneksi gagal saat sinkronisasi.");
+      else setError("Failed to connect to the server.");
+    } finally {
+      setIsLoading(false);
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     if (hasStarted || !projectId) return;
     setHasStarted(true);
-    const go = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch("/api/generate/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId }) });
-        if (!res.ok) { setError("Gagal membuat task list."); return; }
-        const json = await res.json();
-        if (json.error) setError(json.error);
-        else {
-          setData(json);
-          if (json.phases?.[0]?.id) setActivePhase(json.phases[0].id);
-
-          // Server State Priority: Server DB (including AI Agent CLI updates) takes priority
-          const serverSaved = json.savedStatus || {};
-          let initialStatuses: Record<string, ColumnId> = {};
-
-          const localKey = `kanban_status_${projectId}`;
-          let localStatuses: Record<string, ColumnId> = {};
-          try {
-            const localSaved = localStorage.getItem(localKey);
-            if (localSaved) localStatuses = JSON.parse(localSaved);
-          } catch (e) {
-            console.warn("Failed to load local kanban status:", e);
-          }
-
-          json.phases.forEach((p: Phase) => {
-            p.tasks.forEach((t: Task) => {
-              if (serverSaved[t.id]) {
-                initialStatuses[t.id] = typeof serverSaved[t.id] === "string" ? serverSaved[t.id] : (serverSaved[t.id] === true ? "done" : "todo");
-              } else if (localStatuses[t.id]) {
-                initialStatuses[t.id] = localStatuses[t.id];
-              } else {
-                initialStatuses[t.id] = (t.status as ColumnId) || "todo";
-              }
-            });
-          });
-
-          setTaskStatus(initialStatuses);
-          // Sync updated state to localStorage
-          try { localStorage.setItem(localKey, JSON.stringify(initialStatuses)); } catch (e) {}
-        }
-      } catch { setError("Failed to connect to the server."); }
-      finally { setIsLoading(false); }
-    };
-    go();
+    fetchTasks(false);
   }, [hasStarted, projectId]);
 
   // Track latest taskStatus in ref for zero-latency on-leave sync
@@ -641,6 +659,23 @@ function TaskPageContent() {
             >
               <Cpu size={12} style={{ color: "var(--color-circuit)" }} />
               Setup AI Agent CLI
+            </button>
+          )}
+          {!isLoading && data && (
+            <button
+              onClick={() => fetchTasks(true)}
+              disabled={isSyncing}
+              style={{
+                ...btn,
+                background: isSyncing ? "rgba(255,182,39,0.15)" : "var(--bg-elevated)",
+                borderColor: isSyncing ? "var(--color-signal)" : "var(--border-hairline)",
+                color: isSyncing ? "var(--color-signal)" : "var(--fg-secondary)",
+                cursor: isSyncing ? "not-allowed" : "pointer",
+              }}
+              title="Sync tasks with latest PRD and Structure changes"
+            >
+              <RefreshCw size={11} className={isSyncing ? "animate-spin" : ""} style={{ color: isSyncing ? "var(--color-signal)" : "var(--fg-muted)" }} />
+              {isSyncing ? "Syncing…" : "Sync Tasks"}
             </button>
           )}
           {!isLoading && data && (

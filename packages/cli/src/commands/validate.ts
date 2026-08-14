@@ -77,6 +77,8 @@ export async function validateCommand(options: { target?: string; json?: boolean
         const lineContent = lines[i];
         const lineNum = i + 1;
 
+        if (lineContent.includes("// piardify-allow") || relPath.includes("tasteSkill") || relPath.includes("contextSerializer")) continue;
+
         // 1. Check Gradient Text on Headline
         if (/<h[1-6]/i.test(lineContent) || /className=.*text-(2xl|3xl|4xl|5xl|6xl)/i.test(lineContent)) {
           if (lineContent.includes("bg-gradient-") || (lineContent.includes("text-transparent") && lineContent.includes("bg-clip-text"))) {
@@ -136,6 +138,56 @@ export async function validateCommand(options: { target?: string; json?: boolean
             file: relPath,
             line: lineNum,
             advice: "Remove decorative pulsing dots and badges from non-Hero sections.",
+          });
+        }
+
+        // 4b. Excessive Pill Badges on Non-Status Elements (Taste Skill v2 & Piardify v3.0)
+        if (lineContent.includes("rounded-full") && (/<h[1-6]/i.test(lineContent) || /className=.*text-(lg|xl|2xl|3xl)/i.test(lineContent) || lineContent.includes("Category") || lineContent.includes("Feature"))) {
+          if (!lineContent.includes("status") && !lineContent.includes("badge-status") && !lineContent.includes("avatar") && !lineContent.includes("isStreaming")) {
+            issues.push({
+              type: "error",
+              code: "EXCESSIVE_PILL_BADGES",
+              message: "Misplaced / Excessive Pill Badge ('rounded-full') detected on non-status label",
+              file: relPath,
+              line: lineNum,
+              advice: "Reserve 'rounded-full' exclusively for real dynamic status tags (e.g. Active, Beta). Use crisp typography with tracking-widest font-mono for section labels.",
+            });
+          }
+        }
+
+        // 4c. Forbidden Sparkles & Shimmer Slop (Piardify v3.0)
+        if ((lineContent.includes("Sparkles") || lineContent.includes("Wand2") || lineContent.includes("animate-shimmer")) && !relPath.includes("generate") && !relPath.includes("prompt") && !relPath.includes("ai/")) {
+          issues.push({
+            type: "error",
+            code: "FORBIDDEN_SPARKLES_SHIMMER_SLOP",
+            message: "Cliché AI Sparkles icon or shimmer animation detected on generic UI container",
+            file: relPath,
+            line: lineNum,
+            advice: "Remove decorative Sparkles/Wand icons and shimmer effects. Rely on clean material surface layers, crisp typography, and tactile spring hover states.",
+          });
+        }
+
+        // 4d. Side-Tab Accent Border Slop (Taste Skill v2 §3.6)
+        if (/border-[lrtb]-4\s+border-(purple|blue|indigo)-/i.test(lineContent)) {
+          issues.push({
+            type: "error",
+            code: "SIDE_TAB_ACCENT_BORDER",
+            message: "1-Sided Thick Accent Border detected on card container",
+            file: relPath,
+            line: lineNum,
+            advice: "Avoid 1-sided thick accent borders. Use uniform subtle borders (border border-border) with surface background contrast instead.",
+          });
+        }
+
+        // 4e. Cliché Purple-Blue-Cyan Gradient Slop (Taste Skill v2 §3.2)
+        if (/from-purple-.*(to-blue-|to-cyan-|via-blue-)/i.test(lineContent) || /from-violet-.*to-cyan-/i.test(lineContent)) {
+          issues.push({
+            type: "error",
+            code: "PURPLE_BLUE_GRADIENT_SLOP",
+            message: "Cliché Purple-Blue-Cyan Neon Gradient detected",
+            file: relPath,
+            line: lineNum,
+            advice: "Avoid cliché purple-blue-cyan neon gradients. Use rich obsidian dark surfaces with single-color accents.",
           });
         }
 
@@ -239,7 +291,7 @@ export async function validateCommand(options: { target?: string; json?: boolean
       }));
     } else {
       console.log("\n==========================================");
-      console.log(`  Piardify UI/UX Anti-Slop Linter v2.0`);
+      console.log(`  Piardify UI/UX Anti-Slop Linter v2.7.1`);
       console.log(`  Target Domain: ${target.toUpperCase()}`);
       console.log(`  Scanned Files: ${filesToScan.length}`);
       console.log("==========================================\n");
