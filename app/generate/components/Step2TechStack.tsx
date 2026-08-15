@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { StackCategory, FormData } from "../types";
 import { TECH_CATEGORIES, POPULAR_STACK_PRESETS, COLOR_PALETTE_PRESETS } from "../constants";
-import { Check, ChevronDown, Bot, Construction, Plus, X, Search, Zap, Palette, Upload, FileText, Sparkles, CheckCircle2 } from "lucide-react";
+import { DESIGN_TEMPLATES_METADATA, DesignTemplateMetadata } from "@/lib/designTemplates";
+import { apiClient } from "@/lib/apiClient";
+import { Check, ChevronDown, Bot, Construction, Plus, X, Search, Zap, Palette, Upload, FileText, Sparkles, CheckCircle2, Layers, Layout, Globe, Loader2, ShieldCheck } from "lucide-react";
 
 interface Step2TechStackProps {
   stackMode: FormData["stackMode"];
@@ -321,6 +323,7 @@ export default function Step2TechStack({
   const selectedCount = Object.values(stacks).filter((v) => v !== "").length;
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const [selectedPaletteId, setSelectedPaletteId] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>("saas-webapp");
   const [showCustomMarkdown, setShowCustomMarkdown] = useState(false);
 
   const [aiLoading, setAiLoading] = useState(false);
@@ -332,27 +335,49 @@ export default function Step2TechStack({
   } | null>(null);
   const [aiApplied, setAiApplied] = useState(false);
 
+  const handleTemplateSelect = (template: DesignTemplateMetadata) => {
+    if (selectedTemplateId === template.id && designData) {
+      setSelectedTemplateId(null);
+      if (setDesignData) setDesignData("");
+      return;
+    }
+
+    setSelectedTemplateId(template.id);
+    setSelectedPaletteId(null);
+
+    // Instant in-memory assignment — 0ms latency, zero API calls
+    if (template.rawMarkdown && setDesignData) {
+      setDesignData(template.rawMarkdown);
+    }
+  };
+
+  // Auto-populate default template on mount if designData is empty
+  useEffect(() => {
+    if (!designData && selectedTemplateId) {
+      const defaultTpl = DESIGN_TEMPLATES_METADATA.find((t) => t.id === selectedTemplateId);
+      if (defaultTpl) {
+        handleTemplateSelect(defaultTpl);
+      }
+    }
+  }, []);
+
   const fetchAiRecommendation = async () => {
     if (!appIdea) return;
     setAiLoading(true);
     try {
-      const res = await fetch("/api/generate/recommend-stack", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appName, appIdea }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setAiRecommendation(json);
-        if (json.stacks) {
-          Object.entries(json.stacks).forEach(([cat, label]) => {
+      const json = await apiClient.generate.recommendStack({ appName: appName || "", appIdea });
+      if (json.success && json.recommendation) {
+        setAiRecommendation(json.recommendation as any);
+        if (json.recommendation.stacks) {
+          Object.entries(json.recommendation.stacks).forEach(([cat, label]) => {
             setStack(cat as StackCategory, label as string);
           });
         }
-        if (json.paletteId) {
-          const pal = COLOR_PALETTE_PRESETS.find(p => p.id === json.paletteId);
+        if (json.recommendation.paletteId) {
+          const pal = COLOR_PALETTE_PRESETS.find(p => p.id === json.recommendation.paletteId);
           if (pal && setDesignData) {
             setSelectedPaletteId(pal.id);
+            setSelectedTemplateId(null);
             setDesignData(generatePaletteMarkdown(pal));
           }
         }
@@ -382,6 +407,7 @@ export default function Step2TechStack({
       const pal = COLOR_PALETTE_PRESETS.find(p => p.id === aiRecommendation.paletteId);
       if (pal && setDesignData) {
         setSelectedPaletteId(pal.id);
+        setSelectedTemplateId(null);
         setDesignData(generatePaletteMarkdown(pal));
       }
     }
@@ -401,6 +427,7 @@ export default function Step2TechStack({
       if (setDesignData) setDesignData("");
     } else {
       setSelectedPaletteId(palette.id);
+      setSelectedTemplateId(null);
       if (setDesignData) {
         setDesignData(generatePaletteMarkdown(palette));
       }
@@ -415,6 +442,7 @@ export default function Step2TechStack({
         const text = evt.target?.result as string;
         if (text) {
           setSelectedPaletteId(null);
+          setSelectedTemplateId(null);
           setDesignData(text);
         }
       };
@@ -668,7 +696,7 @@ export default function Step2TechStack({
             </div>
           </div>
 
-          {/* 🎨 Dedicated Section: Design System & Color Palette */}
+          {/* 🎨 Dedicated Section: Design System & Architecture Presets (design.md) */}
           <div
             style={{
               padding: "20px",
@@ -680,15 +708,31 @@ export default function Step2TechStack({
               gap: 16,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Palette size={16} style={{ color: "var(--color-circuit)" }} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "var(--radius-sm)",
+                    background: "rgba(79, 209, 197, 0.1)",
+                    border: "1px solid rgba(79, 209, 197, 0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--color-circuit)",
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                >
+                  <Palette size={16} />
+                </div>
                 <div>
                   <h4 style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: 700, color: "var(--fg-primary)", margin: "0 0 2px" }}>
-                    Design System & Color Palette (Optional)
+                    Design System & Presets (<code style={{ color: "var(--color-signal)", fontFamily: "var(--font-mono)" }}>design.md</code>)
                   </h4>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "var(--color-mist)", margin: 0 }}>
-                    Select a theme palette or upload custom design guidelines (design.md).
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: "11.5px", color: "var(--color-mist)", margin: 0, lineHeight: 1.5 }}>
+                    Pilih template spesifikasi desain siap pakai berstandar industri (100% full spec), preset swatch warna, atau unggah file kustom.
                   </p>
                 </div>
               </div>
@@ -698,7 +742,7 @@ export default function Step2TechStack({
                   fontFamily: "var(--font-mono)",
                   fontSize: "9px",
                   fontWeight: 700,
-                  padding: "4px 10px",
+                  padding: "5px 12px",
                   borderRadius: "var(--radius-xs)",
                   background: "rgba(79, 209, 197, 0.1)",
                   color: "var(--color-circuit)",
@@ -706,11 +750,12 @@ export default function Step2TechStack({
                   border: "1px solid rgba(79, 209, 197, 0.3)",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 4,
+                  gap: 5,
                   flexShrink: 0,
+                  transition: "all 0.15s ease",
                 }}
               >
-                <Upload size={10} />
+                <Upload size={11} />
                 Upload .md
                 <input
                   type="file"
@@ -721,42 +766,100 @@ export default function Step2TechStack({
               </label>
             </div>
 
-            {/* Swatches Preset Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
-              {COLOR_PALETTE_PRESETS.map((palette) => {
-                const isSelected = selectedPaletteId === palette.id;
-                return (
-                  <div
-                    key={palette.id}
-                    onClick={() => handlePaletteSelect(palette)}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: "var(--radius-md)",
-                      border: `1px solid ${isSelected ? "var(--color-signal)" : "var(--border-hairline)"}`,
-                      background: isSelected ? "rgba(255, 182, 39, 0.08)" : "var(--bg-base)",
-                      cursor: "pointer",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    {/* Swatches dots */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-                      <span style={{ width: 14, height: 14, borderRadius: "50%", background: palette.primary, border: "1px solid rgba(255,255,255,0.2)" }} />
-                      <span style={{ width: 12, height: 12, borderRadius: "50%", background: palette.bg, border: "1px solid var(--border-hairline)" }} />
-                      <span style={{ width: 12, height: 12, borderRadius: "50%", background: palette.surface, border: "1px solid var(--border-hairline)" }} />
-                    </div>
-                    <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: isSelected ? "var(--color-signal)" : "var(--fg-primary)" }}>
-                      {palette.name}
-                    </div>
-                    <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", color: "var(--fg-muted)", letterSpacing: "0.04em" }}>
-                      {palette.theme}
-                    </div>
-                  </div>
-                );
-              })}
+            {/* 🌟 Design System Presets & Swatches */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Flagship Templates */}
+              <div>
+                <div style={{ marginBottom: 6 }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700, color: "var(--color-signal)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    Design System Templates (100% Full Spec):
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
+                  {DESIGN_TEMPLATES_METADATA.map((template) => {
+                    const isSelected = selectedTemplateId === template.id;
+                    return (
+                      <div
+                        key={template.id}
+                        onClick={() => handleTemplateSelect(template)}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: "var(--radius-md)",
+                          border: `1px solid ${isSelected ? "var(--color-signal)" : "var(--border-hairline)"}`,
+                          background: isSelected ? "rgba(255, 182, 39, 0.08)" : "var(--bg-base)",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {/* Swatches dots */}
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ width: 14, height: 14, borderRadius: "50%", background: template.primary, border: "1px solid rgba(255,255,255,0.2)" }} />
+                            <span style={{ width: 12, height: 12, borderRadius: "50%", background: template.bg, border: "1px solid var(--border-hairline)" }} />
+                            <span style={{ width: 12, height: 12, borderRadius: "50%", background: template.surface, border: "1px solid var(--border-hairline)" }} />
+                          </div>
+                          {isSelected && <CheckCircle2 size={12} style={{ color: "var(--color-signal)" }} />}
+                        </div>
+                        <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: isSelected ? "var(--color-signal)" : "var(--fg-primary)" }}>
+                          {template.name}
+                        </div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", color: "var(--fg-muted)", letterSpacing: "0.04em" }}>
+                          {template.theme}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick Color Swatches */}
+              <div style={{ borderTop: "1px dashed var(--border-hairline)", paddingTop: 10 }}>
+                <div style={{ marginBottom: 6 }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700, color: "var(--fg-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    Atau Pilih Quick Color Swatch:
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
+                  {COLOR_PALETTE_PRESETS.map((palette) => {
+                    const isSelected = selectedPaletteId === palette.id;
+                    return (
+                      <div
+                        key={palette.id}
+                        onClick={() => handlePaletteSelect(palette)}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: "var(--radius-md)",
+                          border: `1px solid ${isSelected ? "var(--color-signal)" : "var(--border-hairline)"}`,
+                          background: isSelected ? "rgba(255, 182, 39, 0.08)" : "var(--bg-base)",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ width: 14, height: 14, borderRadius: "50%", background: palette.primary, border: "1px solid rgba(255,255,255,0.2)" }} />
+                            <span style={{ width: 12, height: 12, borderRadius: "50%", background: palette.bg, border: "1px solid var(--border-hairline)" }} />
+                            <span style={{ width: 12, height: 12, borderRadius: "50%", background: palette.surface, border: "1px solid var(--border-hairline)" }} />
+                          </div>
+                          {isSelected && <CheckCircle2 size={12} style={{ color: "var(--color-signal)" }} />}
+                        </div>
+                        <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: isSelected ? "var(--color-signal)" : "var(--fg-primary)" }}>
+                          {palette.name}
+                        </div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", color: "var(--fg-muted)", letterSpacing: "0.04em" }}>
+                          {palette.theme}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Custom design.md Textarea toggle */}
-            <div>
+            <div style={{ borderTop: "1px dashed var(--border-hairline)", paddingTop: 10 }}>
               <button
                 type="button"
                 onClick={() => setShowCustomMarkdown(!showCustomMarkdown)}
@@ -770,28 +873,29 @@ export default function Step2TechStack({
                   cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 4,
+                  gap: 5,
                   padding: 0,
                 }}
               >
                 <FileText size={11} />
-                {showCustomMarkdown ? "Hide Custom design.md Editor" : "Paste Custom design.md Text directly"}
+                {showCustomMarkdown ? "Hide Custom design.md Editor" : `Lihat / Edit Raw design.md Markdown (${designData ? `${designData.length.toLocaleString()} chars` : "Kosong"})`}
               </button>
 
               {showCustomMarkdown && (
                 <textarea
-                  rows={4}
+                  rows={6}
                   placeholder="Paste custom design.md markdown content here..."
                   value={designData || ""}
                   onChange={(e) => {
                     setSelectedPaletteId(null);
+                    setSelectedTemplateId(null);
                     if (setDesignData) setDesignData(e.target.value);
                   }}
                   style={{
                     width: "100%",
                     padding: "10px 12px",
                     borderRadius: "var(--radius-sm)",
-                    fontSize: "12px",
+                    fontSize: "11.5px",
                     fontFamily: "var(--font-mono)",
                     outline: "none",
                     resize: "vertical",
@@ -806,16 +910,25 @@ export default function Step2TechStack({
               )}
             </div>
 
-            {/* Fallback Indicator */}
+            {/* Active Status Indicator */}
             {designData ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-mono)", fontSize: "9px", color: "var(--color-circuit)" }}>
-                <CheckCircle2 size={11} />
-                <span>Custom design system active ({designData.length} chars)</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: "9.5px", color: "var(--color-circuit)", background: "rgba(79, 209, 197, 0.06)", padding: "6px 10px", borderRadius: "var(--radius-xs)", border: "1px solid rgba(79, 209, 197, 0.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <CheckCircle2 size={12} />
+                  <span>
+                    {selectedTemplateId
+                      ? `Preset Aktif: ${DESIGN_TEMPLATES_METADATA.find(t => t.id === selectedTemplateId)?.name} (100% Unmodified Spec • ${designData.length.toLocaleString()} chars)`
+                      : selectedPaletteId
+                      ? `Swatch Aktif: ${COLOR_PALETTE_PRESETS.find(p => p.id === selectedPaletteId)?.name} (${designData.length} chars)`
+                      : `Custom design.md Aktif (${designData.length.toLocaleString()} chars)`}
+                  </span>
+                </div>
+                <span style={{ color: "var(--fg-muted)", fontSize: "8.5px" }}>design.md lock active</span>
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-mono)", fontSize: "9px", color: "var(--fg-muted)" }}>
                 <Sparkles size={11} style={{ color: "var(--color-signal)" }} />
-                <span>Default high-end design system template will be automatically applied.</span>
+                <span>Default high-end SaaS design system template (100% full spec) will be automatically applied.</span>
               </div>
             )}
           </div>

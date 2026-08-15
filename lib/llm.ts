@@ -23,12 +23,21 @@ interface AiSettings {
   openRouterModel?: string;
 }
 
+let cachedAiSettings: AiSettings | null = null;
+let lastAiSettingsFetch = 0;
+
 export async function getAiSettings(): Promise<AiSettings> {
+  const now = Date.now();
+  if (cachedAiSettings && now - lastAiSettingsFetch < 30_000) {
+    return cachedAiSettings;
+  }
   try {
     const raw = await redis.get<AiSettings>("app:settings");
-    return raw || {};
+    cachedAiSettings = raw || {};
+    lastAiSettingsFetch = now;
+    return cachedAiSettings;
   } catch {
-    return {};
+    return cachedAiSettings || {};
   }
 }
 

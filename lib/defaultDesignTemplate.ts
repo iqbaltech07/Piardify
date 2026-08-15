@@ -1,10 +1,22 @@
 import { parseDesignMarkdown } from "./designParser";
+import { getTemplateRawMarkdown } from "./designTemplatesServer";
 
 export function generateDefaultDesignMarkdown(
   appName: string,
   appIdea: string,
   designPreference?: string
 ): string {
+  const isLanding =
+    designPreference?.toLowerCase().includes("landing") ||
+    designPreference?.toLowerCase().includes("marketing") ||
+    designPreference?.toLowerCase().includes("portfolio");
+  const filename = isLanding ? "landing-page-design.md" : "saas-webapp-design.md";
+  const templateRaw = getTemplateRawMarkdown(filename);
+
+  if (templateRaw && templateRaw.trim()) {
+    return templateRaw;
+  }
+
   const pref = designPreference || "Modern Enterprise Light Mode (Visual-First & Users-First)";
 
   return `# Design Guidelines & System Specifications: ${appName}

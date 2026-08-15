@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify ownership
-    const project = await (prisma.project as any).findUnique({
-      where: { id: projectId, userId: session.user.id },
+    const project = await prisma.project.findUnique({
+      where: { id_userId: { id: projectId, userId: session.user.id } },
       select: {
         id: true,
         userId: true,

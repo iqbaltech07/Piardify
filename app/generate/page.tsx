@@ -11,6 +11,9 @@ import Step1Idea from "./components/Step1Idea";
 import Step2TechStack from "./components/Step2TechStack";
 import { getDynamicStep3Questions } from "./components/Step3Questions";
 import { Step } from "./types";
+import { apiClient, ApiError } from "@/lib/apiClient";
+import { useUiStore } from "@/stores/useUiStore";
+import UpgradeModal from "../components/UpgradeModal";
 
 /* Shared button style tokens */
 const btnPrimary: React.CSSProperties = {
@@ -53,9 +56,10 @@ export default function GeneratePage() {
     setAppName, setAppIdea, setStackMode,
     setDesignData,
     fetchDynamicQuestions, setDynamicAnswer,
+    resetWizard,
   } = useGenerateForm();
 
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { showUpgradeModal, setShowUpgradeModal } = useUiStore();
 
   const selectedStacksCount = Object.values(form.stacks).filter((v) => v !== "").length;
   const canProceedStep1 = form.appIdea.length >= 20 && form.appName.length >= 2;
@@ -67,24 +71,21 @@ export default function GeneratePage() {
   const handleGenerate = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/projects/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        if (res.status === 401) { router.push("/login"); return; }
-        const data = await res.json();
-        if (data.error === "LIMIT_REACHED") {
+      const data = await apiClient.projects.create(form);
+      resetWizard();
+      router.push(`/structure?projectId=${data.projectId}`);
+    } catch (err: any) {
+      if (err instanceof ApiError) {
+        if (err.statusCode === 401) {
+          router.push("/login");
+          return;
+        }
+        if (err.data && typeof err.data === "object" && (err.data as any).error === "LIMIT_REACHED") {
           setShowUpgradeModal(true);
           setLoading(false);
           return;
         }
-        throw new Error("Failed to create project");
       }
-      const data = await res.json();
-      setTimeout(() => router.push(`/structure?projectId=${data.projectId}`), 2200);
-    } catch {
       setLoading(false);
     }
   };
@@ -285,61 +286,7 @@ export default function GeneratePage() {
       </div>
 
       {/* ── Upgrade Modal ── */}
-      {showUpgradeModal && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(8,11,20,0.85)",
-          backdropFilter: "blur(4px)",
-          padding: 16,
-        }}>
-          <div style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-hairline)",
-            borderRadius: "var(--radius-lg)",
-            maxWidth: 400, width: "100%",
-            overflow: "hidden",
-          }}>
-            <div aria-hidden="true" style={{ height: 2, background: "var(--color-signal)" }} />
-            <div style={{ padding: "28px 28px 24px" }}>
-              <div style={{
-                width: 40, height: 40,
-                border: "1px solid var(--border-hairline)",
-                borderRadius: "var(--radius-md)",
-                background: "var(--bg-elevated)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--color-signal)", marginBottom: 16,
-              }}>
-                <DollarSign size={18} />
-              </div>
-              <div style={{
-                fontFamily: "var(--font-mono)", fontSize: "9px", fontWeight: 700,
-                letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "var(--color-signal)", marginBottom: 8,
-              }}>
-                Quota Limit Reached
-              </div>
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 800, color: "var(--fg-primary)", marginBottom: 8 }}>
-                Monthly Limit Reached
-              </h2>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--color-mist)", marginBottom: 24, lineHeight: 1.65 }}>
-                Free plan: 1 generate/month. Pro plan: 3 generates/month. Upgrade to continue building.
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  onClick={() => setShowUpgradeModal(false)}
-                  style={{ ...btnGhost, flex: 1, justifyContent: "center" }}
-                >
-                  Maybe later
-                </button>
-                <button style={{ ...btnPrimary, flex: 1, justifyContent: "center" }}>
-                  Upgrade to Pro
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <UpgradeModal />
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }

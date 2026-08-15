@@ -39,11 +39,5 @@ export async function POST() {
     return NextResponse.json({ error: "LIMIT_REACHED", message: `Plan ${user.tier} hanya bisa membuat ${prdLimit === Infinity ? "unlimited" : prdLimit} project per bulan.` }, { status: 403 });
   }
 
-  // Increment usage count (lifetime counter)
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { prdCount: { increment: 1 } },
-  });
-
-  return NextResponse.json({ success: true, projectsThisMonth: projectsThisMonth + 1, prdLimit });
+  return NextResponse.json({ success: true, projectsThisMonth, prdLimit });
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Trophy, FileText, Zap, Award } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
 
 const DUMMY_DATA = [
   { id: "d1", name: "Michael Sterling",  rankName: "Legendary Builder",  points: 15200, prds: 342, avatar: "MS" },
@@ -44,8 +45,7 @@ export default function LeaderboardSection() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch("/api/leaderboard");
-        const json = await res.json();
+        const json = await apiClient.leaderboard.get();
         let realData: any[] = [];
         if (json.success && Array.isArray(json.data)) realData = json.data;
 

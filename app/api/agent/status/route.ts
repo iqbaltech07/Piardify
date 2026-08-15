@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     let projectInfo = null;
     if (projectId) {
       const project = await prisma.project.findUnique({
-        where: { id: projectId, userId: authResult.user.id },
+        where: { id_userId: { id: projectId, userId: authResult.user.id } },
         select: {
           id: true,
           appName: true,

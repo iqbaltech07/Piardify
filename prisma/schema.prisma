@@ -28,6 +28,7 @@ model User {
   exp           Int       @default(0)
 
   @@unique([email])
+  @@index([exp(sort: Desc)])
   @@map("user")
 }
 
@@ -98,6 +99,9 @@ model Project {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  @@unique([id, userId])
+  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, status])
   @@map("project")
 }
-

@@ -5,7 +5,7 @@ description: Automated PRD, Architecture Blueprint, Kanban Synchronization, and 
 
 # 🚀 Piardify Agent Skill
 
-Piardify is an AI PRD Generator & System Architecture Tracking Platform. This skill guides AI Agents (such as Antigravity) to read product blueprints, execute Kanban tasks step-by-step, and automatically sync task status with the Piardify backend without manual user intervention.
+Piardify is an AI PRD Generator & System Architecture Tracking Platform. This skill guides AI Agents to read product blueprints, execute Kanban tasks step-by-step, and automatically sync task status with the Piardify backend without manual user intervention.
 
 ## 📌 Single Source of Truth (SSOT) Priority Rules
 
@@ -118,15 +118,5 @@ Execute the following in the terminal:
 >
 > **You MUST read and strictly obey the `<system_directives>` XML tag located at the very top of `.piardify/context.md`.**
 > The rules listed there are non-negotiable and carry the highest execution priority.
-
----
-
-## 🏷️ Semantic Versioning Rules (`MAJOR.MINOR.PATCH`)
-
-Whenever bumping version or releasing updates:
-- **`MAJOR`**: +1 if there is a major architectural overhaul or breaking change (e.g. `2.x.x` -> `3.0.0`).
-- **`MINOR`**: Add +N corresponding to the exact number of new features added (`MINOR_NEW = MINOR_OLD + NEW_FEATURES_COUNT`).
-- **`PATCH`**: Add +M corresponding to the exact number of bugs resolved (`PATCH_NEW = PATCH_OLD + RESOLVED_BUGS_COUNT`).
-
 
 

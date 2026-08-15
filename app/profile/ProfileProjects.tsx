@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FolderOpen, CheckCircle2, Calendar, Award, Trash2, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/apiClient";
 
 type Project = { id: string; appName: string; appIdea: string; status: string; createdAt: Date; };
 
@@ -18,8 +19,7 @@ export default function ProfileProjects({ projects }: { projects: Project[] }) {
     if (!confirm("Delete this project?")) return;
     setDeleting(id);
     try {
-      const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      await apiClient.projects.delete(id);
       toast.success("Project deleted");
       router.refresh();
     } catch (err: any) { toast.error(err.message); }

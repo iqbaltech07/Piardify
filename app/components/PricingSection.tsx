@@ -4,28 +4,26 @@ import Link from "next/link";
 import { Check, X } from "lucide-react";
 
 const FREE_FEATURES = [
-  { text: "1 PRD generation per month",     included: true },
-  { text: "5x AI chat per PRD",             included: true },
-  { text: "7-step personalization flow",    included: true },
-  { text: "Markdown export (.md)",          included: true },
-  { text: "AI tech stack suggestions",      included: true },
-  { text: "PRD preview & editor",           included: true },
-  { text: "3 PRD generations per month",    included: false },
-  { text: "Priority AI processing",         included: false },
-  { text: "PDF & DOCX export (coming soon)",included: false },
-  { text: "Version history",                included: false },
+  { text: "1 Project per month (PRD, Mindmap, Tasks)",  included: true },
+  { text: "5x AI Chat revision per project",             included: true },
+  { text: "Interactive Visual Mindmap (React Flow)",     included: true },
+  { text: "6-Phase Kanban Task Tracker",                 included: true },
+  { text: "MCP Agent IDE Integration (Cursor/Windsurf)",  included: true },
+  { text: "3 Projects per month",                        included: false },
+  { text: "20x AI Chat with Multi-Model AI",             included: false },
+  { text: "Markdown (.md) & JSON Export",                included: false },
+  { text: "Priority AI Speed & Zero-Wait Queue",         included: false },
 ];
 
 const PRO_FEATURES = [
-  { text: "3 PRD generations per month",    included: true },
-  { text: "20x AI chat per PRD",            included: true },
-  { text: "7-step personalization flow",    included: true },
-  { text: "Markdown export (.md)",          included: true },
-  { text: "AI tech stack suggestions",      included: true },
-  { text: "PRD preview & editor",           included: true },
-  { text: "Priority AI processing",         included: true },
-  { text: "PDF & DOCX export (coming soon)",included: true },
-  { text: "Version history",                included: true },
+  { text: "3 Projects per month (PRD, Mindmap, Tasks)",  included: true },
+  { text: "20x AI Chat revision per project",            included: true },
+  { text: "Multi-Model AI (Gemini 2.5/3.7 & OpenRouter)",included: true },
+  { text: "Priority AI Speed & Zero-Wait Queue",         included: true },
+  { text: "Interactive Visual Mindmap (React Flow)",     included: true },
+  { text: "6-Phase Kanban Task Tracker (Live Sync)",     included: true },
+  { text: "High-Quota MCP Agent IDE Integration",        included: true },
+  { text: "Markdown (.md) & JSON Export",                included: true },
 ];
 
 function FeatureRow({

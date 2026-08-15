@@ -1,182 +1,161 @@
 export const SYSTEM_DIRECTIVES = {
-  "systemDirectives": {
-    "antiHallucinationRules": {
-      "severity": "CRITICAL",
-      "rules": [
+  systemDirectives: {
+    antiHallucinationRules: {
+      severity: "CRITICAL",
+      rules: [
         {
-          "id": "AH-001",
-          "rule": "ZERO INVENTION: Dilarang keras menambah library, framework, dependency, atau tech stack di luar yang eksplisit disebutkan di PRD.",
-          "validation": "Sebelum menulis import statement, cross-check dengan daftar dependency di PRD. Jika tidak ada, JANGAN tulis.",
-          "failure_consequence": "Build error, security vulnerability, bloat tidak perlu"
+          id: "AH-001",
+          rule: "ZERO INVENTION: Never add unapproved libraries, frameworks, or dependencies outside explicit PRD specs.",
+          validation: "Cross-check imports with PRD tech stack before writing.",
+          failure_consequence: "Build failure, security vulnerability, dependency bloat."
         },
         {
-          "id": "AH-002",
-          "rule": "ZERO ASSUMPTION: Jangan pernah membuat asumsi tentang skema database, API endpoint, response format, atau business logic yang tidak terdokumentasi.",
-          "validation": "Jika PRD tidak menjelaskan API response shape, tulis comment: `// TODO: Confirm API response shape with backend` dan gunakan placeholder type yang jelas.",
-          "failure_consequence": "Runtime error, data mismatch, silent bugs"
+          id: "AH-002",
+          rule: "ZERO ASSUMPTION: Never assume database schemas, API contracts, response shapes, or undocumented business logic.",
+          validation: "Verify from PRD & existing code first. If missing, flag explicitly.",
+          failure_consequence: "Data mismatch, runtime errors, silent failure."
         },
         {
-          "id": "AH-003",
-          "rule": "STATUS SYNC: Selalu ubah status task di Piardify menjadi 'in_progress' saat mulai dikerjakan dan 'done' setelah selesai.",
-          "validation": "Ini adalah REQUIRED side-effect dari setiap task execution.",
-          "failure_consequence": "Project tracking rusak, task duplication"
+          id: "AH-003",
+          rule: "STATUS SYNC: Update task status to 'in_progress' on start and 'done' upon verified completion via .piardify/sync.",
+          validation: "Execute .piardify/sync start <id> and .piardify/sync complete <id>.",
+          failure_consequence: "Broken Kanban tracking, desynchronized workflow."
         },
         {
-          "id": "AH-004",
-          "rule": "REALITY CHECK: Jika diminta membuat fitur yang memerlukan backend/API yang belum ada, WAJIB flag sebagai blocker, bukan silent mock.",
-          "validation": "Tulis komentar inline: `/* BLOCKER: Membutuhkan endpoint POST /api/xxx - saat ini menggunakan mock data */`",
-          "failure_consequence": "False progress, broken integration nanti"
+          id: "AH-004",
+          rule: "REALITY CHECK: Flag missing backend/API dependencies as blockers; never silent mock unverified endpoints.",
+          validation: "Add inline blocker notice if dependent service is unavailable.",
+          failure_consequence: "False progress, broken downstream integration."
         },
         {
-          "id": "AH-005",
-          "rule": "DESIGN SYSTEM CHECK [CRITICAL]: Saat memulai task pembuatan atau perubahan UI/UX (frontend), WAJIB menanyakan ke user terlebih dahulu apakah ada design system spesifik (misal: shadcn/ui, Material, dll) atau referensi visual yang diinginkan.",
-          "validation": "Berhenti dan tanyakan secara eksplisit ke user SEBELUM mulai menulis kode komponen UI. Jangan pernah lanjut membuat UI dengan gaya default (asumsi) tanpa persetujuan / konfirmasi.",
-          "failure_consequence": "Desain UI tidak sesuai harapan user, membuang waktu, dan harus dirombak ulang (rework) secara masif."
+          id: "AH-005",
+          rule: "DESIGN SYSTEM SYNC: Verify design tokens in <design_data> before generating frontend components.",
+          validation: "Adhere to specified design tokens (colors, typography, radius).",
+          failure_consequence: "Inconsistent UI aesthetics (AI slop)."
         },
         {
-          "id": "AH-006",
-          "rule": "MANDATORY CHECKPOINT HONOR [CRITICAL]: AI Agent WAJIB BERHENTI saat menemukan task dengan flag `isCheckpoint: true` atau judul `[CHECKPOINT]`. AI Agent dilarang keras melanjutkan ke task berikutnya sebelum user memberikan konfirmasi/ACC.",
-          "validation": "Outputkan ringkasan hasil ke user dan tunggu konfirmasi user sebelum memanggil `sync complete` atau pindah task.",
-          "failure_consequence": "AI Agent melompati persetujuan user dan merusak ekspektasi UI/Backend."
+          id: "AH-006",
+          rule: "CHECKPOINT HONOR: Stop and await user confirmation when encountering tasks marked [CHECKPOINT] or isCheckpoint: true.",
+          validation: "Summarize progress to user and wait for confirmation before proceeding.",
+          failure_consequence: "Skipped user approval and architectural drift."
         },
         {
-          "id": "AH-007",
-          "rule": "MANDATORY DESIGN REFERENCE [CRITICAL]: Sebelum membuat komponen Frontend UI, AI Agent WAJIB membaca file `design.md` (atau tag `<design_data>` di `.piardify/context.md`) untuk mengambil token warna HEX, font, dan komponen UI yang valid.",
-          "validation": "Cross-check seluruh style warna dan tipografi dengan design.md. Dilarang menghalusinasi warna di luar token.",
-          "failure_consequence": "Desain UI berantakan dan tidak konsisten (AI Slop)."
+          id: "AH-007",
+          rule: "DESIGN TOKEN GROUND TRUTH: Use exact HEX colors and typography from <design_data>; never invent arbitrary colors.",
+          validation: "Match all background, surface, border, and accent colors to token table.",
+          failure_consequence: "Visual inconsistency and unapproved palette drift."
         },
         {
-          "id": "AH-008",
-          "rule": "DUMMY DATA ELIMINATION [REQUIRED]: Di Phase 6 (Integrasi Backend), AI Agent WAJIB meretouch seluruh komponen Frontend untuk menghapus data mock/dummy dan menyambungkannya ke real API route & database seeder.",
-          "validation": "Pastikan tidak ada array mock/dummy data statis yang tertinggal di komponen Frontend.",
-          "failure_consequence": "Tampilan Frontend tidak menampilkan data asli dari database."
+          id: "AH-008",
+          rule: "ZERO DUMMY DATA IN PRODUCTION: Replace all mock/dummy static arrays with real API and database seed data in Phase 6.",
+          validation: "Ensure frontend components bind to real backend data contracts.",
+          failure_consequence: "Application displays fake static data in production."
         },
         {
-          "id": "AH-009",
-          "rule": "MODERN DOCS VERIFICATION [REQUIRED]: Sebelum membuat file framework (misal Next.js App Router, Middleware, Auth), AI Agent WAJIB mengecek dokumentasi terbaru via MCP Context7 atau Web Search untuk menggunakan nama file & konvensi terbaru.",
-          "validation": "Pastikan nama file dan API mengikuti konvensi versi framework terbaru (misal `proxy.ts` vs `middleware.ts` di Next.js 16).",
-          "failure_consequence": "Error kompilasi akibat konvensi framework yang deprecated/outdated."
+          id: "AH-009",
+          rule: "MODERN CONVENTIONS VERIFICATION: Verify official latest framework conventions (Next.js 16 App Router, Turbopack, Better-Auth) before writing files.",
+          validation: "Check official documentation via MCP Context7/Web.",
+          failure_consequence: "Deprecated file conventions and compilation failures."
         },
         {
-          "id": "AH-010",
-          "rule": "DEFINITION OF DONE VERIFICATION [CRITICAL]: Setiap task harus diverifikasi sesuai kriteria `definitionOfDone` sebelum ditandai `complete`.",
-          "validation": "Jalankan pengecekan lokal terhadap kriteria `definitionOfDone` task.",
-          "failure_consequence": "Task dianggap selesai padahal kriteria utama belum terpenuhi."
+          id: "AH-010",
+          rule: "DEFINITION OF DONE: Strictly verify task completion criteria and acceptance criteria before marking done.",
+          validation: "Run local verification checks (lint, typecheck, build) to confirm.",
+          failure_consequence: "Premature task completion with hidden regressions."
         },
         {
-          "id": "AH-011",
-          "rule": "PROJECT-SPECIFIC DESIGN SKILL ROUTING [CRITICAL]: AI Agent WAJIB memeriksa `<design_data>` dan `<taste_skill>` di `.piardify/context.md` (atau `design.md`) sebelum membuat UI dan mengaktifkan Taste Skill yang sesuai.",
-          "validation": "Deklarasikan 'Design Skill Active: <selected-skill-name>' di awal respon sebelum menulis komponen Frontend.",
-          "failure_consequence": "AI Agent salah menggunakan gaya desain yang tidak sesuai dengan instruksi project user."
+          id: "AH-011",
+          rule: "DESIGN SKILL ROUTING: Activate and align with the specified taste skill key in <system_directives>.",
+          validation: "Apply active skill rules during frontend component engineering.",
+          failure_consequence: "Incorrect visual archetype implementation."
         },
         {
-          "id": "AH-012",
-          "rule": "CURATED REACT BITS & CLI INSTALLATION [CRITICAL]: AI Agent WAJIB menggunakan React Bits (reactbits.dev) via `npx shadcn@latest add @react-bits/<ComponentName>-TS-TW`. Komponen difilter secara ketat (misal: Aurora Background, Animated Grid, dsb). DILARANG KERAS menggunakan AI Slop: kursor mouse custom, glow neon berlebihan, efek glitch teks buram.",
-          "validation": "Pastikan komponen UI kompleks diambil dari React Bits dan bukan halusinasi manual yang buruk.",
-          "failure_consequence": "Desain UI terlalu kekanak-kanakan (AI Slop)."
+          id: "AH-012",
+          rule: "CURATED REACT BITS INTEGRATION: Integrate modern animations (Aurora, Spotlight, Waves) via reactbits.dev. Forbid cheesy slop (glitch cursors, neon overload).",
+          validation: "Use clean tactile micro-animations (150-250ms).",
+          failure_consequence: "Childish and laggy UI performance."
         },
         {
-          "id": "AH-013",
-          "rule": "MANDATORY SKILL FOCUS & PRE-FLIGHT COMPREHENSION GATE [CRITICAL]: Sebelum menulis 1 baris kode UI, AI Agent WAJIB MUTLAK memanggil command `.piardify/sync taste <active_key>` di terminal untuk membaca sisa instruksi Taste Skill yang dipotong. Setelah itu baru deklarasikan: 1) `🎨 Active Design Skill: <name>`, 2) `<skill_comprehension>`, 3) `<design_plan>`. Melanggar ini adalah CRITICAL FAILURE.",
-          "validation": "Dilarang output komponen UI jika tidak ada bukti eksekusi `.piardify/sync taste <active_key>` di terminal/log.",
-          "failure_consequence": "AI Agent berhalusinasi desain karena tidak membaca full Taste Skill (AI Slop)."
+          id: "AH-013",
+          rule: "ON-DEMAND TASTE SKILL: Fetch full taste skill via .piardify/sync taste <key> for complex UI scaffolding.",
+          validation: "Ensure complete design guidelines are digested before large frontend refactors.",
+          failure_consequence: "Generic boilerplate UI."
         },
         {
-          "id": "AH-014",
-          "rule": "ZERO-SLOP & ZERO-HALLUCINATION VISUAL QUALITY MANDATE [MANDATORY]: Setiap komponen UI WAJIB 100% mematuhi active Taste Skill dan design.md. Desain harus memukau (agency-grade). ZERO AI-slop, ZERO kontainer biru default (#0F172A), ZERO neon glows, ZERO halusinasi dependency.",
-          "validation": "Evaluasi ketat setiap kode UI. Jangan gunakan style default Tailwind yang biasa dipakai AI generik.",
-          "failure_consequence": "Tampilan UI terlihat murahan dan amatir."
+          id: "AH-014",
+          rule: "ZERO-SLOP VISUAL QUALITY: Ensure premium agency-grade aesthetics. Forbid default #0F172A navy, #000000 pure black, and uniform rounded-2xl.",
+          validation: "Use Obsidian surfaces (#090A0C, #121318) and proportional radius hierarchy.",
+          failure_consequence: "Generic amateur appearance."
         },
         {
-          "id": "AH-015",
-          "rule": "MANDATORY CONTEXT PERSISTENCE & RE-VERIFICATION GATE [CRITICAL]: AI Agent DILARANG KERAS lupa dengan konteks proyek. Sebelum mengeksekusi task APAPUN, AI Agent WAJIB memanggil `view_file` pada `.piardify/context.md` dan membaca semuanya (chunk-read jika >800 baris) untuk me-refresh 100% memori proyek.",
-          "validation": "Tidak ada task yang dieksekusi tanpa bukti pemanggilan `view_file` ke context.md sebelumnya di log percakapan.",
-          "failure_consequence": "AI Agent melupakan spesifikasi PRD dan token desain saat sesi chat terlalu panjang."
+          id: "AH-015",
+          rule: "CONTEXT PERSISTENCE: Re-verify .piardify/context.md before starting new tasks to maintain 100% project memory.",
+          validation: "Read local context file snapshot at the beginning of task execution.",
+          failure_consequence: "Context loss during long chat sessions."
         },
         {
-          "id": "AH-016",
-          "rule": "MANDATORY CHUNK-READ FOR LARGE FILES [CRITICAL]: Saat membaca file berukuran besar (>800 baris) seperti `.piardify/context.md`, `design.md`, atau file *source code*, AI Agent WAJIB menggunakan `view_file` secara bertahap (chunk: baris 1-800, 801-1600, dst) sampai seluruh baris terbaca tuntas.",
-          "validation": "Jangan pernah klaim 'sudah baca' jika tidak menggunakan argument `StartLine` dan `EndLine` untuk membaca keseluruhan file besar.",
-          "failure_consequence": "AI Agent berhalusinasi atau melewati aturan kritikal karena teks terpotong oleh batasan `view_file`."
+          id: "AH-016",
+          rule: "CHUNK-READ FOR LARGE FILES: Use chunked reading (StartLine/EndLine) for files >800 lines to ensure zero truncated context.",
+          validation: "Read large documentation and source files completely across chunks.",
+          failure_consequence: "Truncated instructions and missed critical constraints."
         },
         {
-          "id": "AH-017",
-          "rule": "CONTEXT FRESHNESS GATE [CRITICAL]: Bandingkan timestamp di komentar header `<!-- Piardify Context Snapshot -->` (generatedAt) dengan `<project_context>.updatedAt` di `.piardify/context.md`. Jika `updatedAt` LEBIH BARU dari `generatedAt`, konteks lokal sudah basi — AI Agent WAJIB me-refresh dulu (`npx piardify init` atau `.piardify/sync context > .piardify/context.md`) SEBELUM mengeksekusi task.",
-          "validation": "Jangan pernah mengerjakan task berdasarkan PRD/design/task yang mungkin sudah diubah user di Web. Verifikasi freshness pada awal sesi dan setelah user mengumumkan edit.",
-          "failure_consequence": "AI Agent membangun fitur lama/basi, konflik dengan perubahan terbaru user, dan hasil akhir tidak sinkron dengan Piardify web app."
+          id: "AH-017",
+          rule: "CONTEXT FRESHNESS: If project updatedAt is newer than snapshot generatedAt, refresh via .piardify/sync context > .piardify/context.md.",
+          validation: "Verify freshness timestamp before executing tasks.",
+          failure_consequence: "Working on outdated requirements."
         },
         {
-          "id": "AH-018",
-          "rule": "MANDATORY FULL READ & 100% UNCOMPROMISED COMPLIANCE OF DESIGN CONTEXT [CRITICAL & ZERO TOLERANCE]: Sebelum membuat, mengubah, atau merancang komponen UI/frontend APAPUN, AI Agent WAJIB membaca 100% Konteks Desain & Token Warna (`npx piardify design` / `.piardify/sync design` atau `<design_data>` & `<critical_design_locks>`) TANPA ADA SATUPUN ATURAN, ATRIBUT, ATAU TOKEN YANG TERABAIKAN. AI Agent DILARANG KERAS mengasumsikan, melewati, mengabaikan, atau memodifikasi warna HEX, tracking tipografi, radius hierarchy, layout governance, atau aturan Anti-Slop secara sepihak.",
-          "validation": "Bukti pemanggilan `npx piardify design` atau pembacaan `<critical_design_locks>` harus tercatat sebelum penulisan kode UI. Seluruh token warna HEX, tracking, dan radius wajib diterapkan 100% presisi.",
-          "failure_consequence": "Kode UI yang dihasilkan dianggap INVALID dan REJECTED jika mengabaikan satu pun token atau aturan dari Design Context."
+          id: "AH-018",
+          rule: "COMPREHENSIVE DESIGN COMPLIANCE: 100% adherence to design tokens, layout hierarchy, and typography constraints.",
+          validation: "Apply exact specified HEX codes, tracking, and spacing.",
+          failure_consequence: "Visual design rejected by quality linter."
         },
         {
-          "id": "AH-021",
-          "rule": "MANDATORY SHADCN/UI COMPONENT SYSTEM [CRITICAL]: AI Agent WAJIB MUTLAK menggunakan `shadcn/ui` primitives (`@/components/ui/*`) sebagai pustaka komponen fondasi utama untuk seluruh pembuatan dan pengeditan komponen UI/Frontend (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge). DILARANG KERAS mengarang komponen raw HTML polos dari nol tanpa fondasi shadcn/ui.",
-          "validation": "Pastikan seluruh komponen UI yang dibuat mengimpor atau menurunkan dari `@/components/ui/*`.",
-          "failure_consequence": "Komponen UI tidak terstandarisasi, berantakan, dan ditolak oleh linter governance."
+          id: "AH-019",
+          rule: "MANDATORY FRONTEND DESIGN THINKING [CRITICAL]: Sebelum membuat atau mengubah komponen UI/UX Frontend, AI Agent WAJIB membaca dan menerapkan pemikiran utama dari skill '.agents/skills/frontend/SKILL.md' (Ground it in subject, distinctive typography/layout, intentional copy, deliberate motion, dan satu risiko estetika terjustifikasi tanpa mengulang template AI-slop).",
+          validation: "Pastikan pemikiran desain frontend-design dimuat dan diterapkan pada setiap komponen visual.",
+          failure_consequence: "Desain UI terlihat generik, templated, dan kehilangan karakter produk."
+        },
+        {
+          id: "AH-021",
+          rule: "SHADCN/UI COMPONENT MANDATE: Use shadcn/ui primitives (@/components/ui/*) for all UI components. Never create raw unstyled HTML buttons/inputs.",
+          validation: "Import UI elements from @/components/ui/*.",
+          failure_consequence: "Non-standardized UI primitives."
         }
       ],
-      "designHierarchy": {
-        "rule": "HIERARCHY OF AUTHORITY: design.md vs Taste Skill Synergy",
-        "level1_ground_truth": "design.md (atau <design_data> di context.md): Menentukan WHAT to build (Warna HEX spesifik, font spesifik, dan layout wireframe project). Nilai di design.md SELALU memenangkan prioritas utama jika ada perbedaan warna/font.",
-        "level2_engineering_quality": "Taste Skill: Menentukan HOW to build (Standar kualitas frontend, anti-slop, kontras WCAG AA, fisika animasi spring, ritme spacing, & anti-klise). Taste Skill digunakan untuk mengimplementasikan design.md secara estetik & presisi, BUKAN untuk menggantikan warna/font dari design.md.",
-        "conflictResolution": "Jika design.md menentukan warna tertentu (misal ungu/brand khusus), AI Agent WAJIB menggunakan warna HEX tersebut dari design.md, sembari menerapkan kualitas engineering dari Taste Skill (kontras, padding, & responsivitas)."
+      designHierarchy: {
+        rule: "HIERARCHY: design.md (WHAT to build) > Taste Skill (HOW to build)",
+        level1_ground_truth: "design.md / <design_data>: Ground truth for specific HEX tokens, fonts, and layout.",
+        level2_engineering_quality: "Taste Skill: Standards for spacing, spring motion (150-250ms), and contrast.",
+        conflictResolution: "Use design.md exact tokens with Taste Skill engineering precision."
       },
-      "selfCheckPrompt": "Sebelum mengirim output, tanyakan pada diri sendiri: 'Apakah saya menggunakan warna HEX dari design.md? Apakah Taste Skill membantu kualitas engineering UI tanpa merusak token design.md? Apakah saya SUDAH mematuhi Checkpoint?'"
+      selfCheckPrompt: "Did I use exact HEX tokens from design.md? Are all acceptance criteria met? Did I run local lint/build?"
     },
 
-    "codeQuality": {
-      "severity": "HIGH",
-      "typeScript": {
-        "FORBIDDEN": [
-          "Type 'any' (kecuali untuk explicit escape hatch dengan comment TODO)",
-          "Type assertion yang tidak perlu (as string ketika TypeScript bisa infer)",
-          "// @ts-ignore tanpa penjelasan"
+    codeQuality: {
+      severity: "HIGH",
+      typeScript: {
+        FORBIDDEN: [
+          "Type 'any' (unless strictly necessary with inline comment)",
+          "Redundant type assertions (e.g. `as string` when inferred)",
+          "Unexplained // @ts-ignore"
         ],
-        "REQUIRED": [
-          "Strict typing untuk semua function parameters and return types",
-          "Interface/Type untuk API response, form data, dan complex objects",
-          "Enum atau union type untuk status/state yang terbatas",
-          "Generic types untuk reusable components and utilities"
+        REQUIRED: [
+          "Strict typing for all function parameters and returns",
+          "Explicit interfaces/types for API payloads and data models"
         ],
-        "example": "```typescript\n// ❌ FORBIDDEN\nfunction handleSubmit(data: any) { ... }\n\n// ✅ REQUIRED\ninterface FormData {\n  email: string;\n  password: string;\n  rememberMe: boolean;\n}\n\nfunction handleSubmit(data: FormData): Promise<AuthResponse> { ... }\n```"
+        example: "interface ProjectData { id: string; name: string; }"
       },
-      "architecture": {
-        "rules": [
-          "MODULARITY & FILE SIZE [CRITICAL]: Jangan biarkan satu file berisi ratusan baris kode (monolithic). Pecah UI dan logika kompleks menjadi sub-komponen kecil yang reusable, lalu gunakan Props untuk mengoper data agar mudah di-maintain.",
-          "Pertahankan struktur folder yang sudah ada di proyek",
-          "Komponen baru diletakkan di folder yang sesuai dengan kategorinya",
-          "Naming convention: PascalCase untuk komponen, camelCase untuk utilities, UPPER_SNAKE_CASE untuk constants",
-          "Satu komponen per file (kecuali tiny sub-components yang tidak reusable)",
-          "Co-locate styles, types, dan tests dengan komponen jika memungkinkan"
+      architecture: {
+        rules: [
+          "Co-locate components with their subcomponents",
+          "Custom hooks for complex UI state management",
+          "Centralized API client for all network requests"
         ]
       },
-      "componentStructure": {
-        "order": [
-          "1. Imports",
-          "2. Type definitions",
-          "3. Constants",
-          "4. Helper functions",
-          "5. Main component",
-          "6. Sub-components (jika ada)",
-          "7. Export"
-        ]
-      }
-    },
-
-    "outputValidation": {
-      "selfCheck": {
-        "runBeforeOutput": true,
-        "checklist": [
-          "☐ Apakah saya menambah library yang tidak ada di PRD?",
-          "☐ Apakah saya mengasumsikan API/database yang tidak terdokumentasi?",
-          "☐ Apakah ada 'any' type yang bisa dihindari?",
-          "☐ Apakah status task Piardify sudah diupdate?",
-          "☐ Apakah saya sudah menjalankan perintah `npm run lint` dan `npm run build`?",
-        ],
-        "ifAnyFail": "Perbaiki sebelum mengirim output. Jangan compromise."
+      componentStructure: {
+        order: ["Imports", "Interfaces/Types", "Component", "Subcomponents", "Styles"]
       }
     }
   }

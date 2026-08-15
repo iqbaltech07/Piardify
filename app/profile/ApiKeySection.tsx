@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Key, Copy, Check, RefreshCw, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
 
 export default function ApiKeySection() {
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -21,14 +22,9 @@ export default function ApiKeySection() {
     try {
       setIsLoading(true);
       setErrorMsg(null);
-      const res = await fetch("/api/user/api-key");
-      if (res.ok) {
-        const data = await res.json();
-        setHasApiKey(Boolean(data.hasApiKey));
-        setApiKey(null); // only meaningful when freshly created
-      } else {
-        setErrorMsg("Gagal memuat status API Key.");
-      }
+      const data = await apiClient.user.getApiKey();
+      setHasApiKey(Boolean(data.hasApiKey));
+      setApiKey(data.apiKey || null);
     } catch (err) {
       setErrorMsg("Koneksi gagal saat mengambil API Key.");
     } finally {
@@ -40,16 +36,11 @@ export default function ApiKeySection() {
     try {
       setIsRegenerating(true);
       setErrorMsg(null);
-      const res = await fetch("/api/user/api-key", { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setApiKey(data.apiKey || null);
-        setHasApiKey(Boolean(data.apiKey));
-        setConfirmRegenerate(false);
-        setShowKey(true); // Automatically reveal new key
-      } else {
-        setErrorMsg("Gagal memperbarui API Key.");
-      }
+      const data = await apiClient.user.generateApiKey();
+      setApiKey(data.apiKey || null);
+      setHasApiKey(Boolean(data.apiKey));
+      setConfirmRegenerate(false);
+      setShowKey(true); // Automatically reveal new key
     } catch (err) {
       setErrorMsg("Terjadi kesalahan saat regenerasi API Key.");
     } finally {

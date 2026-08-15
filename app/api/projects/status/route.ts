@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Database lookup fallback
     const project = await prisma.project.findUnique({
-      where: { id: projectId, userId: session.user.id },
+      where: { id_userId: { id: projectId, userId: session.user.id } },
       select: { checkedTasks: true },
     });
 

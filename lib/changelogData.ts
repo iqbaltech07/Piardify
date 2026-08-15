@@ -22,10 +22,61 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: "v2.13.0",
+    date: "16 Agustus 2026",
+    title: "Lossless Context Densification, Dedicated Frontend Design Skill, & Pro Export Protection",
+    badge: "Latest Release",
+    summary:
+      "Pembaruan arsitektur untuk densifikasi konteks lossless (~65% token reduction), penambahan skill pemikiran desain frontend terdedikasi (frontend-design), proteksi ekspor dokumen Pro-only, transisi instan 0ms dengan streaming skeletons, dan resolusi API key real-time.",
+    highlights: [
+      {
+        type: "feat",
+        title: "Lossless Context Densification Engine (~65% Token Reduction)",
+        description:
+          "Memadatkan payload konteks proyek secara drastis melalui dense constraint syntax (AH-001..AH-021), konsolidasi tata kelola UI (<ui_governance>), dan active task windowing tanpa memotong 100% full context PRD dan desain.",
+        tags: ["Context Engine", "Token Optimization", "Performance", "Anti-Hallucination"],
+      },
+      {
+        type: "feat",
+        title: "Dedicated Frontend Design Thinking Skill (frontend-design)",
+        description:
+          "Menghadirkan skill pemikiran desain fondasional (.agents/skills/frontend/SKILL.md) yang terpisah dari Taste Skill modular untuk memandu AI agent menghasilkan visual unik berkarakter, hierarki tipografi intensional, dan bebas dari template klise.",
+        tags: ["Design System", "Frontend Skill", "UI/UX", "Anti-Slop"],
+      },
+      {
+        type: "feat",
+        title: "Automatic Dual-Skill Provisioning via CLI",
+        description:
+          "Perintah `npx piardify init` kini secara otomatis memasang kedua skill utama (`piardify` workflow & `frontend` design thinking) langsung ke folder `.agents/skills/` di workspace pengguna.",
+        tags: ["CLI", "Automation", "Agent Skill"],
+      },
+      {
+        type: "feat",
+        title: "Pro-Tier Export Protection & Upgrade Modal",
+        description:
+          "Memproteksi fitur download file Markdown (.md) dan JSON cetak biru khusus untuk pengguna Pro dengan verifikasi session real-time dan modal upgrade responsif.",
+        tags: ["Monetization", "Security", "Pro Tier"],
+      },
+      {
+        type: "improvement",
+        title: "Instant 0ms Page Navigation & Streaming Skeletons",
+        description:
+          "Menghapus seluruh artificial delay dan mengimplementasikan Next.js 16 streaming skeleton loaders (loading.tsx) serta animasi shimmer di seluruh halaman (/structure, /preview, /detail, /task, /profile).",
+        tags: ["Next.js 16", "Turbopack", "Skeletons", "UX"],
+      },
+      {
+        type: "fix",
+        title: "Real-Time Dynamic API Key Resolution in Modals",
+        description:
+          "Memperbaiki bug salin API key di modal MCP Connect dan profil pengguna dengan pemanggilan data dinamis, memastikan token rahasia pengguna tidak lagi tertimpa placeholder <YOUR_API_KEY>.",
+        tags: ["Bugfix", "Auth", "API Key"],
+      },
+    ],
+  },
+  {
     version: "v2.12.3",
     date: "14 Agustus 2026",
     title: "Tri-Combo Zero-Redundancy Context Engine, Gemini 3.7 Flash, & AI Tech Stack Auto-Recommend",
-    badge: "Latest Release",
     summary:
       "Pembaruan arsitektur besar untuk optimasi token context hingga 84%, integrasi model Gemini 3.7 Flash, engine rekomendasi tech stack otomatis oleh AI, preset stack Vanilla Web/Mobile/IoT, dan parser PRD multi-tier tangguh.",
     highlights: [

@@ -61,7 +61,7 @@ export async function initCommand(options: { project?: string; target?: string; 
     try {
       fullContextRes = await apiRequest(`/api/agent/project?projectId=${projectId}&section=context`, { rawText: true });
       fs.writeFileSync(path.join(piardifyDir, "context.md"), fullContextRes, "utf-8");
-    } catch {}
+    } catch { }
 
     // Modular Context Architecture (Solusi 3)
     try {
@@ -98,7 +98,7 @@ export async function initCommand(options: { project?: string; target?: string; 
       if (project.prdData) {
         fs.writeFileSync(path.join(piardifyDir, "prd_summary.md"), project.prdData, "utf-8");
       }
-    } catch {}
+    } catch { }
 
     // Generate Windows CMD 10ms native helper
     const cmdScript = `@echo off
@@ -206,7 +206,7 @@ fi
     try {
       const taskRes = await apiRequest(`/api/agent/tasks/current?projectId=${projectId}`);
       currentTask = taskRes.task;
-    } catch {}
+    } catch { }
 
     if (options.json) {
       console.log(JSON.stringify({

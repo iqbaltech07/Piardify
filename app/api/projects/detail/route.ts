@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     const project = await prisma.project.findUnique({
-      where: { id: projectId, userId: session.user.id },
+      where: { id_userId: { id: projectId, userId: session.user.id } },
       select: {
         id: true,
         userId: true,

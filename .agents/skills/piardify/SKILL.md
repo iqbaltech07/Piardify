@@ -73,6 +73,7 @@ Before starting code modifications, update the Kanban status to `IN_PROGRESS`:
 ```
 
 ### Step 3: Implement Changes
+- **MANDATORY FRONTEND DESIGN SKILL (AH-019)**: Sebelum membuat atau memodifikasi komponen UI/UX (Frontend), AI Agent WAJIB membaca dan menerapkan prinsip dari `.agents/skills/frontend/SKILL.md` (atau `packages/cli/skills/piardify/frontend/SKILL.md`). Buat keputusan visual yang intensional, hierarki tipografi berkarakter, struktur bermakna, dan satu risiko estetika terjustifikasi tanpa mengulang template AI-slop generik.
 - **MANDATORY DESIGN CONTEXT GATE (AH-018)**: Sebelum menulis/mengubah komponen UI/frontend, AI Agent WAJIB membaca 100% Konteks Desain (`npx piardify design` atau `.piardify/sync design`) TANPA ADA SATUPUN ATURAN/TOKEN YANG TERABAIKAN.
 - **MANDATORY SHADCN/UI MANDATE (AH-021)**: AI Agent WAJIB MUTLAK menggunakan `shadcn/ui` primitives (`@/components/ui/*`) untuk seluruh pembuatan dan pengeditan komponen UI (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge). Dilarang mengarang komponen raw HTML polos dari nol.
 - Inspect the codebase (`grep_search`, `list_dir`, `view_file`).
@@ -118,13 +119,4 @@ Execute the following in the terminal:
 >
 > **You MUST read and strictly obey the `<system_directives>` XML tag located at the very top of `.piardify/context.md`.**
 > The rules listed there are non-negotiable and carry the highest execution priority.
-
----
-
-## 🏷️ Semantic Versioning Rules (`MAJOR.MINOR.PATCH`)
-
-Whenever bumping version or releasing updates:
-- **`MAJOR`**: +1 if there is a major architectural overhaul or breaking change (e.g. `2.x.x` -> `3.0.0`).
-- **`MINOR`**: Add +N corresponding to the exact number of new features added (`MINOR_NEW = MINOR_OLD + NEW_FEATURES_COUNT`).
-- **`PATCH`**: Add +M corresponding to the exact number of bugs resolved (`PATCH_NEW = PATCH_OLD + RESOLVED_BUGS_COUNT`).
 

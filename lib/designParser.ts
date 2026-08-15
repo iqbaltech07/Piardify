@@ -114,18 +114,18 @@ export function parseDesignMarkdown(mdText: string): StructuredDesignData {
     }
   });
 
-  // Key-value format: token: "#hex" or token: #hex
-  const kvRegex = /^\s*([\w-]+):\s*["']?(#[0-9a-fA-F]{3,8})["']?/gm;
+  // CSS variables / Key-value format: --color-token: #hex; /* role */ or token: #hex
+  const tokenLineRegex = /^\s*(--?[\w-]+):\s*["']?(#[0-9a-fA-F]{3,8})["']?(?:;)?(?:\s*\/\*\s*(.*?)\s*\*\/)?/gm;
   let match;
-  while ((match = kvRegex.exec(mdText)) !== null) {
+  while ((match = tokenLineRegex.exec(mdText)) !== null) {
     const token = match[1].trim();
     const hex = match[2].trim();
+    const role = (match[3] && match[3].trim()) || "Color Token";
     if (token && hex && !seen.has(token)) {
-      colorTokens.push({ token, hex, role: "Color Token" });
+      colorTokens.push({ token, hex, role });
       seen.add(token);
     }
   }
-
 
   return {
     rawMarkdown: mdText,

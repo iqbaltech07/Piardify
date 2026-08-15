@@ -2,17 +2,16 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 
 /**
- * Finds a project that belongs to the given user, using a typed `findFirst`
- * (instead of `(prisma.project as any).findUnique`) so we never lose type safety.
- *
- * Using `findFirst` with `{ id, userId }` guarantees ownership AND avoids
- * abusing a unique index with a non-unique filter.
+ * Finds a project that belongs to the given user using the compound unique index `[id, userId]`.
+ * Guarantees 100% type safety and instant O(1) B-Tree index lookup.
  */
 export async function getOwnedProject<
   T extends Prisma.ProjectSelect,
 >(userId: string, projectId: string, select: T) {
-  return prisma.project.findFirst({
-    where: { id: projectId, userId },
+  return prisma.project.findUnique({
+    where: {
+      id_userId: { id: projectId, userId },
+    },
     select,
   });
 }

@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { FolderGit2, Lightbulb, Pencil, X, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/apiClient";
+import { useProjectStore } from "@/stores/useProjectStore";
 
 interface ProjectInfo {
   id: string;
@@ -23,6 +25,7 @@ export default function ProjectHeaderBrand({
   const [loading, setLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { updateProjectLocally } = useProjectStore();
 
   // Edit Modal State
   const [isEditingModalOpen, setIsEditingModalOpen] = useState(false);
@@ -46,10 +49,9 @@ export default function ProjectHeaderBrand({
     let isMounted = true;
     setLoading(true);
 
-    fetch(`/api/projects/${projectId}`)
-      .then((res) => (res.ok ? res.json() : null))
+    apiClient.projects.get(projectId)
       .then((data) => {
-        if (isMounted && data && !data.error) {
+        if (isMounted && data) {
           const resolvedName = data.appName || data.title || "Untitled Project";
           setProject({
             ...data,
@@ -87,20 +89,11 @@ export default function ProjectHeaderBrand({
 
     setIsSaving(true);
     try {
-      const res = await fetch("/api/projects/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          appName: finalName,
-          appIdea: finalIdea,
-        }),
+      await apiClient.projects.update({
+        projectId,
+        appName: finalName,
+        appIdea: finalIdea,
       });
-
-      if (!res.ok) {
-        toast.error("Failed to update project info");
-        return;
-      }
 
       setProject((prev) =>
         prev
@@ -117,6 +110,7 @@ export default function ProjectHeaderBrand({
               appIdea: finalIdea,
             }
       );
+      updateProjectLocally({ appName: finalName, appIdea: finalIdea });
       setIsEditingModalOpen(false);
       toast.success("Project info updated successfully!");
 

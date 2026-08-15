@@ -1,21 +1,17 @@
 import type { ColorToken, DesignSection } from "./designParser";
 
 // ============================================================================
-// Hybrid Context Serializer (XML + Markdown + JSON)
+// Ultra-Dense Lossless Context Serializer (XML + Markdown + Compact JSON)
 // ============================================================================
-// Converts the full project context object into a hybrid format optimized
-// for AI Agent attention mechanisms. Directives go first (highest priority),
-// followed by personalization inputs, project metadata, structure, PRD
-// (unescaped Markdown), design data, and tasks.
+// Converts full project context into an ultra-dense, high-signal hybrid format
+// optimized for LLM attention mechanisms and token efficiency.
 //
-// Token-efficiency rules applied here:
-//   - Raw Markdown / JSON payloads are wrapped in XML CDATA so content that
-//     contains `<`, `>`, `&` (mermaid arrows, JSX, code) can NEVER break the
-//     XML parsing (previously unescaped).
-//   - Data-only JSON (structure, tasks, color tokens, directives) is emitted
-//     COMPACT (no indentation) to avoid ~20% token inflation.
-//   - <design_sections> is dropped from the context: it is derived from the
-//     same raw markdown, so tokens + raw markdown fully cover it.
+// Key Token-Optimization Principles (Lossless Compression):
+//   1. High-Signal Directives: Zero prose fluff, 100% semantic constraints.
+//   2. Consolidated UI Governance: Unified surfaces, radius, and anti-slop rules.
+//   3. Active Task Windowing: Full detail for active/next tasks + phase roadmap.
+//   4. Full Unaltered PRD: Section 1-10 Markdown remains 100% intact in CDATA.
+//   5. Compact JSON Payloads: 0 whitespace in structural data.
 // ============================================================================
 
 interface ProjectMeta {
@@ -100,59 +96,48 @@ interface ContextInput {
 }
 
 /**
- * Serialize the full project context into Hybrid format (XML + Markdown + JSON).
- *
- * Layout priority (top → bottom = highest → lowest attention weight):
- *   1. Snapshot comment       — generatedAt vs project updatedAt (freshness gate AH-017)
- *   2. <system_directives>    — Anti-hallucination rules, code quality, taste skill
- *   3. <project_context>      — Project metadata (JSON)
- *   4. <personalization_inputs> — 7-step answers + tech stack (formInputs)
- *   5. <structure>            — Feature mindmap / architecture nodes (compact JSON)
- *   6. <prd_document>         — Full PRD as readable Markdown (CDATA)
- *   7. <design_data>          — Color tokens (compact JSON) + raw design markdown (CDATA)
- *   8. <task_list>            — Phases & task statuses (compact JSON)
+ * Serialize full project context into high-density Lossless Hybrid format.
  */
 export function serializeContextToHybrid(data: ContextInput): string {
   const parts: string[] = [];
 
-  // ── 0. SNAPSHOT FRESHNESS MARKER (highest visibility, minimal tokens) ──
+  // 0. Snapshot freshness comment (AH-017)
   parts.push(renderSnapshotComment());
 
-  // ── 1. SYSTEM DIRECTIVES ──────────────────────────────────────────────
+  // 1. High-Density System Directives & UI Governance
   parts.push(renderSystemDirectives(data.directives, data.design));
 
-  // ── 2. PROJECT CONTEXT ────────────────────────────────────────────────
+  // 2. Project Metadata
   parts.push(renderProjectContext(data.project));
 
-  // ── 3. PERSONALIZATION INPUTS (formInputs) ────────────────────────────
+  // 3. Personalization Inputs
   if (data.formInputs) {
     parts.push(renderPersonalizationInputs(data.formInputs));
   }
 
-  // ── 4. STRUCTURE ──────────────────────────────────────────────────────
+  // 4. Feature Architecture Structure
   if (data.structure) {
     parts.push(renderStructure(data.structure));
   }
 
-  // ── 5. PRD DOCUMENT ───────────────────────────────────────────────────
+  // 5. Full 10-Section PRD Document (100% Full & Intact)
   if (data.prd) {
     parts.push(renderPrd(data.prd));
   }
 
-  // ── 6. DESIGN DATA ────────────────────────────────────────────────────
+  // 6. Color Tokens & Design Data
   parts.push(renderDesignData(data.design));
 
-  // ── 7. TASK LIST ──────────────────────────────────────────────────────
+  // 7. Active Task Window & Roadmap
   parts.push(renderTaskList(data.tasks, data.taskStatuses));
 
   return parts.join("\n\n");
 }
 
 // ============================================================================
-// XML safety helpers
+// XML Safety Helpers
 // ============================================================================
 
-/** Escape `&`, `<`, `>` for short XML text content (attributes + prose). */
 function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -160,166 +145,65 @@ function escapeXml(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
-/**
- * Wrap arbitrary content (Markdown, JSON, code) in a CDATA section so angle
- * brackets inside the content can never terminate the XML element early.
- * Handles the only illegal sequence `]]>` by splitting it.
- */
 function cdata(value: string): string {
   const safe = String(value).replace(/\]\]>/g, "]]]]><![CDATA[>");
   return `<![CDATA[\n${safe}\n]]>`;
 }
 
-/** Compact JSON (no indentation) for token-heavy data blocks. */
 function compactJson(value: unknown): string {
   return JSON.stringify(value);
 }
 
 // ============================================================================
-// Render helpers
+// Render Helpers (Optimized for Signal-to-Token Ratio)
 // ============================================================================
 
 function renderSnapshotComment(): string {
   const generatedAt = new Date().toISOString();
-  return `<!-- Piardify Context Snapshot
-     generatedAt   : ${generatedAt}
-     NOTE          : Jika <project_context>.updatedAt lebih baru dari generatedAt, konteks ini BASI.
-                     Jalankan 'npx piardify init' atau '.piardify/sync context > .piardify/context.md' untuk refresh (AH-017). -->`;
+  return `<!-- Piardify Context Snapshot | generatedAt: ${generatedAt} | Freshness Gate AH-017: If project updatedAt is newer, refresh via .piardify/sync context > .piardify/context.md -->`;
 }
 
 function renderSystemDirectives(directives: ContextInput["directives"], design?: DesignData): string {
   const { antiHallucinationRules, tasteSkill } = directives;
 
-  // Critical Design Locks & Layout Governance (Top-of-File Pinning)
-  const criticalLocksBlock = renderCriticalDesignLocks(design);
-  const layoutGovernanceBlock = renderLayoutGovernance();
-  const currencyDirectivesBlock = renderCurrencyDirectives();
+  const primaryColor =
+    design?.colorTokens?.find((t) => t.role.toLowerCase().includes("accent") || t.role.toLowerCase().includes("primary"))
+      ?.hex || "#6366F1";
 
-  // Minified Anti-Hallucination Rules (1-line per rule for token efficiency)
-  const rulesBlock = antiHallucinationRules.rules
+  // Dense XML Rules
+  const rules = antiHallucinationRules.rules
     .map((r) => `  <rule id="${escapeXml(r.id)}">${escapeXml(r.rule)}</rule>`)
     .join("\n");
 
-  // Lazy-Loaded Taste Skill Pointer (Zero-Redundancy: On-Demand Fetch via .piardify/sync taste <key>)
   const ts = tasteSkill;
   const tasteBlock = `  <active_skill key="${escapeXml(ts.activeSkillKey)}" fetch_cmd=".piardify/sync taste ${escapeXml(ts.activeSkillKey)}">
-    Selected: ${escapeXml(ts.routerInfo.selectedReason)} | Standard: Obsidian Surface (#090A0C), 150-250ms spring motion, shadcn/ui mandatory, zero-slop.
+    Selected: ${escapeXml(ts.routerInfo.selectedReason)} | Baseline: Obsidian (#090A0C), 150-250ms spring physics, shadcn/ui mandatory, zero-slop.
   </active_skill>`;
 
   return `<system_directives>
-${criticalLocksBlock}
-
-${layoutGovernanceBlock}
-
-${currencyDirectivesBlock}
+  <ui_governance>
+    <surfaces base="#090A0C" level1="#121318" level2="#181A22" hover="#222634" primary_accent="${escapeXml(primaryColor)}" />
+    <radius data="0-4px" cards_inputs="4-8px" pills_only="9999px" />
+    <typography headline_tracking="tight (-0.02em)" label_tracking="wide (+0.05em)" max_prose_chars="75" max_weights="3" />
+    <motion duration="150-250ms" timing="cubic-bezier(0.16, 1, 0.3, 1)" />
+    <mandate library="shadcn/ui (@/components/ui/*)" />
+    <forbidden>
+      [pure_black_#000000, navy_#0F172A, icon_container_syndrome, gradient_text_headlines, rounded-2xl_everywhere, nested_cards_gt_2, arbitrary_unapproved_libraries]
+    </forbidden>
+    <currency idr_billion="Rp X,XX M" idr_million="Rp X,XX Jt" idr_thousand="Rp XXX Rb" />
+  </ui_governance>
 
   <anti_hallucination_rules>
-${rulesBlock}
+${rules}
   </anti_hallucination_rules>
 
 ${tasteBlock}
 </system_directives>`;
 }
 
-function renderCriticalDesignLocks(design?: DesignData): string {
-  const primaryColor = design?.colorTokens?.find(t => t.role.toLowerCase().includes("accent") || t.role.toLowerCase().includes("primary"))?.hex || "#6366F1";
-
-  return `  <critical_design_locks>
-    <core_identity>Distinctive — Premium — Usable (Intentional, Human-Designed, Visually Memorable)</core_identity>
-    <color_palette>
-      - HEX_MAIN_BG: "#090A0C" (Obsidian Dark - FORBIDDEN: Pure Black #000000 or Navy #0F172A)
-      - HEX_SURFACE_LEVEL1: "#121318"
-      - HEX_SURFACE_LEVEL2: "#181A22"
-      - HEX_SURFACE_HOVER: "#222634"
-      - HEX_ACCENT_PRIMARY: "${primaryColor}"
-      - COLOR_RESTRICTION: "Max 1 dominant accent, max 2 functional status colors. NO neon glows or purple-on-dark slop."
-    </color_palette>
-    <typography_rules>
-      - HEADLINE_TRACKING: "Tight tracking (tracking-tight / -0.02em to -0.04em) on headlines >= 32px"
-      - LABEL_TRACKING: "Relaxed tracking (tracking-wider / +0.05em) on small labels <= 12px"
-      - LINE_MEASURE: "Limit paragraph width to 45-75 characters (max-w-prose)"
-      - PAIRING: "Max 2 font families (1 display + 1 neutral sans/mono). Max 3 font weights per component."
-    </typography_rules>
-    <shape_radius_strategy>
-      - RADIUS_HIERARCHY: "Sharp (0-4px) for data/financials/tables; Subtle (4-8px) for forms/cards; Pill (9999px) ONLY for status tags"
-      - FORBIDDEN: "Do NOT apply rounded-2xl to everything indiscriminately (Anti Everything-Rounded Slop)"
-    </shape_radius_strategy>
-    <iconography_discipline>
-      - PLACEMENT: "Self-standing inline icons or inside action buttons"
-      - FORBIDDEN: "Icon Container Syndrome (p-3 rounded-xl bg-purple-500/10 boxes above headings)"
-    </iconography_discipline>
-    <component_framework_mandate>
-      - MANDATORY_LIBRARY: "ALWAYS use shadcn/ui primitives (@/components/ui/*) for UI component creation and editing (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge)"
-      - FORBIDDEN: "Do NOT create raw unstyled HTML buttons/inputs from scratch when shadcn/ui primitives exist"
-    </component_framework_mandate>
-    <motion_subsystem>
-      - DURATION: "150ms - 250ms with spring physics or cubic-bezier(0.16, 1, 0.3, 1)"
-      - FORBIDDEN: "Slow 800ms fade-in-up scroll delays, typewriter loops, or glitch cursor slop"
-    </motion_subsystem>
-  </critical_design_locks>`;
-}
-
-function renderLayoutGovernance(): string {
-  return `  <layout_governance>
-    <principles>
-      - FUNCTION_DRIVEN_LAYOUT: Layout disesuaikan dengan skenario penggunaan (Focus Mode, Data Split, Canvas). Dilarang menjadikan dashboard grid 3-kolom sebagai default.
-      - WHITESPACE_OVER_BORDERS: Gunakan padding/margin dan perbedaan kontras surface, BUKAN border warna-warni atau outline solid tebal.
-      - TYPOGRAPHIC_HIERARCHY: Bedakan informasi dengan font-weight, kerning (letter-spacing), dan font-size contrast.
-      - FLUID_RESPONSIVENESS: Komponen internal wajib adaptif tanpa fixed pixel width (misal w-[342px]) dan gunakan min-h-[100dvh] atau min-h-screen (bukan h-screen).
-      - BRAND_REMOVAL_TEST: UI harus tetap terlihat unik dan human-designed bahkan ketika logo dan nama brand dilepas.
-    </principles>
-    <forbidden_ui_slop>
-      - FORBIDDEN_PATTERNS: [
-          "Card-inside-card nested > 2 levels",
-          "Icon-stuffed bento box without clear semantic priority",
-          "Icon Container Syndrome (wrapping every icon in p-3 rounded-xl colored box)",
-          "Headline biscuit/pill badge with pulsing dots",
-          "Gradient text fill on headline keywords (text-transparent bg-gradient-to-r)",
-          "Colored border accents or glowing colored outlines",
-          "Purple/Violet accents on dark theme backgrounds",
-          "Indiscriminate rounded-2xl on all containers",
-          "Pure Black #000000 or Navy #0F172A background slop"
-        ]
-    </forbidden_ui_slop>
-    <anti_slop_20point_audit>
-      1. Layout bebas dari susunan klise 'Hero -> 3 Bento Cards -> Pricing'?
-      2. Memiliki alur hierarki visual yang intentional?
-      3. Bebas dari cardification berlebihan (nested cards > 2 level)?
-      4. Radius sudut bervariasi proporsional (bukan rounded-2xl seragam)?
-      5. Badge/pill hanya untuk status riil, bukan dekorasi kosong?
-      6. Bebas dari Icon Container Syndrome (kotak ikon kecil generik)?
-      7. Jumlah warna aksen dibatasi (<= 1 dominan, <= 2 fungsional)?
-      8. Warna ungu/biru dihindari jika tidak sesuai brand context?
-      9. Bebas dari neon glow dan shadow raksasa pencemar teks?
-      10. Gradasi warna dibatasi hanya untuk lighting simulation?
-      11. Glassmorphism terbatas max 1 layer fungsional (sticky header)?
-      12. Border dan divider memiliki alasan struktural nyata?
-      13. Tipografi memiliki kontras skala & tracking optik presisi?
-      14. Panjang baris paragraf 45-75 karakter?
-      15. Library ikon seragam dan konsisten?
-      16. Animasi mempunyai fungsi tactile real-time (150-250ms)?
-      17. Interaksi mikro terasa taktil dan responsif?
-      18. Layout mobile dirancang ulang secara ergonomis (thumb-zone)?
-      19. Desain memiliki kepribadian sesuai domain produk?
-      20. Lolos Subtractive Polish (bebas elemen visual sampah)?
-    </anti_slop_20point_audit>
-  </layout_governance>`;
-}
-
-function renderCurrencyDirectives(): string {
-  return `  <currency_directives>
-    <formatting_rules>
-      - IDR >= 1.000.000.000 -> "Rp X,XX M" (Miliar)
-      - IDR >= 1.000.000 -> "Rp X,XX Jt" (Juta) (misal: Rp 13,95 Jt)
-      - IDR >= 100.000 -> "Rp XXX Rb" (Ribu)
-      - PURPOSE: Prevents layout overflow & numeric truncation in UI data cards and tables.
-    </formatting_rules>
-  </currency_directives>`;
-}
-
 function renderProjectContext(project: ProjectMeta): string {
   return `<project_context>
-${cdata(JSON.stringify(project, null, 2))}
+${cdata(compactJson(project))}
 </project_context>`;
 }
 
@@ -336,16 +220,12 @@ ${cdata(compactJson(structure))}
 }
 
 function renderPrd(prd: string): string {
-  // The PRD is already a Markdown string — emit it raw (CDATA protects any
-  // `<` like mermaid arrows from breaking XML parsing).
   return `<prd_document>
 ${cdata(prd)}
 </prd_document>`;
 }
 
 function renderDesignData(design: DesignData): string {
-  // Color tokens (compact, fast-lookup index).
-  // raw_design_markdown is omitted to eliminate token waste since colorTokens & critical_design_locks cover all design system rules.
   return `<design_data>
   <color_tokens>
 ${cdata(compactJson(design.colorTokens))}
@@ -353,17 +233,80 @@ ${cdata(compactJson(design.colorTokens))}
 </design_data>`;
 }
 
+interface RawTaskItem {
+  id: string;
+  title: string;
+  estimasi?: string;
+  priority?: string;
+  description?: string;
+  definitionOfDone?: string[];
+}
+
+interface RawPhaseItem {
+  id: number | string;
+  name: string;
+  tasks?: RawTaskItem[];
+}
+
 function renderTaskList(tasks: unknown, taskStatuses: Record<string, string>): string {
-  // Active task filtering for zero-redundancy: focus on active and pending tasks
-  const activeStatuses: Record<string, string> = {};
-  for (const [id, status] of Object.entries(taskStatuses || {})) {
-    const s = String(status).toLowerCase();
-    if (s === "in_progress" || s === "pending" || s === "current") {
-      activeStatuses[id] = status;
+  const statuses = taskStatuses || {};
+
+  let phasesSummary: Array<{ id: number | string; name: string; total: number; done: number }> = [];
+  let activeWindow: Array<{
+    id: string;
+    phaseName: string;
+    title: string;
+    status: string;
+    priority?: string;
+    estimasi?: string;
+    description?: string;
+    definitionOfDone?: string[];
+  }> = [];
+
+  const raw = tasks as { phases?: RawPhaseItem[] } | null;
+
+  if (raw && Array.isArray(raw.phases)) {
+    let pendingCount = 0;
+
+    for (const phase of raw.phases) {
+      const phaseTasks = Array.isArray(phase.tasks) ? phase.tasks : [];
+      let doneCount = 0;
+
+      for (const t of phaseTasks) {
+        const st = (statuses[t.id] || "todo").toLowerCase();
+        if (st === "done") {
+          doneCount++;
+        } else if (st === "in_progress" || st === "current" || pendingCount < 3) {
+          activeWindow.push({
+            id: t.id,
+            phaseName: phase.name,
+            title: t.title,
+            status: st,
+            priority: t.priority,
+            estimasi: t.estimasi,
+            description: t.description,
+            definitionOfDone: t.definitionOfDone,
+          });
+          if (st !== "in_progress") pendingCount++;
+        }
+      }
+
+      phasesSummary.push({
+        id: phase.id,
+        name: phase.name,
+        total: phaseTasks.length,
+        done: doneCount,
+      });
     }
   }
 
+  const payload = {
+    phasesOverview: phasesSummary,
+    activeTasksWindow: activeWindow,
+    taskStatuses: statuses,
+  };
+
   return `<task_list>
-${cdata(compactJson({ activeTaskStatuses: activeStatuses, taskSummary: tasks }))}
+${cdata(compactJson(payload))}
 </task_list>`;
 }

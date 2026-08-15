@@ -23,9 +23,12 @@ import {
   type Connection,
   BackgroundVariant,
 } from "@xyflow/react";
+import { apiClient } from "@/lib/apiClient";
+import { useProjectStore } from "@/stores/useProjectStore";
 import "@xyflow/react/dist/style.css";
 import StepNavbar from "../components/StepNavbar";
 import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
+import { StructureSkeleton } from "../components/Skeletons";
 
 /* ─── Types ─── */
 interface StrukturChild { id: string; label: string; }
@@ -304,9 +307,7 @@ function StrukturPageContent() {
     const generate = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/generate/struktur", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId }) });
-        if (!res.ok) { setError("Failed to create structure."); return; }
-        const json = await res.json();
+        const json = await apiClient.generate.struktur(projectId);
         if (json.error) { setError(json.error); }
         else { setRawData(json); const { nodes: n, edges: e } = buildGraph(json); setNodes(n); setEdges(e); }
       } catch { setError("Failed to connect to the server."); }
@@ -349,11 +350,19 @@ function StrukturPageContent() {
     };
     setIsSaving(true);
     try {
-      const res = await fetch("/api/projects/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId, strukturData: parsedData, tasksOutdated: true }) });
-      if (res.ok) { setRawData(parsedData); const { nodes: n, edges: e } = buildGraph(parsedData); setNodes(n); setEdges(e); setIsEditing(false); toast.success("Structure saved!"); }
-      else { toast.error("Failed to save structure."); }
-    } catch { toast.error("Connection error while saving."); }
-    finally { setIsSaving(false); }
+      await apiClient.projects.update({ projectId, strukturData: parsedData, tasksOutdated: true });
+      useProjectStore.getState().updateProjectLocally({ strukturData: JSON.stringify(parsedData) });
+      setRawData(parsedData);
+      const { nodes: n, edges: e } = buildGraph(parsedData);
+      setNodes(n);
+      setEdges(e);
+      setIsEditing(false);
+      toast.success("Structure saved!");
+    } catch {
+      toast.error("Failed to save structure.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   /* Shared button base */
@@ -527,7 +536,7 @@ function StrukturPageContent() {
 
 export default function StrukturPage() {
   return (
-    <Suspense fallback={<div style={{ height: "100vh", background: "var(--color-ink)" }} />}>
+    <Suspense fallback={<StructureSkeleton />}>
       <StrukturPageContent />
     </Suspense>
   );

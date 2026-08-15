@@ -5,6 +5,7 @@ import Navbar from "@/app/components/Navbar";
 import { Settings, Save, Server, Cpu, Loader2, AlertCircle, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { apiClient, ApiError } from "@/lib/apiClient";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -40,17 +41,14 @@ export default function AdminSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch("/api/admin/settings");
-      if (res.status === 403) {
-        router.push("/");
-        return;
-      }
-      if (!res.ok) throw new Error("Failed to load settings");
-      const data = await res.json();
-      
+      const data = await apiClient.admin.getSettings();
       if (data.geminiModel) setGeminiModel(data.geminiModel);
       if (data.openRouterModel) setOpenRouterModel(data.openRouterModel);
     } catch (err: any) {
+      if (err instanceof ApiError && err.statusCode === 403) {
+        router.push("/");
+        return;
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -59,12 +57,10 @@ export default function AdminSettingsPage() {
 
   const fetchOpenRouterModels = async () => {
     try {
-      const res = await fetch("/api/openrouter/models");
-      if (res.status === 403) return; // Handled by settings fetch
-      if (!res.ok) throw new Error("Failed to load OpenRouter models");
-      const data = await res.json();
+      const data = await apiClient.openrouter.getModels();
       setFreeModels(data.models || []);
     } catch (err: any) {
+      if (err instanceof ApiError && err.statusCode === 403) return;
       console.error(err);
       toast.error("Failed to load OpenRouter models");
     } finally {
@@ -74,11 +70,11 @@ export default function AdminSettingsPage() {
 
   const fetchUsages = async () => {
     try {
-      const res = await fetch("/api/admin/usage");
-      if (!res.ok) throw new Error("Failed to load usage data");
-      const data = await res.json();
+      const data: any = await apiClient.admin.getUsage();
       if (data.success && data.data) {
         setUsages(data.data);
+      } else if (data.gemini_key_1 !== undefined) {
+        setUsages(data);
       }
     } catch (err) {
       console.error(err);
@@ -90,13 +86,7 @@ export default function AdminSettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ geminiModel, openRouterModel }),
-      });
-      
-      if (!res.ok) throw new Error("Failed to save settings");
+      await apiClient.admin.updateSettings({ geminiModel, openRouterModel });
       toast.success("Settings saved successfully!");
     } catch (err: any) {
       toast.error(err.message);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Copy, Check, Terminal, X, ShieldCheck, Cpu, MessageSquareText, Key, Lock } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
 
 interface McpConnectModalProps {
   projectId: string;
@@ -16,36 +17,28 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
   const [isCopiedCommand, setIsCopiedCommand] = useState(false);
   const [isCopiedPrompt, setIsCopiedPrompt] = useState(false);
 
-  useEffect(() => {
-    async function fetchApiKey() {
-      try {
-        setIsLoadingKey(true);
-        const res = await fetch("/api/user/api-key");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.apiKey) {
-            setApiKey(data.apiKey);
-          } else if (!data.hasApiKey) {
-            // Auto generate API key if user doesn't have one yet
-            const postRes = await fetch("/api/user/api-key", { method: "POST" });
-            if (postRes.ok) {
-              const postData = await postRes.json();
-              if (postData.apiKey) {
-                setApiKey(postData.apiKey);
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to fetch API key:", err);
-      } finally {
-        setIsLoadingKey(false);
+  const fetchKey = async (): Promise<string> => {
+    if (apiKey) return apiKey;
+    try {
+      setIsLoadingKey(true);
+      const data = await apiClient.user.getApiKey();
+      if (data.apiKey) {
+        setApiKey(data.apiKey);
+        return data.apiKey;
       }
+    } catch (err) {
+      console.warn("Failed to fetch API key:", err);
+    } finally {
+      setIsLoadingKey(false);
     }
-    fetchApiKey();
+    return "";
+  };
+
+  useEffect(() => {
+    fetchKey();
   }, []);
 
-  const keyToUse = apiKey || "<YOUR_API_KEY>";
+  const keyToUse = apiKey || "";
 
   // Masked string representation for UI display (always sensored on UI, no eye toggle)
   const sensoredApiKeyDisplay = isLoadingKey
@@ -55,20 +48,20 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
       : "piar_live_••••••••••••••••••••••••••••••••";
 
   // CLI command strings
-  const cliCommands = `npx piardify login --token ${keyToUse}
+  const getCliCommands = (key: string) => `npx piardify login --token ${key || "<YOUR_API_KEY>"}
 npx piardify init --project ${projectId}`;
 
   const cliCommandsDisplay = `npx piardify login --token ${sensoredApiKeyDisplay}
 npx piardify init --project ${projectId}`;
 
   // AI Prompt strings
-  const aiPrompt = `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
+  const getAiPrompt = (key: string) => `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
 
 Tolong jalankan alur kerja otomatisasi berikut:
 
 1. SETUP CLI & INSTALL SKILL (Terminal):
    Jalankan 2 perintah berikut di terminal:
-   npx piardify login --token ${keyToUse}
+   npx piardify login --token ${key || "<YOUR_API_KEY>"}
    npx piardify init --project ${projectId}
 
 2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
@@ -125,6 +118,32 @@ Tolong jalankan alur kerja otomatisasi berikut:
     } catch (e) {
       console.warn("Clipboard copy failed:", e);
     }
+  };
+
+  const handleCopyKey = async () => {
+    let key = apiKey;
+    if (!key) {
+      key = await fetchKey();
+    }
+    if (key) {
+      await copyToClipboard(key, setIsCopiedKey);
+    }
+  };
+
+  const handleCopyCommand = async () => {
+    let key = apiKey;
+    if (!key) {
+      key = await fetchKey();
+    }
+    await copyToClipboard(getCliCommands(key), setIsCopiedCommand);
+  };
+
+  const handleCopyPrompt = async () => {
+    let key = apiKey;
+    if (!key) {
+      key = await fetchKey();
+    }
+    await copyToClipboard(getAiPrompt(key), setIsCopiedPrompt);
   };
 
   return (
@@ -288,7 +307,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
             </div>
 
             <button
-              onClick={() => copyToClipboard(keyToUse, setIsCopiedKey)}
+              onClick={handleCopyKey}
               disabled={isLoadingKey}
               style={{
                 padding: "8px 14px",
@@ -455,7 +474,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={() => copyToClipboard(cliCommands, setIsCopiedCommand)}
+              onClick={handleCopyCommand}
               style={{
                 flex: 1,
                 padding: "12px 16px",
@@ -481,7 +500,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
             </button>
 
             <button
-              onClick={() => copyToClipboard(aiPrompt, setIsCopiedPrompt)}
+              onClick={handleCopyPrompt}
               style={{
                 flex: 1,
                 padding: "12px 16px",

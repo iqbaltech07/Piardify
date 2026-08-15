@@ -23,7 +23,7 @@ export async function POST(
     }
 
     const project = await prisma.project.findUnique({
-      where: { id: projectId, userId: authResult.user.id },
+      where: { id_userId: { id: projectId, userId: authResult.user.id } },
       select: { id: true, checkedTasks: true },
     });
 

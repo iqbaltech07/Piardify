@@ -10,6 +10,12 @@ import StepNavbar from "../components/StepNavbar";
 import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 import { Send, Bot, Loader2, Lightbulb, Scale, PenLine, Database } from "lucide-react";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/apiClient";
+import { useChatStore } from "@/stores/useChatStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUiStore } from "@/stores/useUiStore";
+import UpgradeModal from "../components/UpgradeModal";
+import { PrdPreviewSkeleton } from "../components/Skeletons";
 
 function PreviewPageContent() {
   const router = useRouter();
@@ -28,11 +34,20 @@ function PreviewPageContent() {
   const contentRef = useRef<HTMLDivElement>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
-  const [chatMessages, setChatMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string; timestamp: string }>>([]);
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [isAiEditing, setIsAiEditing] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash-lite");
   const [freeModels, setFreeModels] = useState<any[]>([]);
+
+  const {
+    chatMessages,
+    addMessage,
+    aiPrompt,
+    setAiPrompt,
+    isAiEditing,
+    setIsAiEditing,
+    selectedModel,
+    setSelectedModel,
+  } = useChatStore();
+  const { updateProjectLocally } = useProjectStore();
+  const { setShowUpgradeModal } = useUiStore();
 
   const GEMINI_MODELS = [
     { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
@@ -45,39 +60,40 @@ function PreviewPageContent() {
   ];
 
   useEffect(() => {
-    fetch("/api/openrouter/models").then(r => r.ok ? r.json() : { models: [] }).then(d => setFreeModels(d.models || [])).catch(() => {});
+    apiClient.openrouter.getModels().then(d => setFreeModels(d.models || [])).catch(() => {});
   }, []);
 
   useEffect(() => { chatBottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages, isAiEditing]);
 
   const handleAiSubmit = async (promptText?: string) => {
     const textToSubmit = promptText || aiPrompt;
-    if (!textToSubmit.trim() || isAiEditing) return;
+    if (!projectId || !textToSubmit.trim() || isAiEditing) return;
     const query = textToSubmit.trim();
     if (!promptText) setAiPrompt("");
     const ts = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    setChatMessages(prev => [...prev, { id: Date.now().toString(), role: "user", content: query, timestamp: ts }]);
+    addMessage({ id: Date.now().toString(), role: "user", content: query, timestamp: ts });
     setIsAiEditing(true);
     try {
-      const res = await fetch("/api/generate/edit-prd", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId, currentPrd: markdown, prompt: query, selectedModel }) });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setChatMessages(prev => [...prev, { id: (Date.now()+1).toString(), role: "assistant", content: `❌ ${data.error || "Error"}`, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-      } else {
-        if (data.isPrdUpdated && data.markdown) {
-          setMarkdown(data.markdown);
-          setEditContent(data.markdown);
-          toast.success("PRD berhasil diperbarui!");
-          try {
-            window.dispatchEvent(new CustomEvent("prdUpdated", { detail: { prdData: data.markdown } }));
-          } catch {}
-        }
-        let reply = data.reply || "Done.";
-        if (reply.trim().startsWith("{") && reply.includes('"reply"')) { try { const m = reply.match(/"reply"\s*:\s*"([\s\S]*?)"/); if (m?.[1]) reply = m[1].replace(/\\n/g,"\n").replace(/\\"/g,'"'); } catch(_){} }
-        setChatMessages(prev => [...prev, { id: (Date.now()+1).toString(), role: "assistant", content: reply, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+      const data = await apiClient.generate.editPrd({ projectId, currentPrd: markdown, prompt: query, selectedModel });
+      if (data.updatedMarkdown) {
+        setMarkdown(data.updatedMarkdown);
+        setEditContent(data.updatedMarkdown);
+        updateProjectLocally({ prdData: data.updatedMarkdown });
+        toast.success("PRD berhasil diperbarui!");
+        try {
+          window.dispatchEvent(new CustomEvent("prdUpdated", { detail: { prdData: data.updatedMarkdown } }));
+        } catch {}
       }
+      let reply = (data as any).reply || data.diffSummary || "Done.";
+      if (typeof reply === "string" && reply.trim().startsWith("{") && reply.includes('"reply"')) {
+        try {
+          const m = reply.match(/"reply"\s*:\s*"([\s\S]*?)"/);
+          if (m?.[1]) reply = m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+        } catch (_) {}
+      }
+      addMessage({ id: (Date.now()+1).toString(), role: "assistant", content: reply, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
     } catch (err: any) {
-      setChatMessages(prev => [...prev, { id: (Date.now()+1).toString(), role: "assistant", content: `❌ ${err.message}`, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+      addMessage({ id: (Date.now()+1).toString(), role: "assistant", content: `❌ ${err.message}`, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
     } finally { setIsAiEditing(false); }
   };
 
@@ -87,13 +103,14 @@ function PreviewPageContent() {
     const go = async () => {
       setIsGenerating(true); setMarkdown("");
       try {
-        const res = await fetch("/api/generate/prd", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId }) });
-        if (!res.ok) { setMarkdown("# Error\n\nPlease check API keys in `.env`."); return; }
-        const data = await res.json();
-        if (data.error) setMarkdown(`# Error\n\n${data.error}`);
-        else { setMarkdown(data.markdown || ""); setEditContent(data.markdown || ""); }
-      } catch { setMarkdown("# Network Error\n\nFailed to generate PRD."); }
-      finally { setIsGenerating(false); }
+        const data = await apiClient.generate.prd(projectId);
+        setMarkdown(data.markdown || "");
+        setEditContent(data.markdown || "");
+      } catch (err: any) {
+        setMarkdown(`# Error\n\n${err?.message || "Failed to generate PRD."}`);
+      } finally {
+        setIsGenerating(false);
+      }
     };
     go();
   }, [hasStarted, projectId]);
@@ -113,17 +130,40 @@ function PreviewPageContent() {
   }, [toc]);
 
   const handleCopy = useCallback(async () => { await navigator.clipboard.writeText(markdown); setCopied(true); setTimeout(() => setCopied(false), 2000); }, [markdown]);
-  const handleDownload = useCallback(() => { const b = new Blob([markdown], { type: "text/markdown" }); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "PRD.md"; a.click(); URL.revokeObjectURL(u); }, [markdown]);
+  const handleDownload = useCallback(async () => {
+    try {
+      const { user } = await apiClient.user.me();
+      if (!user.isPro) {
+        toast.error("Fitur Download Markdown (.md) terkunci khusus untuk pengguna Pro.");
+        setShowUpgradeModal(true);
+        return;
+      }
+      const b = new Blob([markdown], { type: "text/markdown" });
+      const u = URL.createObjectURL(b);
+      const a = document.createElement("a");
+      a.href = u;
+      a.download = "PRD.md";
+      a.click();
+      URL.revokeObjectURL(u);
+    } catch {
+      toast.error("Silakan login untuk mengunduh dokumen PRD.");
+    }
+  }, [markdown, setShowUpgradeModal]);
   const handleContinueToDesign = () => router.push(`/detail${projectId ? `?projectId=${projectId}` : ""}`);
   const scrollToHeading = (id: string) => { const c = contentRef.current; if (!c) return; const el = c.querySelector<HTMLElement>(`#${id}`); if (!el) return; c.scrollTo({ top: el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop - 24, behavior: "smooth" }); };
   const handleSave = async () => {
     if (!projectId) return; setIsSaving(true);
     try {
-      const res = await fetch("/api/projects/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId, prdData: editContent, tasksOutdated: true }) });
-      if (res.ok) { setMarkdown(editContent); setIsEditing(false); toast.success("PRD saved!"); }
-      else toast.error("Failed to save PRD.");
-    } catch { toast.error("Connection error."); }
-    finally { setIsSaving(false); }
+      await apiClient.projects.update({ projectId, prdData: editContent, tasksOutdated: true });
+      setMarkdown(editContent);
+      updateProjectLocally({ prdData: editContent });
+      setIsEditing(false);
+      toast.success("PRD saved!");
+    } catch {
+      toast.error("Failed to save PRD.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   /* Shared small button style */
@@ -413,13 +453,15 @@ function PreviewPageContent() {
         aside::-webkit-scrollbar-thumb { background: var(--border-hairline); border-radius: 3px; }
         select option, select optgroup { background: var(--bg-elevated); color: var(--fg-primary); }
       `}</style>
+      {/* Pro Upgrade Modal */}
+      <UpgradeModal />
     </div>
   );
 }
 
 export default function PreviewPage() {
   return (
-    <Suspense fallback={<div style={{ height: "100vh", background: "var(--color-ink)" }} />}>
+    <Suspense fallback={<PrdPreviewSkeleton />}>
       <PreviewPageContent />
     </Suspense>
   );

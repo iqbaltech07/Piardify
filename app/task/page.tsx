@@ -21,6 +21,11 @@ import { toast } from "sonner";
 import StepNavbar from "../components/StepNavbar";
 import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
 import McpConnectModal from "../components/McpConnectModal";
+import { apiClient } from "@/lib/apiClient";
+import { useKanbanStore } from "@/stores/useKanbanStore";
+import { useUiStore } from "@/stores/useUiStore";
+import UpgradeModal from "../components/UpgradeModal";
+import { TaskKanbanSkeleton } from "../components/Skeletons";
 
 /* ─── Types ─── */
 interface Task {
@@ -338,9 +343,13 @@ function TaskPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
   
-  // Track status per task (todo | in_progress | done)
-  const [taskStatus, setTaskStatus] = useState<Record<string, ColumnId>>({});
-  const [activePhase, setActivePhase] = useState<string>("");
+  const {
+    taskStatus,
+    setTaskStatus,
+    activePhase,
+    setActivePhase,
+  } = useKanbanStore();
+  const { setShowUpgradeModal } = useUiStore();
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
   const [celebration, setCelebration] = useState<FinishResult | null>(null);
@@ -353,17 +362,7 @@ function TaskPageContent() {
     else setIsLoading(true);
 
     try {
-      const res = await fetch("/api/generate/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, forceSync: force }),
-      });
-      if (!res.ok) {
-        if (force) toast.error("Gagal menyinkronkan task list.");
-        else setError("Gagal membuat task list.");
-        return;
-      }
-      const json = await res.json();
+      const json = await apiClient.generate.tasks({ projectId, forceSync: force });
       if (json.error) {
         if (force) toast.error(json.error);
         else setError(json.error);
@@ -426,10 +425,8 @@ function TaskPageContent() {
       if (document.visibilityState !== "visible" || isDirtyRef.current) return;
 
       try {
-        const res = await fetch(`/api/projects/status?projectId=${projectId}`, { cache: "no-store" });
-        if (res.ok) {
-          const json = await res.json();
-          const serverStatuses: Record<string, ColumnId> = json.taskStatus || {};
+        const json = await apiClient.projects.getStatus(projectId);
+        const serverStatuses: Record<string, ColumnId> = (json.taskStatus as any) || {};
 
           let hasChange = false;
           const updated = { ...latestTaskStatusRef.current };
@@ -455,7 +452,6 @@ function TaskPageContent() {
               localStorage.setItem(`kanban_status_${projectId}`, JSON.stringify(updated));
             } catch (e) {}
           }
-        }
       } catch (err) {
         // Silent error handling for background polling
       }
@@ -480,15 +476,12 @@ function TaskPageContent() {
       }
     }
     
-    // 2. Fallback fetch with keepalive: true
-    fetch("/api/projects/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: payload,
-      keepalive: true,
-    }).then(() => {
-      isDirtyRef.current = false;
-    }).catch(e => console.warn("Failed to sync kanban status on leave:", e));
+    // 2. Fallback using centralized apiClient
+    apiClient.projects.update({ projectId, checkedTasks: latestTaskStatusRef.current })
+      .then(() => {
+        isDirtyRef.current = false;
+      })
+      .catch((e) => console.warn("Failed to sync kanban status on leave:", e));
   };
 
   // Attach lifecycle event listeners for On-Leave / On-Unload sync (Skenario A)
@@ -558,36 +551,44 @@ function TaskPageContent() {
     });
 
     try {
-      const res = await fetch("/api/projects/finish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, checkedTasks: checkedMap })
-      });
-      const json = await res.json();
-      if (!res.ok) setFinishError(json.error || "Gagal menyelesaikan project.");
-      else { setIsFinished(true); setCelebration(json); }
-    } catch { setFinishError("Failed to connect."); }
-    finally { setIsFinishing(false); }
+      const json = await apiClient.projects.finish({ projectId, checkedTasks: checkedMap });
+      setIsFinished(true);
+      setCelebration(json);
+    } catch (err: any) {
+      setFinishError(err?.message || "Gagal menyelesaikan project.");
+    } finally {
+      setIsFinishing(false);
+    }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!data) return;
-    let md = "";
-    data.phases.forEach((ph, i) => {
-      md += `## ${i+1}. ${ph.name}\n\n`;
-      ph.tasks.forEach(t => {
-        const statusStr = taskStatus[t.id] === "done" ? "[x]" : "[ ]";
-        const stateLabel = (taskStatus[t.id] || "todo").toUpperCase();
-        md += `- ${statusStr} **${t.title}** *(${t.estimasi})* — Status: ${stateLabel} | Priority: ${t.priority}\n  ${t.description}\n\n`;
+    try {
+      const { user } = await apiClient.user.me();
+      if (!user.isPro) {
+        toast.error("Fitur Export Kanban Tasks (.md) terkunci khusus untuk pengguna Pro.");
+        setShowUpgradeModal(true);
+        return;
+      }
+      let md = "";
+      data.phases.forEach((ph, i) => {
+        md += `## ${i+1}. ${ph.name}\n\n`;
+        ph.tasks.forEach(t => {
+          const statusStr = taskStatus[t.id] === "done" ? "[x]" : "[ ]";
+          const stateLabel = (taskStatus[t.id] || "todo").toUpperCase();
+          md += `- ${statusStr} **${t.title}** *(${t.estimasi})* — Status: ${stateLabel} | Priority: ${t.priority}\n  ${t.description}\n\n`;
+        });
       });
-    });
-    const b = new Blob([md], { type: "text/markdown" });
-    const u = URL.createObjectURL(b);
-    const a = document.createElement("a");
-    a.href = u;
-    a.download = "kanban-tasks.md";
-    a.click();
-    URL.revokeObjectURL(u);
+      const b = new Blob([md], { type: "text/markdown" });
+      const u = URL.createObjectURL(b);
+      const a = document.createElement("a");
+      a.href = u;
+      a.download = "kanban-tasks.md";
+      a.click();
+      URL.revokeObjectURL(u);
+    } catch {
+      toast.error("Silakan login untuk mengunduh daftar task.");
+    }
   };
 
   const progress = getProgress();
@@ -963,13 +964,15 @@ function TaskPageContent() {
         main::-webkit-scrollbar { height: 6px; width: 6px; }
         main::-webkit-scrollbar-thumb { background: var(--border-hairline); border-radius: 3px; }
       `}</style>
+      {/* Pro Upgrade Modal */}
+      <UpgradeModal />
     </div>
   );
 }
 
 export default function TaskPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--color-ink)" }} />}>
+    <Suspense fallback={<TaskKanbanSkeleton />}>
       <TaskPageContent />
     </Suspense>
   );

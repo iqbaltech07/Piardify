@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import StepNavbar from "../components/StepNavbar";
@@ -12,6 +12,10 @@ import ProjectHeaderCard from "./components/ProjectHeaderCard";
 import ColorTokensTable from "./components/ColorTokensTable";
 import DesignAccordions from "./components/DesignAccordions";
 import DesignDropzone from "./components/DesignDropzone";
+import { DESIGN_TEMPLATES_METADATA } from "@/lib/designTemplates";
+import { apiClient } from "@/lib/apiClient";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { ProjectDetailSkeleton } from "../components/Skeletons";
 
 export { DEFAULT_COLOR_TOKENS, DEFAULT_ACCORDION_SECTIONS } from "./utils/parser";
 export type { ProjectDetailData, ColorToken } from "./types";
@@ -20,9 +24,7 @@ function ProjectDetailContent() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
 
-  const [project, setProject] = useState<ProjectDetailData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { project, isLoading, error, fetchProject, setProject } = useProjectStore();
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({ dos_and_donts: true, overview: true });
   const [showMcpModal, setShowMcpModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -33,38 +35,16 @@ function ProjectDetailContent() {
   };
 
   useEffect(() => {
-    if (!projectId) return;
-    const fetchProject = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/projects/detail?projectId=${projectId}`);
-        if (!res.ok) throw new Error("Failed to load project details");
-        const json = await res.json();
-        setProject(json.project || null);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to connect to server");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProject();
-  }, [projectId]);
+    if (projectId) {
+      fetchProject(projectId);
+    }
+  }, [projectId, fetchProject]);
 
   const processUploadedFile = async (file: File) => {
     if (!file || !projectId) return;
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("projectId", projectId);
-      formData.append("file", file);
-
-      const res = await fetch("/api/projects/upload-design", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-      const json = await res.json();
+      const json = await apiClient.projects.uploadDesignFile(projectId, file);
 
       setProject((prev) =>
         prev
@@ -76,6 +56,31 @@ function ProjectDetailContent() {
       );
     } catch (err: unknown) {
       alert("Failed to upload design.md: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleApplyTemplate = async (templateId: string) => {
+    if (!projectId) return;
+    setIsUploading(true);
+    try {
+      const template = DESIGN_TEMPLATES_METADATA.find((t) => t.id === templateId);
+      const rawMarkdown = template?.rawMarkdown;
+      if (!rawMarkdown) throw new Error("Template content is empty");
+
+      const uploadJson = await apiClient.projects.uploadDesign({ projectId, designData: rawMarkdown });
+
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              designData: uploadJson.designData,
+            }
+          : prev
+      );
+    } catch (err: unknown) {
+      alert("Failed to apply design template: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsUploading(false);
     }
@@ -93,18 +98,30 @@ function ProjectDetailContent() {
     if (file) await processUploadedFile(file);
   };
 
-  const formInputs = project?.formInputs ? (() => { try { return JSON.parse(project.formInputs); } catch { return {}; } })() : {};
-  const rawDesignData = (() => {
+  const formInputs = useMemo(() => {
+    if (!project?.formInputs) return {};
+    try {
+      return JSON.parse(project.formInputs);
+    } catch {
+      return {};
+    }
+  }, [project?.formInputs]);
+
+  const rawDesignData = useMemo(() => {
     const raw = project?.designData || "";
     if (raw.startsWith("{") && raw.includes("rawMarkdown")) {
-      try { return JSON.parse(raw).rawMarkdown || raw; } catch { return raw; }
+      try {
+        return JSON.parse(raw).rawMarkdown || raw;
+      } catch {
+        return raw;
+      }
     }
     return raw;
-  })();
+  }, [project?.designData]);
 
-  const sections = parseMarkdownSections(rawDesignData);
-  const colorTokens = parseColorTokens(rawDesignData);
-  const hasDesignData = !!(rawDesignData && rawDesignData.trim());
+  const sections = useMemo(() => parseMarkdownSections(rawDesignData), [rawDesignData]);
+  const colorTokens = useMemo(() => parseColorTokens(rawDesignData), [rawDesignData]);
+  const hasDesignData = useMemo(() => !!(rawDesignData && rawDesignData.trim()), [rawDesignData]);
 
   const btn: React.CSSProperties = {
     display: "inline-flex",
@@ -167,10 +184,30 @@ function ProjectDetailContent() {
       </header>
 
       {/* ── Main Content ── */}
-      <main style={{ paddingTop: 76, paddingBottom: 80, maxWidth: 960, margin: "0 auto", paddingLeft: 24, paddingRight: 24 }}>
+      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         {isLoading ? (
-          <div style={{ padding: "80px 0", textAlign: "center" }}>
-            <p style={{ fontFamily: "var(--font-mono)", color: "var(--color-signal)" }}>Loading Project Details...</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div style={{ background: "var(--bg-surface)", padding: 28, borderRadius: "var(--radius-lg)", border: "1px solid var(--border-hairline)" }}>
+              <div className="skeleton-shimmer" style={{ width: 140, height: 14, marginBottom: 14 }} />
+              <div className="skeleton-shimmer" style={{ width: 340, height: 32, marginBottom: 14 }} />
+              <div className="skeleton-shimmer" style={{ width: "80%", height: 18, marginBottom: 20 }} />
+              <div style={{ display: "flex", gap: 12 }}>
+                <div className="skeleton-shimmer" style={{ width: 100, height: 28 }} />
+                <div className="skeleton-shimmer" style={{ width: 100, height: 28 }} />
+                <div className="skeleton-shimmer" style={{ width: 100, height: 28 }} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+              <div style={{ background: "var(--bg-surface)", padding: 24, borderRadius: "var(--radius-lg)", border: "1px solid var(--border-hairline)" }}>
+                <div className="skeleton-shimmer" style={{ width: 180, height: 20, marginBottom: 16 }} />
+                <div className="skeleton-shimmer" style={{ width: "100%", height: 36, marginBottom: 8 }} />
+                <div className="skeleton-shimmer" style={{ width: "100%", height: 36 }} />
+              </div>
+              <div style={{ background: "var(--bg-surface)", padding: 24, borderRadius: "var(--radius-lg)", border: "1px solid var(--border-hairline)" }}>
+                <div className="skeleton-shimmer" style={{ width: 180, height: 20, marginBottom: 16 }} />
+                <div className="skeleton-shimmer" style={{ width: "100%", height: 80 }} />
+              </div>
+            </div>
           </div>
         ) : error ? (
           <div style={{ padding: "60px 0", textAlign: "center", color: "#f87171" }}>
@@ -189,6 +226,7 @@ function ProjectDetailContent() {
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onFileUpload={handleFileUpload}
+                onApplyTemplate={handleApplyTemplate}
               />
             ) : (
               <>
@@ -217,7 +255,7 @@ function ProjectDetailContent() {
 
 export default function ProjectDetailPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 40, color: "var(--color-signal)" }}>Loading Detail Page...</div>}>
+    <Suspense fallback={<ProjectDetailSkeleton />}>
       <ProjectDetailContent />
     </Suspense>
   );
