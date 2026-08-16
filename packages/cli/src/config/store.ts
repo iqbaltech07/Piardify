@@ -33,11 +33,16 @@ export function getGlobalConfig(): GlobalConfig {
 export function saveGlobalConfig(config: GlobalConfig): void {
   try {
     if (!fs.existsSync(GLOBAL_CONFIG_DIR)) {
-      fs.mkdirSync(GLOBAL_CONFIG_DIR, { recursive: true });
+      fs.mkdirSync(GLOBAL_CONFIG_DIR, { recursive: true, mode: 0o700 });
     }
     const current = getGlobalConfig();
     const updated = { ...current, ...config };
-    fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(updated, null, 2), "utf-8");
+    fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(updated, null, 2), { encoding: "utf-8", mode: 0o600 });
+    try {
+      if (process.platform !== "win32") {
+        fs.chmodSync(GLOBAL_CONFIG_FILE, 0o600);
+      }
+    } catch {}
   } catch (e: any) {
     console.error("Failed to save global config:", e.message);
   }

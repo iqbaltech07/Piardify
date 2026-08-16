@@ -365,16 +365,15 @@ export default function Step2TechStack({
     if (!appIdea) return;
     setAiLoading(true);
     try {
-      const json = await apiClient.generate.recommendStack({ appName: appName || "", appIdea });
-      if (json.success && json.recommendation) {
-        setAiRecommendation(json.recommendation as any);
-        if (json.recommendation.stacks) {
-          Object.entries(json.recommendation.stacks).forEach(([cat, label]) => {
-            setStack(cat as StackCategory, label as string);
-          });
-        }
-        if (json.recommendation.paletteId) {
-          const pal = COLOR_PALETTE_PRESETS.find(p => p.id === json.recommendation.paletteId);
+      const json: any = await apiClient.generate.recommendStack({ appName: appName || "", appIdea });
+      const rec = json?.recommendation || (json?.stacks ? json : null);
+      if (rec && rec.stacks) {
+        setAiRecommendation(rec);
+        Object.entries(rec.stacks).forEach(([cat, label]) => {
+          setStack(cat as StackCategory, label as string);
+        });
+        if (rec.paletteId) {
+          const pal = COLOR_PALETTE_PRESETS.find((p) => p.id === rec.paletteId);
           if (pal && setDesignData) {
             setSelectedPaletteId(pal.id);
             setSelectedTemplateId(null);

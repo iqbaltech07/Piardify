@@ -71,9 +71,9 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           id: "AH-012",
-          rule: "CURATED REACT BITS INTEGRATION: Integrate modern animations (Aurora, Spotlight, Waves) via reactbits.dev. Forbid cheesy slop (glitch cursors, neon overload).",
-          validation: "Use clean tactile micro-animations (150-250ms).",
-          failure_consequence: "Childish and laggy UI performance."
+          rule: "AUTONOMOUS COMPONENT DISCOVERY & BESPOKE SYNTHESIS: Autonomously research and synthesize modern UI components, motion physics, and visual metaphors via web docs (React Bits, 21st.dev, Framer Motion, Magic UI) tailored to the product domain. Strictly forbid repetitive default-template anchoring.",
+          validation: "Conduct autonomous discovery before UI coding and cite researched docs/URLs in <skill_comprehension>.",
+          failure_consequence: "Repetitive, uninspired generic UI slop across projects."
         },
         {
           id: "AH-013",
@@ -113,7 +113,7 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           id: "AH-019",
-          rule: "MANDATORY FRONTEND DESIGN THINKING [CRITICAL]: Sebelum membuat atau mengubah komponen UI/UX Frontend, AI Agent WAJIB membaca dan menerapkan pemikiran utama dari skill '.agents/skills/frontend/SKILL.md' (Ground it in subject, distinctive typography/layout, intentional copy, deliberate motion, dan satu risiko estetika terjustifikasi tanpa mengulang template AI-slop).",
+          rule: "MANDATORY FRONTEND DESIGN THINKING & CREATIVE THESIS [CRITICAL]: Sebelum membuat atau mengubah komponen UI/UX Frontend, AI Agent WAJIB melakukan Autonomous Discovery (mencari referensi docs/web komponen modern), serta merumuskan tesis desain di blok '<design_plan>' (1. Product Visual Metaphor, 2. Bespoke Interaction Recipes, 3. Intentionally Rejected Clichés). Dilarang keras jatuh ke bias heuristik aman.",
           validation: "Pastikan pemikiran desain frontend-design dimuat dan diterapkan pada setiap komponen visual.",
           failure_consequence: "Desain UI terlihat generik, templated, dan kehilangan karakter produk."
         },
@@ -122,6 +122,18 @@ export const SYSTEM_DIRECTIVES = {
           rule: "SHADCN/UI COMPONENT MANDATE: Use shadcn/ui primitives (@/components/ui/*) for all UI components. Never create raw unstyled HTML buttons/inputs.",
           validation: "Import UI elements from @/components/ui/*.",
           failure_consequence: "Non-standardized UI primitives."
+        },
+        {
+          id: "AH-022",
+          rule: "ZERO NO-OP STUBS & INTERACTIVE RUNTIME FIDELITY: Every interactive element (button, link, form, modal trigger, tab) MUST have a functional runtime handler, real state mutation, or working destination URL. Strictly prohibit empty 'onClick={() => {}}', placeholder 'console.log', dead 'href=\"#\"', or dummy alert() as deliverables.",
+          validation: "Verify all buttons and form submissions trigger real state changes, modals, or API calls.",
+          failure_consequence: "Broken, non-functional cosmetic UI stubs delivered to users."
+        },
+        {
+          id: "AH-023",
+          rule: "AGGRESSIVE DEAD-CODE CLEANUP & REFACTORING HYGIENE: When updating, refactoring, or switching themes, AI Agent MUST aggressively delete dead components, obsolete variables, unused imports, and commented-out code blocks. Never append new code without pruning dead code.",
+          validation: "Ensure zero orphaned code blocks or bloated dead files remain after edits.",
+          failure_consequence: "Severe code bloat, technical debt, and context window pollution."
         }
       ],
       designHierarchy: {

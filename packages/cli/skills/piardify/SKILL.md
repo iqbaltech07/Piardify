@@ -72,9 +72,20 @@ Before starting code modifications, update the Kanban status to `IN_PROGRESS`:
 .piardify/sync start <task-id>
 ```
 
-### Step 3: Implement Changes
+### Step 3: Implement Changes (with Mandatory Autonomous Component Discovery)
+
+> [!IMPORTANT]
+> **AUTONOMOUS COMPONENT DISCOVERY PROTOCOL (Anti-Safe-Heuristic Rule):**
+> 1. **Zero-Anchor Mandate**: DILARANG KERAS menggunakan template default secara berulang di setiap project (misal: selalu menaruh AuroraBackground, BlurText, atau MagnetButton di semua web tanpa justifikasi domain).
+> 2. **Autonomous Research Loop**: Sebelum koding UI, AI WAJIB menjalankan tool riset (`search_web`, `read_url_content`, MCP `context7`, atau MCP `21st`) untuk mencari inspirasi 2-3 komponen/motion modern yang cocok dengan metafora domain produk ini (dari reactbits.dev, 21st.dev, ui.aceternity.com, motion.dev).
+> 3. **Creative Thesis Declaration**: Deklarasikan blok `<skill_comprehension>` (mencantumkan URL/docs yang dipelajari) dan blok `<design_plan>` sebelum koding:
+>    - `1. PRODUCT VISUAL METAPHOR` (Karakter estetika spesifik domain produk)
+>    - `2. BESPOKE INTERACTION RECIPES` (Interaksi unik yang dipilih beserta alasannya)
+>    - `3. INTENTIONALLY REJECTED CLICHES` (Template generik yang sengaja ditolak demi keunikan)
 - **MANDATORY DESIGN CONTEXT GATE (AH-018)**: Sebelum menulis/mengubah komponen UI/frontend, AI Agent WAJIB membaca 100% Konteks Desain (`npx piardify design` atau `.piardify/sync design`) TANPA ADA SATUPUN ATURAN/TOKEN YANG TERABAIKAN.
 - **MANDATORY SHADCN/UI MANDATE (AH-021)**: AI Agent WAJIB MUTLAK menggunakan `shadcn/ui` primitives (`@/components/ui/*`) untuk seluruh pembuatan dan pengeditan komponen UI (Button, Input, Dialog, Select, Card, Sheet, DropdownMenu, Table, Tabs, Tooltip, Popover, Avatar, Badge). Dilarang mengarang komponen raw HTML polos dari nol.
+- **MANDATORY RUNTIME FIDELITY GATE (AH-022)**: Seluruh tombol, link, form, dan modal WAJIB memiliki *runtime handler* aktif (state mutation, toast notification, modal dispatch, atau deep link). DILARANG MENINGGALKAN stub kosong (`onClick={() => {}}`), dead link (`href="#"`), atau `alert()` primitif.
+- **MANDATORY DEAD-CODE REFACTORING HYGIENE (AH-023)**: Saat merefaktor atau mengubah kode, AI Agent WAJIB menghapus tuntas kode mati, blok komentar usang, dan import yang tidak terpakai. Dilarang menumpuk kode baru di atas kode lama tanpa *pruning*.
 - Inspect the codebase (`grep_search`, `list_dir`, `view_file`).
 - Write clean, production-ready code adhering strictly to the PRD specifications.
 - Do NOT invent unmentioned libraries, frameworks, or database schemas (**AH-001 Zero Invention**).

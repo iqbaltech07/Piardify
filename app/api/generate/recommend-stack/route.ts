@@ -91,60 +91,75 @@ Recommend the best tech stack and palette. Output valid JSON.`;
 
       if (isMobile) {
         return NextResponse.json({
-          stacks: {
-            frontend: "Flutter (Dart)",
-            backend: "Firebase Cloud Functions",
-            database: "Firebase Firestore",
-            deployment: "Google Play & App Store"
-          },
-          paletteId: "electric-emerald",
-          badge: "Mobile Native",
-          reasoning: "Flutter dan Firebase memberikan performa cross-platform native dengan backend real-time tanpa setup server rumit."
+          success: true,
+          recommendation: {
+            stacks: {
+              frontend: "Flutter (Dart)",
+              backend: "Firebase Cloud Functions",
+              database: "Firebase Firestore",
+              deployment: "Google Play & App Store"
+            },
+            paletteId: "electric-emerald",
+            badge: "Mobile Native",
+            reasoning: "Flutter dan Firebase memberikan performa cross-platform native dengan backend real-time tanpa setup server rumit."
+          }
         });
       }
 
       if (isIot) {
         return NextResponse.json({
-          stacks: {
-            frontend: "Embedded C/C++ (ESP32)",
-            backend: "Node.js (MQTT Broker)",
-            database: "InfluxDB / TimescaleDB",
-            deployment: "PlatformIO / OTA"
-          },
-          paletteId: "amber-cyber",
-          badge: "IoT & Hardware",
-          reasoning: "ESP32 dengan protokol MQTT dan time-series database sangat ideal untuk transmisi telemetri sensor latensi rendah."
+          success: true,
+          recommendation: {
+            stacks: {
+              frontend: "Embedded C/C++ (ESP32)",
+              backend: "Node.js (MQTT Broker)",
+              database: "InfluxDB / TimescaleDB",
+              deployment: "PlatformIO / OTA"
+            },
+            paletteId: "amber-cyber",
+            badge: "IoT & Hardware",
+            reasoning: "ESP32 dengan protokol MQTT dan time-series database sangat ideal untuk transmisi telemetri sensor latensi rendah."
+          }
         });
       }
 
       if (isVanilla) {
         return NextResponse.json({
-          stacks: {
-            frontend: "HTML5 / Vanilla JS",
-            backend: "None (Client-Side Only)",
-            database: "LocalStorage / IndexedDB",
-            deployment: "GitHub Pages"
-          },
-          paletteId: "ocean-indigo",
-          badge: "Zero Backend",
-          reasoning: "Arsitektur client-side ringan menggunakan LocalStorage tanpa dependensi backend atau biaya database."
+          success: true,
+          recommendation: {
+            stacks: {
+              frontend: "HTML5 / Vanilla JS",
+              backend: "None (Client-Side Only)",
+              database: "LocalStorage / IndexedDB",
+              deployment: "GitHub Pages"
+            },
+            paletteId: "ocean-indigo",
+            badge: "Zero Backend",
+            reasoning: "Arsitektur client-side ringan menggunakan LocalStorage tanpa dependensi backend atau biaya database."
+          }
         });
       }
 
       return NextResponse.json({
-        stacks: {
-          frontend: "Next.js",
-          backend: "Next.js (API Routes)",
-          database: "PostgreSQL",
-          deployment: "Vercel"
-        },
-        paletteId: "amber-cyber",
-        badge: "Most Recommended",
-        reasoning: "Next.js Fullstack dengan App Router dan Postgres memberikan skalabilitas tinggi, SEO optimal, dan deployment instan."
+        success: true,
+        recommendation: {
+          stacks: {
+            frontend: "Next.js",
+            backend: "Next.js (API Routes)",
+            database: "PostgreSQL",
+            deployment: "Vercel"
+          },
+          paletteId: "amber-cyber",
+          badge: "Most Recommended",
+          reasoning: "Next.js Fullstack dengan App Router dan Postgres memberikan skalabilitas tinggi, SEO optimal, dan deployment instan."
+        }
       });
     }
 
-    return NextResponse.json(parsed);
+    return NextResponse.json({
+      success: true,
+      recommendation: parsed,
+    });
   } catch (error: any) {
     console.error("Error recommending stack:", error);
     return NextResponse.json({ error: error?.message || "Failed to recommend stack" }, { status: 500 });

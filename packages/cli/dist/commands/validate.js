@@ -282,6 +282,32 @@ async function validateCommand(options) {
                 }
             }
         }
+        // 17. Orphaned / Unused Component Check
+        const importOccurrences = new Set();
+        for (const filePath of filesToScan) {
+            const fc = fs.readFileSync(filePath, "utf-8");
+            const importRegex = /(?:import\s+(?:[\s\S]*?from\s+)?|require\s*\(\s*)["']([^"']+)["']/g;
+            let m;
+            while ((m = importRegex.exec(fc)) !== null) {
+                importOccurrences.add(path.basename(m[1], path.extname(m[1])));
+            }
+        }
+        for (const filePath of filesToScan) {
+            const relPath = path.relative(workspaceRoot, filePath).replace(/\\/g, "/");
+            const baseName = path.basename(filePath, path.extname(filePath));
+            const isComponent = (relPath.includes("components/") || relPath.includes("ui/")) && !relPath.includes("components/ui/");
+            const isPageOrLayout = relPath.includes("page.") || relPath.includes("layout.") || relPath.includes("route.") || relPath.includes("globals.");
+            if (isComponent && !isPageOrLayout && !importOccurrences.has(baseName)) {
+                issues.push({
+                    type: "warning",
+                    code: "ORPHANED_UNUSED_COMPONENT",
+                    message: `Component '${baseName}' is declared but never imported anywhere in the project`,
+                    file: relPath,
+                    line: 1,
+                    advice: "Run 'npx piardify clean' or delete this unused component to keep the codebase lean and clean.",
+                });
+            }
+        }
         const errorCount = issues.filter((i) => i.type === "error").length;
         const warningCount = issues.filter((i) => i.type === "warning").length;
         if (options.json) {

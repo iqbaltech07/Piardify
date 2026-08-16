@@ -8,6 +8,7 @@ const project_js_1 = require("./commands/project.js");
 const task_js_1 = require("./commands/task.js");
 const kanban_js_1 = require("./commands/kanban.js");
 const validate_js_1 = require("./commands/validate.js");
+const clean_js_1 = require("./commands/clean.js");
 const theme_js_1 = require("./commands/theme.js");
 const hook_js_1 = require("./commands/hook.js");
 const generate_js_1 = require("./commands/generate.js");
@@ -19,6 +20,8 @@ async function main() {
         json: args.includes("--json"),
         quiet: args.includes("--quiet"),
         force: args.includes("--force"),
+        fix: args.includes("--fix") || !args.includes("--dry-run"),
+        dryRun: args.includes("--dry-run"),
     };
     for (let i = 0; i < args.length; i++) {
         if (args[i] === "--token" && args[i + 1]) {
@@ -44,6 +47,11 @@ async function main() {
         }
     }
     switch (command) {
+        case "clean":
+        case "prune":
+        case "clean-code":
+            await (0, clean_js_1.cleanCommand)(options);
+            break;
         case "login":
             await (0, login_js_1.loginCommand)(options);
             break;
@@ -90,12 +98,12 @@ async function main() {
             if (options.json) {
                 console.log(JSON.stringify({
                     name: "piardify",
-                    version: "2.7.1",
-                    commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "init-theme", "hook", "generate"],
+                    version: "2.8.0",
+                    commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "clean", "init-theme", "hook", "generate"],
                 }));
             }
             else {
-                console.log("\n  Piardify AI Agent CLI v2.7.1 (Anti-Slop Architecture)");
+                console.log("\n  Piardify AI Agent CLI v2.8.0 (Anti-Slop Architecture)");
                 console.log("  ==========================");
                 console.log("  Usage: npx piardify <command> [options]\n");
                 console.log("  Core Developer Commands:");
@@ -105,6 +113,7 @@ async function main() {
                 console.log("  Anti-Slop Visual Governance & Tooling (v2.0):");
                 console.log("    npx piardify design                        Fetch design context & tokens");
                 console.log("    npx piardify validate-ui                   Run AST Anti-Slop Linter on workspace");
+                console.log("    npx piardify clean                         Automatically prune unused components & dead code");
                 console.log("    npx piardify init-theme                    Generate Tailwind preset & CSS tokens");
                 console.log("    npx piardify hook                          Install Git pre-commit & build hooks");
                 console.log("    npx piardify generate <ComponentName>     Scaffold 100% Anti-Slop compliant component\n");
@@ -116,6 +125,7 @@ async function main() {
                 console.log("    --target <web|mobile|iot|backend>          Specify multi-domain target ecosystem");
                 console.log("    --json                                    Machine-readable JSON output");
                 console.log("    --project <id>                            Specify project ID explicitly");
+                console.log("    --dry-run                                 Check unused code without deleting");
                 console.log("    --force                                   Force state transitions\n");
             }
             break;

@@ -171,6 +171,10 @@ if "%ACTION%"=="theme" (
   npx piardify init-theme
   exit /b
 )
+if "%ACTION%"=="clean" (
+  npx piardify clean
+  exit /b
+)
 `;
         fs.writeFileSync(path.join(piardifyDir, "sync.cmd"), cmdScript, "utf-8");
         // Generate POSIX shell 10ms native helper
@@ -206,18 +210,31 @@ fi
 `;
         const shPath = path.join(piardifyDir, "sync");
         fs.writeFileSync(shPath, shScript, { mode: 0o755 });
-        // Install Agent Skill into workspace (.agents/skills/piardify/SKILL.md)
-        const targetSkillDir = path.join(workspaceRoot, ".agents", "skills", "piardify");
-        const targetSkillFile = path.join(targetSkillDir, "SKILL.md");
-        if (!fs.existsSync(targetSkillDir)) {
-            fs.mkdirSync(targetSkillDir, { recursive: true });
+        // Install Agent Skills into workspace (.agents/skills/piardify/SKILL.md & .agents/skills/frontend/SKILL.md)
+        const skillsToInstall = [
+            { name: "piardify", folder: "piardify" },
+            { name: "frontend", folder: "frontend" },
+        ];
+        const installedSkillPaths = [];
+        for (const skill of skillsToInstall) {
+            const targetSkillDir = path.join(workspaceRoot, ".agents", "skills", skill.folder);
+            const targetSkillFile = path.join(targetSkillDir, "SKILL.md");
+            if (!fs.existsSync(targetSkillDir)) {
+                fs.mkdirSync(targetSkillDir, { recursive: true });
+            }
+            let bundledSkillPath = path.resolve(__dirname, "..", "..", "skills", skill.folder, "SKILL.md");
+            if (!fs.existsSync(bundledSkillPath) && skill.folder === "frontend") {
+                bundledSkillPath = path.resolve(__dirname, "..", "..", "skills", "piardify", "frontend", "SKILL.md");
+            }
+            if (fs.existsSync(bundledSkillPath)) {
+                const skillContentToWrite = fs.readFileSync(bundledSkillPath, "utf-8");
+                fs.writeFileSync(targetSkillFile, skillContentToWrite, "utf-8");
+                installedSkillPaths.push(targetSkillFile);
+            }
+            else if (skill.name === "piardify") {
+                throw new Error(`BUNDLED_SKILL_MISSING: Bundled skill file not found at ${bundledSkillPath}. Reinstall the piardify package.`);
+            }
         }
-        const bundledSkillPath = path.resolve(__dirname, "..", "..", "skills", "piardify", "SKILL.md");
-        if (!fs.existsSync(bundledSkillPath)) {
-            throw new Error(`BUNDLED_SKILL_MISSING: Bundled skill file not found at ${bundledSkillPath}. Reinstall the piardify package.`);
-        }
-        const skillContentToWrite = fs.readFileSync(bundledSkillPath, "utf-8");
-        fs.writeFileSync(targetSkillFile, skillContentToWrite, "utf-8");
         let currentTask = null;
         try {
             const taskRes = await (0, client_js_1.apiRequest)(`/api/agent/tasks/current?projectId=${projectId}`);
@@ -234,13 +251,13 @@ fi
                 },
                 nativeHelpers: [path.join(piardifyDir, "sync.cmd"), shPath],
                 localContext: path.join(piardifyDir, "context.md"),
-                skillInstalled: targetSkillFile,
+                skillsInstalled: installedSkillPaths,
                 currentTask,
             }));
         }
         else {
             console.log("\n==========================================");
-            console.log("  Piardify CLI v2.0 - Project Initialized");
+            console.log("  Piardify CLI v2.13.0 - Project Initialized");
             console.log("==========================================");
             console.log(`  Project Name  : ${project.appName}`);
             console.log(`  Project ID    : ${project.id}`);
@@ -249,7 +266,7 @@ fi
             console.log("  Local Context : Saved -> .piardify/context.md (3-Layer Hybrid)");
             console.log("  Modular Context: Saved -> .piardify/tokens.json & anti_slop_rules.md");
             console.log("  Native Helper : Generated -> .piardify/sync (10ms)");
-            console.log("  Agent Skill   : Installed -> .agents/skills/piardify/SKILL.md");
+            console.log("  Agent Skills  : Installed -> .agents/skills/piardify & frontend");
             console.log(`  Authentication: Connected (${statusRes.user?.email})`);
             console.log("  Kanban Sync   : Active");
             if (currentTask) {

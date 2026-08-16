@@ -1,0 +1,188 @@
+import { Position, Handle } from "@xyflow/react";
+import { Trash2, LayoutGrid, Search, Users, Target, Bell, Shield, Zap, Layers } from "lucide-react";
+
+export const PHASE_COLORS: Record<number, { border: string; badge: string; text: string }> = {
+  1: { border: "var(--color-signal)",  badge: "FASE 1 · Core",   text: "var(--color-graphite)" },
+  2: { border: "var(--color-circuit)", badge: "FASE 2 · Growth", text: "var(--color-graphite)" },
+  3: { border: "#8B93A7",              badge: "FASE 3 · Future", text: "var(--color-graphite)" },
+};
+
+export function getCategoryIcon(label: string, idx: number) {
+  const l = (label || "").toLowerCase();
+  if (l.includes("tugas") || l.includes("task") || l.includes("papan") || l.includes("board")) return LayoutGrid;
+  if (l.includes("ai") || l.includes("asisten") || l.includes("bot") || l.includes("search") || l.includes("cari")) return Search;
+  if (l.includes("auth") || l.includes("user") || l.includes("akun") || l.includes("profil") || l.includes("member")) return Users;
+  if (l.includes("level") || l.includes("gamif") || l.includes("xp") || l.includes("target") || l.includes("skor")) return Target;
+  if (l.includes("notif") || l.includes("deadline") || l.includes("pesan") || l.includes("bell") || l.includes("alert")) return Bell;
+  if (l.includes("keamanan") || l.includes("security") || l.includes("shield")) return Shield;
+  if (l.includes("integrasi") || l.includes("api") || l.includes("service")) return Zap;
+  const defaults = [LayoutGrid, Search, Users, Target, Bell, Zap, Layers];
+  return defaults[idx % defaults.length];
+}
+
+export function CategoryNode({ id, data }: { id: string; data: any }) {
+  const phase = PHASE_COLORS[data.phase] || PHASE_COLORS[1];
+  const color = data.color || phase.border;
+  const IconComponent = getCategoryIcon(data.label || "", data.index || 0);
+
+  return (
+    <>
+      <Handle
+        type="target"
+        position={Position.Left}
+        isConnectable={data.isEditing}
+        style={{
+          background: color,
+          border: "2px solid #10182B",
+          width: 9,
+          height: 9,
+          left: -4.5,
+          cursor: data.isEditing ? "crosshair" : "default",
+        }}
+      />
+      <div
+        style={{
+          background: "#141C30",
+          border: `1px solid ${color}`,
+          borderRadius: 8,
+          padding: "12px 16px",
+          minWidth: 200,
+          maxWidth: 240,
+          position: "relative",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+        }}
+      >
+        {/* Phase annotation */}
+        <div
+          style={{
+            position: "absolute",
+            top: -10,
+            left: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            pointerEvents: "none",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 8,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: phase.text,
+              background: color,
+              padding: "2px 8px",
+              borderRadius: 3,
+            }}
+          >
+            {phase.badge}
+          </span>
+          {data.isEditing && (
+            <div
+              onClick={() => data.onDelete(id)}
+              style={{
+                background: "#f87171",
+                color: "white",
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                pointerEvents: "auto",
+              }}
+              title="Hapus Kategori"
+            >
+              <Trash2 size={9} strokeWidth={2.5} />
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 5,
+              border: `1px solid ${color}44`,
+              background: `${color}15`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <IconComponent size={13} strokeWidth={2} color={color} />
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "var(--fg-primary)",
+              lineHeight: 1.3,
+              flex: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {data.isEditing ? (
+              <input
+                value={data.label}
+                onChange={(e) => data.onChange(id, "label", e.target.value)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "inherit",
+                  fontWeight: "inherit",
+                  fontSize: "inherit",
+                  outline: "none",
+                  borderBottom: `1px solid ${color}`,
+                  width: "100%",
+                  padding: 0,
+                }}
+                autoFocus
+              />
+            ) : (
+              data.label
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 8,
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            color: "var(--fg-muted)",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            letterSpacing: "0.06em",
+          }}
+        >
+          <div style={{ width: 4, height: 4, borderRadius: "50%", background: color, opacity: 0.8 }} />
+          <span>Direncanakan</span>
+        </div>
+      </div>
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        isConnectable={data.isEditing}
+        style={{
+          background: color,
+          border: "2px solid #10182B",
+          width: 9,
+          height: 9,
+          right: -4.5,
+          cursor: data.isEditing ? "crosshair" : "default",
+        }}
+      />
+    </>
+  );
+}
