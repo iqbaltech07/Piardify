@@ -33,7 +33,7 @@ The Piardify CLI (`npx piardify init`) pre-generates lightweight 10ms native hel
 | **Fetch Anti-Slop Rules** | Read `.piardify/anti_slop_rules.md` | `npx piardify project rules` |
 | **Run AST Anti-Slop Linter** | `.piardify/sync validate` | `npx piardify validate-ui` |
 | **Generate Theme Boilerplate** | `.piardify/sync theme` | `npx piardify init-theme` |
-| **Scaffold Anti-Slop Component** | N/A | `npx piardify generate [type] <Name>` |
+| **Scaffold Anti-Slop Component** | N/A | `npx piardify scaffold <Name> --type=<hero\|bento\|card\|table\|form\|modal>` |
 | **Install Guardrail Hooks** | N/A | `npx piardify hook` |
 
 ---

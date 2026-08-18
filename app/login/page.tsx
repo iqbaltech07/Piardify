@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "@/lib/auth-client";
+import { signIn } from "@/lib/auth/auth-client";
 import { Loader2, ArrowLeft, FileText, Gauge, Target, Download, Bot, Gift } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";

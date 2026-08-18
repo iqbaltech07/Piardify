@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "@/app/components/Navbar";
+import { Navbar } from "@/app/components/layout";
 import { Settings, Save, Server, Cpu, Loader2, AlertCircle, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { apiClient, ApiError } from "@/lib/apiClient";
+import { apiClient, ApiError } from "@/lib/utils/apiClient";
 
 export default function AdminSettingsPage() {
   const router = useRouter();

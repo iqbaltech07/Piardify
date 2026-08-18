@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { FormData, Step, StackCategory } from "@/app/generate/types";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/utils/apiClient";
 
 interface WizardStore {
   step: Step;

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateAgentRequest } from "@/lib/agentAuth";
-import { prisma } from "@/lib/prisma";
-import { SYSTEM_DIRECTIVES } from "@/lib/systemDirectives";
-import { TASTE_SKILL_DIRECTIVES, getFilteredTasteSkill } from "@/lib/tasteSkill";
-import { parseDesignMarkdown } from "@/lib/designParser";
-import { serializeContextToHybrid } from "@/lib/contextSerializer";
+import { authenticateAgentRequest } from "@/lib/auth/agentAuth";
+import { prisma } from "@/lib/db/prisma";
+import { SYSTEM_DIRECTIVES } from "@/lib/ai/systemDirectives";
+import { TASTE_SKILL_DIRECTIVES, getFilteredTasteSkill } from "@/lib/design/tasteSkill";
+import { parseDesignMarkdown } from "@/lib/design/designParser";
+import { serializeContextToHybrid } from "@/lib/ai/contextSerializer";
 
 /**
  * Parse stored designData — which may be a raw markdown string OR a JSON

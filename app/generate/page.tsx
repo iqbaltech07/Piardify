@@ -11,9 +11,9 @@ import Step1Idea from "./components/Step1Idea";
 import Step2TechStack from "./components/Step2TechStack";
 import { getDynamicStep3Questions } from "./components/Step3Questions";
 import { Step } from "./types";
-import { apiClient, ApiError } from "@/lib/apiClient";
+import { apiClient, ApiError } from "@/lib/utils/apiClient";
 import { useUiStore } from "@/stores/useUiStore";
-import UpgradeModal from "../components/UpgradeModal";
+import { UpgradeModal } from "../components/modals";
 
 /* Shared button style tokens */
 const btnPrimary: React.CSSProperties = {

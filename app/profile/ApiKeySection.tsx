@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Key, Copy, Check, RefreshCw, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/utils/apiClient";
 
 export default function ApiKeySection() {
   const [apiKey, setApiKey] = useState<string | null>(null);

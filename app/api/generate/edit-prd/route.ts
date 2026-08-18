@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { redis } from "@/lib/redis";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { redis } from "@/lib/db/redis";
+import { prisma } from "@/lib/db/prisma";
+import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
-import { generateGemini, generateOpenRouter, parseAndRepairJson } from "@/lib/llm";
-import { getAiChatLimit } from "@/lib/planQuota";
-import { parseBody, editPrdSchema } from "@/lib/validation";
-import { fixMermaidBlocks } from "@/lib/mermaidFix";
+import { generateGemini, generateOpenRouter, parseAndRepairJson } from "@/lib/ai/llm";
+import { getAiChatLimit } from "@/lib/analytics/planQuota";
+import { parseBody, editPrdSchema } from "@/lib/utils/validation";
+import { fixMermaidBlocks } from "@/lib/utils/mermaidFix";
+import { EDIT_PRD_SYSTEM_PROMPT, buildEditPrdUserPrompt } from "@/lib/ai/prompts";
 
 export const maxDuration = 60;
 
@@ -55,38 +56,8 @@ export async function POST(req: NextRequest) {
 
     const isEditIntent = /(tambah|ubah|ganti|update|edit|hapus|masukkan|terapkan|buatkan|revisi|sesuaikan|add|remove|change|insert|delete|append|modify|fix|perbaiki)/i.test(prompt);
 
-    const systemPrompt = `You are an expert AI Product Manager and Brainstorming Partner.
-You are helping the user refine, discuss, or update their Product Requirements Document (PRD).
-
-TASK INSTRUCTIONS:
-1. Analyze the user's prompt instruction.
-2. Determine if the user is BRAINSTORMING / ASKING A QUESTION / DISCUSSING (e.g. asking for ideas, pros/cons, recommendations, technical advice, feedback).
-   - If BRAINSTORMING: Provide a helpful, clear conversational response in Indonesian answering their question. Set isPrdUpdated to false.
-3. Determine if the user wants to REVISE / EDIT / ADD TO / REMOVE / UPDATE / FIX the PRD (e.g. "Tambahkan fitur X", "Hapus section Y", "Ubah bahasa", "Terapkan rekomendasi tadi").
-   - If EDITING: Provide a friendly confirmation message and generate the FULL updated PRD markdown.
-
-OUTPUT FORMAT (You can use Tagged Format for maximum reliability):
-<reply>Your conversational response, answer, ideas, or edit confirmation in Indonesian.</reply>
-<is_prd_updated>true or false</is_prd_updated>
-<updated_prd>
-(Full updated PRD markdown here if is_prd_updated is true, otherwise leave empty)
-</updated_prd>
-
-Alternatively, you may return strict valid JSON:
-{
-  "reply": "Your conversational response in Indonesian.",
-  "isPrdUpdated": true,
-  "updatedMarkdown": "Full updated PRD markdown string"
-}`;
-
-    const userPrompt = `=== CURRENT PRD START ===
-${currentPrd}
-=== CURRENT PRD END ===
-
-=== USER INSTRUCTION ===
-${prompt}
-
-${isEditIntent ? "USER INTENT: The user wants to EDIT/UPDATE the PRD. Please provide the updated PRD with their changes applied." : ""}`;
+    const systemPrompt = EDIT_PRD_SYSTEM_PROMPT;
+    const userPrompt = buildEditPrdUserPrompt({ currentPrd, prompt, isEditIntent });
 
     let rawText = "";
     const modelToUse = selectedModel || "gemini-3.7-flash";
@@ -154,8 +125,8 @@ ${isEditIntent ? "USER INTENT: The user wants to EDIT/UPDATE the PRD. Please pro
       const mdMatch = text.match(/"updatedMarkdown"\s*:\s*"([\s\S]*?)"(?:\s*,\s*"|\s*})/);
       const replyMatch = text.match(/"reply"\s*:\s*"([\s\S]*?)"(?:\s*,\s*"|\s*})/);
 
-      let extractedMd = mdMatch ? mdMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "";
-      let extractedReply = replyMatch ? replyMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "";
+      const extractedMd = mdMatch ? mdMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "";
+      const extractedReply = replyMatch ? replyMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "";
 
       if (extractedMd && extractedMd.length > 50) {
         return {
@@ -213,7 +184,7 @@ ${isEditIntent ? "USER INTENT: The user wants to EDIT/UPDATE the PRD. Please pro
             select: { formInputs: true },
           });
 
-          const updateData: any = { prdData: updatedMarkdown };
+          const updateData: { prdData: string; formInputs?: string } = { prdData: updatedMarkdown };
 
           // Smart-sync: editing the PRD makes the generated task list outdated
           if (project?.formInputs) {
@@ -253,9 +224,9 @@ ${isEditIntent ? "USER INTENT: The user wants to EDIT/UPDATE the PRD. Please pro
       chatCount: currentChats + 1,
       chatLimit: chatLimit === Infinity ? null : chatLimit,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error editing/brainstorming PRD:", error);
-    const status = error?.status ?? 500;
-    return NextResponse.json({ error: status === 400 ? error.message : error?.message || "Internal Server Error" }, { status });
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

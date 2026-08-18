@@ -4,18 +4,17 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import MarkdownRenderer, { TocItem } from "../components/MarkdownRenderer";
+import MarkdownRenderer, { TocItem } from "../components/shared/MarkdownRenderer";
 import { MessageRenderer } from "../components/ai/MessageRenderer";
-import StepNavbar from "../components/StepNavbar";
-import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
+import { StepNavbar, ProjectHeaderBrand } from "../components/layout";
+import { UpgradeModal } from "../components/modals";
+import { PrdPreviewSkeleton } from "../components/shared";
 import { Send, Bot, Loader2, Lightbulb, Scale, PenLine, Database } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/utils/apiClient";
 import { useChatStore } from "@/stores/useChatStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUiStore } from "@/stores/useUiStore";
-import UpgradeModal from "../components/UpgradeModal";
-import { PrdPreviewSkeleton } from "../components/Skeletons";
 
 function PreviewPageContent() {
   const router = useRouter();

@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { StackCategory, FormData } from "../types";
 import { TECH_CATEGORIES, POPULAR_STACK_PRESETS, COLOR_PALETTE_PRESETS } from "../constants";
-import { DESIGN_TEMPLATES_METADATA, DesignTemplateMetadata } from "@/lib/designTemplates";
-import { apiClient } from "@/lib/apiClient";
+import { DESIGN_TEMPLATES_METADATA, DesignTemplateMetadata } from "@/lib/design/designTemplates";
+import { apiClient } from "@/lib/utils/apiClient";
 import { Check, ChevronDown, Bot, Construction, Plus, X, Search, Zap, Palette, Upload, FileText, Sparkles, CheckCircle2, Layers, Layout, Globe, Loader2, ShieldCheck } from "lucide-react";
 
 interface Step2TechStackProps {

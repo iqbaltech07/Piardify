@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "./components/Navbar";
-import HeroSection from "./components/HeroSection";
-import FeaturesSection from "./components/FeaturesSection";
-import HowItWorksSection from "./components/HowItWorksSection";
-import LeaderboardSection from "./components/LeaderboardSection";
-import PricingSection from "./components/PricingSection";
-import CtaSection from "./components/CtaSection";
-import Footer from "./components/Footer";
-import ExamplePrdModal from "./components/ExamplePrdModal";
+import { Navbar, Footer } from "./components/layout";
+import {
+  HeroSection,
+  FeaturesSection,
+  HowItWorksSection,
+  LeaderboardSection,
+  PricingSection,
+  CtaSection,
+} from "./components/landing";
+import { ExamplePrdModal } from "./components/modals";
 
 export default function HomePage() {
   const [showExample, setShowExample] = useState(false);

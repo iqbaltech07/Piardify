@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FolderOpen, CheckCircle2, Calendar, Award, Trash2, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/utils/apiClient";
 
 type Project = { id: string; appName: string; appIdea: string; status: string; createdAt: Date; };
 

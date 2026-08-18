@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import Navbar from "../components/Navbar";
+import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
+import { Navbar } from "../components/layout";
 import ProfileProjects from "./ProfileProjects";
 import ApiKeySection from "./ApiKeySection";
-import { getRank, getNextRank, getRankProgress, getExpToNextRank, RANKS } from "@/lib/gamification";
-import { getMonthlyProjectLimit } from "@/lib/planQuota";
+import { getRank, getNextRank, getRankProgress, getExpToNextRank, RANKS } from "@/lib/analytics/gamification";
+import { getMonthlyProjectLimit } from "@/lib/analytics/planQuota";
 import {
   Sprout, Compass, PenLine, LayoutList, Lightbulb,
   Map, Timer, Telescope, Trophy, Wrench,

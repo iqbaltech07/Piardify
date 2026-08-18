@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { redis } from "@/lib/redis";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db/prisma";
+import { redis } from "@/lib/db/redis";
+import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
-import { generateGemini } from "@/lib/llm";
-import { PRD_TEMPLATE, PRD_TEMPLATE_FALLBACK, BASE_SYSTEM_PROMPT } from "@/lib/prompts";
-import { getOwnedProject } from "@/lib/projectHelpers";
-import { checkRateLimit, RateLimitWindows } from "@/lib/rateLimit";
-import { getDailyAiCallLimit } from "@/lib/planQuota";
-import { parseBody, projectIdSchema } from "@/lib/validation";
-import { fixMermaidBlocks } from "@/lib/mermaidFix";
+import { generateGemini } from "@/lib/ai/llm";
+import { getOwnedProject } from "@/lib/utils/projectHelpers";
+import { checkRateLimit, RateLimitWindows } from "@/lib/db/rateLimit";
+import { getDailyAiCallLimit } from "@/lib/analytics/planQuota";
+import { parseBody, projectIdSchema } from "@/lib/utils/validation";
+import { fixMermaidBlocks } from "@/lib/utils/mermaidFix";
+import { buildPrdSystemPrompt, buildPrdUserPrompt } from "@/lib/ai/prompts";
 
 export const maxDuration = 60;
 
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // 1. Check Redis Cache
     const cacheKey = `project:${projectId}:prd`;
     try {
-      const cached = await redis.get(cacheKey);
+      const cached = await redis.get<string>(cacheKey);
       if (cached) {
         return NextResponse.json({ markdown: cached });
       }
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
       appIdea: true,
       formInputs: true,
       prdData: true,
+      strukturData: true,
     });
 
     if (!project) {
@@ -73,54 +74,29 @@ export async function POST(req: NextRequest) {
 
     const formInputs = project.formInputs ? JSON.parse(project.formInputs) : {};
 
-    const systemPrompt = `${BASE_SYSTEM_PROMPT}
+    const systemPrompt = buildPrdSystemPrompt();
+    const userPrompt = buildPrdUserPrompt({
+      appName: project.appName,
+      appIdea: project.appIdea,
+      stacks: formInputs.stacks,
+      dynamicQuestions: formInputs.dynamicQuestions,
+      dynamicAnswers: formInputs.dynamicAnswers,
+      fallbackAnswers: {
+        targetUser: formInputs.targetUser,
+        platform: formInputs.platform,
+        coreFeatures: formInputs.coreFeatures,
+        monetization: formInputs.monetization,
+        appScale: formInputs.appScale,
+        integrations: formInputs.integrations,
+        designPreference: formInputs.designPreference,
+      },
+      integrations: formInputs.integrations,
+      strukturData: project.strukturData,
+    });
 
-=== TEMPLATE START ===
-${PRD_TEMPLATE || PRD_TEMPLATE_FALLBACK}
-=== TEMPLATE END ===`;
-
-    let answersStr = "";
-    if (formInputs.dynamicQuestions && formInputs.dynamicAnswers) {
-      formInputs.dynamicQuestions.forEach((q: any) => {
-        const ans = formInputs.dynamicAnswers[q.key];
-        const ansStr = Array.isArray(ans) ? ans.join(", ") : ans || "N/A";
-        answersStr += `- ${q.title}: ${ansStr}\n`;
-      });
-    } else {
-      // Fallback for older projects
-      answersStr = `- Target User: ${formInputs.targetUser || "N/A"}
-- Platform: ${formInputs.platform || "N/A"}
-- Core Features: ${Array.isArray(formInputs.coreFeatures) ? formInputs.coreFeatures.join(", ") : "N/A"}
-- Monetization: ${formInputs.monetization || "N/A"}
-- App Scale: ${formInputs.appScale || "N/A"}
-- Integrations: ${Array.isArray(formInputs.integrations) ? formInputs.integrations.join(", ") : "N/A"}
-- Design Preference: ${formInputs.designPreference || "N/A"}`;
-    }
-
-    const integrationsList = Array.isArray(formInputs.integrations) && formInputs.integrations.length > 0
-      ? formInputs.integrations.filter((i: string) => i !== "None").join(", ")
-      : "None";
-
-    const userPrompt = `Generate a PRD based on the following user inputs:
-    
-- App Name: ${project.appName || "N/A"}
-- App Idea: ${project.appIdea || "N/A"}
-- Frontend Stack: ${formInputs.stacks?.frontend || "N/A"}
-- Backend Stack: ${formInputs.stacks?.backend || "N/A"}
-- Database Stack: ${formInputs.stacks?.database || "N/A"}
-- Deployment Stack: ${formInputs.stacks?.deployment || "N/A"}
-${answersStr}
-
-[SELECTED INTEGRATIONS - CRITICAL]
-The following third-party integrations have been selected by the user and MUST be explicitly described inside the corresponding feature section of the PRD (not just listed in tech stack):
-${integrationsList}
-
-For each integration above, include a dedicated sub-section or detailed bullet inside the relevant feature section explaining HOW it is used (e.g. OAuth flow, API calls, webhook handling, SDK usage, etc.).
-`;
-
-    let response: any;
+    let response: { text: string } | null = null;
     let success = false;
-    let lastError = null;
+    let lastError: unknown = null;
 
     try {
       response = await generateGemini({
@@ -128,9 +104,10 @@ For each integration above, include a dedicated sub-section or detailed bullet i
         userPrompt,
       });
       success = true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastError = err;
-      console.warn("[PRD] All Gemini fallback combinations failed:", err.message);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[PRD] All Gemini fallback combinations failed:", msg);
     }
 
     if (!success || !response) {
@@ -138,32 +115,32 @@ For each integration above, include a dedicated sub-section or detailed bullet i
       return NextResponse.json({ error: "Failed to generate PRD due to API limits or errors" }, { status: 500 });
     }
 
-    let text = response.text;
-
-    // Validate and auto-fix mermaid blocks before sending to client
-    if (text) {
-      text = await fixMermaidBlocks(text);
-    }
+    let cleanMarkdown = response.text;
+    cleanMarkdown = await fixMermaidBlocks(cleanMarkdown);
 
     // Save to Database
     await prisma.project.update({
       where: { id: projectId },
-      data: { prdData: text },
-      select: { id: true },
+      data: {
+        prdData: cleanMarkdown,
+        formInputs: JSON.stringify({
+          ...formInputs,
+          _tasksOutdated: true,
+        }),
+      },
     });
 
     // Save to Redis Cache
     try {
-      await redis.set(cacheKey, text);
-    } catch (err) {
-      console.warn("Redis set error:", err);
+      await redis.set(cacheKey, cleanMarkdown);
+    } catch (err: unknown) {
+      console.warn("Failed to set Redis cache:", err);
     }
 
-    return NextResponse.json({ markdown: text });
-
-  } catch (error: any) {
-    console.error("Error generating PRD:", error);
-    const status = error?.status ?? 500;
-    return NextResponse.json({ error: status === 400 ? error.message : "Internal Server Error" }, { status });
+    return NextResponse.json({ markdown: cleanMarkdown });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    console.error("PRD Generation API Error:", error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

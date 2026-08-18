@@ -16,12 +16,12 @@ import {
   type Connection,
   BackgroundVariant,
 } from "@xyflow/react";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/utils/apiClient";
 import { useProjectStore } from "@/stores/useProjectStore";
 import "@xyflow/react/dist/style.css";
-import StepNavbar from "../components/StepNavbar";
-import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
-import { StructureSkeleton } from "../components/Skeletons";
+import StepNavbar from "../components/layout/StepNavbar";
+import ProjectHeaderBrand from "../components/layout/ProjectHeaderBrand";
+import { StructureSkeleton } from "../components/shared";
 
 import { RootNode } from "./components/RootNode";
 import { CategoryNode } from "./components/CategoryNode";

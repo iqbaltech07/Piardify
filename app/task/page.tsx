@@ -18,14 +18,12 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
-import StepNavbar from "../components/StepNavbar";
-import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
-import McpConnectModal from "../components/McpConnectModal";
-import { apiClient } from "@/lib/apiClient";
+import { StepNavbar, ProjectHeaderBrand } from "../components/layout";
+import { McpConnectModal, UpgradeModal } from "../components/modals";
+import { TaskKanbanSkeleton } from "../components/shared";
+import { apiClient } from "@/lib/utils/apiClient";
 import { useKanbanStore } from "@/stores/useKanbanStore";
 import { useUiStore } from "@/stores/useUiStore";
-import UpgradeModal from "../components/UpgradeModal";
-import { TaskKanbanSkeleton } from "../components/Skeletons";
 
 /* ─── Types ─── */
 interface Task {

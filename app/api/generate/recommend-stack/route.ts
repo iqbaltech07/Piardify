@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateGemini, generateOpenRouter, parseAndRepairJson } from "@/lib/llm";
-import { auth } from "@/lib/auth";
+import { generateGemini, generateOpenRouter, parseAndRepairJson } from "@/lib/ai/llm";
+import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
-import { COLOR_PALETTE_PRESETS } from "@/app/generate/constants";
+import {
+  RECOMMEND_STACK_SYSTEM_PROMPT,
+  buildRecommendStackUserPrompt,
+} from "@/lib/ai/prompts";
 
 export const maxDuration = 45;
 
@@ -23,33 +26,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "App idea is required" }, { status: 400 });
     }
 
-    const systemPrompt = `You are a Principal Software Architect and Design System Specialist.
-Your task is to analyze the user's application idea and recommend the optimal, production-ready tech stack and color palette.
-
-Choose the most suitable combination from these options or best industry standards:
-- Frontend: "Next.js", "React", "HTML5 / Vanilla JS", "Vue.js", "Svelte", "Flutter (Dart)", "React Native (Expo)", "Swift / SwiftUI", "Kotlin (Jetpack Compose)", "Embedded C/C++ (ESP32)", "Astro", "HTMX"
-- Backend: "Next.js (API Routes)", "None (Client-Side Only)", "Node.js", "Python (FastAPI/Django)", "Laravel", "NestJS", "Node.js (MQTT Broker)", "Firebase Cloud Functions", "Spring Boot", "Go", "Rust (Actix/Axum)"
-- Database: "PostgreSQL", "LocalStorage / IndexedDB", "MySQL", "MongoDB", "Supabase", "Firebase Firestore", "SQLite (Offline-First)", "Redis", "InfluxDB / TimescaleDB"
-- Deployment: "Vercel", "GitHub Pages", "Google Play & App Store", "AWS", "Railway", "PlatformIO / OTA", "EAS (Expo)", "Cloudflare Workers / Pages"
-- Palette ID: Choose ONE of "amber-cyber" (Dark Cyber), "ocean-indigo" (Light Enterprise), "electric-emerald" (Tech Dark), "neon-violet" (SaaS Dark Glow), "crimson-coral" (Minimal Vibrant Light)
-
-RESPONSE FORMAT (Strict JSON only):
-{
-  "stacks": {
-    "frontend": "e.g. Next.js",
-    "backend": "e.g. Next.js (API Routes)",
-    "database": "e.g. PostgreSQL",
-    "deployment": "e.g. Vercel"
-  },
-  "paletteId": "amber-cyber",
-  "badge": "e.g. Fullstack Serverless",
-  "reasoning": "1-2 concise sentences in Indonesian explaining why this stack and theme fits the product idea."
-}`;
-
-    const userPrompt = `App Name: ${appName || "New Project"}
-App Idea: ${appIdea}
-
-Recommend the best tech stack and palette. Output valid JSON.`;
+    const systemPrompt = RECOMMEND_STACK_SYSTEM_PROMPT;
+    const userPrompt = buildRecommendStackUserPrompt({ appName, appIdea });
 
     let rawText = "";
     const modelToUse = selectedModel || "gemini-3.7-flash";
@@ -160,8 +138,9 @@ Recommend the best tech stack and palette. Output valid JSON.`;
       success: true,
       recommendation: parsed,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error recommending stack:", error);
-    return NextResponse.json({ error: error?.message || "Failed to recommend stack" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : "Failed to recommend stack";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

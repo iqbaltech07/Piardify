@@ -23,28 +23,32 @@ async function main() {
         fix: args.includes("--fix") || !args.includes("--dry-run"),
         dryRun: args.includes("--dry-run"),
     };
+    // Resilient multi-format flag parser (--flag value & --flag=value)
     for (let i = 0; i < args.length; i++) {
-        if (args[i] === "--token" && args[i + 1]) {
-            options.token = args[i + 1];
+        const arg = args[i];
+        if (arg.startsWith("--")) {
+            const parts = arg.slice(2).split("=");
+            const key = parts[0];
+            const inlineVal = parts.length > 1 ? parts.slice(1).join("=") : undefined;
+            if (inlineVal !== undefined) {
+                options[key] = inlineVal;
+            }
+            else if (args[i + 1] && !args[i + 1].startsWith("--")) {
+                options[key] = args[i + 1];
+            }
         }
-        if (args[i] === "--project" && args[i + 1]) {
-            options.project = args[i + 1];
+    }
+    // Filter positional arguments (exclude flags and flag values)
+    const positionalArgs = [];
+    for (let i = 1; i < args.length; i++) {
+        const a = args[i];
+        if (a.startsWith("--")) {
+            if (!a.includes("=") && args[i + 1] && !args[i + 1].startsWith("--")) {
+                i++; // skip next arg as it's the flag value
+            }
+            continue;
         }
-        if (args[i] === "--target" && args[i + 1]) {
-            options.target = args[i + 1];
-        }
-        if (args[i] === "--status" && args[i + 1]) {
-            options.status = args[i + 1];
-        }
-        if (args[i] === "--reason" && args[i + 1]) {
-            options.reason = args[i + 1];
-        }
-        if (args[i] === "--url" && args[i + 1]) {
-            options.url = args[i + 1];
-        }
-        if (args[i] === "--skill" && args[i + 1]) {
-            options.skill = args[i + 1];
-        }
+        positionalArgs.push(a);
     }
     switch (command) {
         case "clean":
@@ -62,14 +66,14 @@ async function main() {
             await (0, status_js_1.statusCommand)(options);
             break;
         case "project":
-            await (0, project_js_1.projectCommand)(args[1], options);
+            await (0, project_js_1.projectCommand)(positionalArgs[0], options);
             break;
         case "design":
         case "design-context":
             await (0, design_js_1.designCommand)(options);
             break;
         case "task":
-            await (0, task_js_1.taskCommand)(args[1], args[2], options);
+            await (0, task_js_1.taskCommand)(positionalArgs[0], positionalArgs[1], options);
             break;
         case "kanban":
             await (0, kanban_js_1.kanbanCommand)(options);
@@ -88,8 +92,9 @@ async function main() {
         case "hook":
             await (0, hook_js_1.hookCommand)(options);
             break;
+        case "scaffold":
         case "generate":
-            await (0, generate_js_1.generateCommand)(args[1], args[2], options);
+            await (0, generate_js_1.generateCommand)(positionalArgs[0], positionalArgs[1], options);
             break;
         case "help":
         case "-h":
@@ -99,14 +104,16 @@ async function main() {
                 console.log(JSON.stringify({
                     name: "piardify",
                     version: "2.8.0",
-                    commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "clean", "init-theme", "hook", "generate"],
+                    commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "clean", "init-theme", "hook", "scaffold", "generate"],
                 }));
             }
             else {
                 console.log("\n  Piardify AI Agent CLI v2.8.0 (Anti-Slop Architecture)");
                 console.log("  ==========================");
                 console.log("  Usage: npx piardify <command> [options]\n");
-                console.log("  Core Developer Commands:");
+                console.log("  Core Developer & Scaffolding Commands:");
+                console.log("    npx piardify scaffold <Name> [--type <hero|bento|card|table|form|modal>]");
+                console.log("    npx piardify generate <Name> [--type <hero|bento|card|table|form|modal>]");
                 console.log("    npx piardify login --token <TOKEN>         Save auth token");
                 console.log("    npx piardify init [--target web|mobile...] Connect project & setup Agent Skill");
                 console.log("    npx piardify status                        Display health & connection status\n");
@@ -115,13 +122,13 @@ async function main() {
                 console.log("    npx piardify validate-ui                   Run AST Anti-Slop Linter on workspace");
                 console.log("    npx piardify clean                         Automatically prune unused components & dead code");
                 console.log("    npx piardify init-theme                    Generate Tailwind preset & CSS tokens");
-                console.log("    npx piardify hook                          Install Git pre-commit & build hooks");
-                console.log("    npx piardify generate <ComponentName>     Scaffold 100% Anti-Slop compliant component\n");
-                console.log("  AI Agent Commands:");
+                console.log("    npx piardify hook                          Install Git pre-commit & build hooks\n");
+                console.log("  AI Agent Task Commands:");
                 console.log("    npx piardify project [tokens|rules|prd...] Fetch modular context or full hybrid");
                 console.log("    npx piardify task <action> [id]            Task lifecycle (list, current, start, complete, fail)");
                 console.log("    npx piardify kanban                        Fetch full Kanban board state\n");
                 console.log("  Flags:");
+                console.log("    --type <hero|bento|card|table|form|modal>  Component archetype type");
                 console.log("    --target <web|mobile|iot|backend>          Specify multi-domain target ecosystem");
                 console.log("    --json                                    Machine-readable JSON output");
                 console.log("    --project <id>                            Specify project ID explicitly");

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
-import { isAdminEmail } from "@/lib/planQuota";
+import { isAdminEmail } from "@/lib/analytics/planQuota";
 
 // Non-text/non-chat model keywords to exclude (audio, music, speech, image-only, embedding, etc.)
 const NON_CHAT_KEYWORDS = [

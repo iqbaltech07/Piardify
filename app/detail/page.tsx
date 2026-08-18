@@ -3,19 +3,18 @@
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import StepNavbar from "../components/StepNavbar";
-import ProjectHeaderBrand from "../components/ProjectHeaderBrand";
-import McpConnectModal from "../components/McpConnectModal";
+import { StepNavbar, ProjectHeaderBrand } from "../components/layout";
+import { McpConnectModal } from "../components/modals";
+import { ProjectDetailSkeleton } from "../components/shared";
 import { ProjectDetailData } from "./types";
 import { parseMarkdownSections, parseColorTokens } from "./utils/parser";
 import ProjectHeaderCard from "./components/ProjectHeaderCard";
 import ColorTokensTable from "./components/ColorTokensTable";
 import DesignAccordions from "./components/DesignAccordions";
 import DesignDropzone from "./components/DesignDropzone";
-import { DESIGN_TEMPLATES_METADATA } from "@/lib/designTemplates";
-import { apiClient } from "@/lib/apiClient";
+import { DESIGN_TEMPLATES_METADATA } from "@/lib/design/designTemplates";
+import { apiClient } from "@/lib/utils/apiClient";
 import { useProjectStore } from "@/stores/useProjectStore";
-import { ProjectDetailSkeleton } from "../components/Skeletons";
 
 export { DEFAULT_COLOR_TOKENS, DEFAULT_ACCORDION_SECTIONS } from "./utils/parser";
 export type { ProjectDetailData, ColorToken } from "./types";

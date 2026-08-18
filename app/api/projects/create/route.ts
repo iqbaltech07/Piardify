@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
 import { headers } from "next/headers";
-import { generateDefaultDesignData } from "@/lib/defaultDesignTemplate";
-import { parseDesignMarkdown } from "@/lib/designParser";
-import { getMonthlyProjectLimit } from "@/lib/planQuota";
-import { parseBody, createProjectSchema } from "@/lib/validation";
+import { generateDefaultDesignData } from "@/lib/design/defaultDesignTemplate";
+import { parseDesignMarkdown } from "@/lib/design/designParser";
+import { getMonthlyProjectLimit } from "@/lib/analytics/planQuota";
+import { parseBody, createProjectSchema } from "@/lib/utils/validation";
 
 export async function POST(req: NextRequest) {
   try {
