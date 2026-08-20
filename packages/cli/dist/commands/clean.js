@@ -151,7 +151,7 @@ async function cleanCommand(options) {
     }
     else {
         console.log("\n==========================================");
-        console.log("  Piardify Codebase Cleaner v2.8.0");
+        console.log("  Moryn Codebase Cleaner v2.13.0");
         console.log("==========================================\n");
         if (orphanedFiles.length > 0) {
             console.log(`  ${autoFix ? "🗑️  Pruned" : "⚠️  Found"} ${orphanedFiles.length} Unused/Orphaned Component(s):`);

@@ -115,7 +115,7 @@ export default function UpgradeModal() {
               letterSpacing: "-0.02em",
             }}
           >
-            Buka Fitur Pro Piardify
+            Buka Fitur Pro Moryn
           </h2>
 
           <p

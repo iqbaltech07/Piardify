@@ -127,7 +127,7 @@ export const useWizardStore = create<WizardStore>()(
         }),
     }),
     {
-      name: "piardify_wizard_draft_v1",
+      name: "moryn_wizard_draft_v1",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         step: state.step,

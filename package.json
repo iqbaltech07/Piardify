@@ -1,6 +1,6 @@
 {
-  "name": "piardify-app",
-  "version": "2.7.0",
+  "name": "moryn-app",
+  "version": "2.13.0",
   "private": true,
   "scripts": {
     "dev": "next dev --experimental-https",

@@ -26,10 +26,10 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Piardify | AI PRD Generator",
+  title: "Moryn | AI PRD Generator & Architecture Engine",
   description:
-    "Generate professional Product Requirements Documents in minutes with AI. Structured, accurate, and minimal hallucination, perfect for developers, PMs, and students.",
-  keywords: ["PRD", "AI", "Product Requirements", "Generator", "Documentation"],
+    "Generate professional Product Requirements Documents and system architectures in minutes with AI. Structured, accurate, and minimal hallucination, perfect for developers, PMs, and students.",
+  keywords: ["Moryn", "PRD", "AI", "Product Requirements", "Architecture", "Generator", "Documentation"],
 };
 
 export default function RootLayout({

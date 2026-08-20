@@ -31,7 +31,7 @@ export const FEATURES: Feature[] = [
     id: "agent-skill",
     label: "Agent Infrastructure",
     title: "NPX CLI & Agent Skill Provisioning",
-    desc: "Run 'npx piardify init' in your workspace. Installs the Piardify Skill (.agents/skills/piardify/SKILL.md) with 10ms native sync helpers.",
+    desc: "Run 'npx moryn init' in your workspace. Installs the Moryn Skill (.agents/skills/moryn/SKILL.md) with 10ms native sync helpers.",
     stat: "2 Commands",
     statLabel: "Zero-friction developer setup",
     accent: "var(--color-circuit)",

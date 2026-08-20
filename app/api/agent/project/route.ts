@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
 
       // SELECTIVE TASTE SKILL PAYLOAD REDUCTION
       // Filter tasteSkill to include ONLY the 1 matching skill for this project,
-      // and embed only an EXCERPT of it (fullContent:false) so .piardify/context.md
+      // and embed only an EXCERPT of it (fullContent:false) so .moryn/context.md
       // stays token-efficient (the default skill file is ~89 KB). The agent can
       // fetch the complete skill on demand via section=taste-skill&skill=<key>.
       const routingText = [

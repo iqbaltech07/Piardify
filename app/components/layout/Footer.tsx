@@ -27,8 +27,8 @@ export default function Footer() {
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <Link href="/" id="footer-logo" style={{ display: "inline-flex", alignItems: "center" }}>
             <Image
-              src="/piardify-logo.svg"
-              alt="Piardify"
+              src="/logo/Moryn-Light-Mode.webp"
+              alt="Moryn"
               width={800}
               height={200}
               style={{ height: "40px", width: "auto" }}
@@ -102,7 +102,7 @@ export default function Footer() {
             letterSpacing: "0.06em",
           }}
         >
-          © {new Date().getFullYear()} Piardify
+          © {new Date().getFullYear()} Moryn. All rights reserved.
         </p>
       </div>
     </footer>

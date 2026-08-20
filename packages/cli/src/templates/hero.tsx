@@ -13,7 +13,7 @@ export interface HeroSectionProps {
 }
 
 export function HeroSection({
-  eyebrow = "PIARDIFY / SYSTEM ENGINE",
+  eyebrow = "MORYN / SYSTEM ENGINE",
   title = "Turn product ideas into systems you can actually build.",
   subtitle = "Generate structured PRDs, architecture decisions, feature dependencies, and execution-ready workflows from one product brief.",
   primaryCtaText = "Start Building",

@@ -48,54 +48,54 @@ export default function McpConnectModal({ projectId, appName, onClose }: McpConn
       : "piar_live_••••••••••••••••••••••••••••••••";
 
   // CLI command strings
-  const getCliCommands = (key: string) => `npx piardify login --token ${key || "<YOUR_API_KEY>"}
-npx piardify init --project ${projectId}`;
+  const getCliCommands = (key: string) => `npx moryn login --token ${key || "<YOUR_API_KEY>"}
+npx moryn init --project ${projectId}`;
 
-  const cliCommandsDisplay = `npx piardify login --token ${sensoredApiKeyDisplay}
-npx piardify init --project ${projectId}`;
+  const cliCommandsDisplay = `npx moryn login --token ${sensoredApiKeyDisplay}
+npx moryn init --project ${projectId}`;
 
   // AI Prompt strings
-  const getAiPrompt = (key: string) => `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
+  const getAiPrompt = (key: string) => `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Moryn ini.
 
 Tolong jalankan alur kerja otomatisasi berikut:
 
 1. SETUP CLI & INSTALL SKILL (Terminal):
    Jalankan 2 perintah berikut di terminal:
-   npx piardify login --token ${key || "<YOUR_API_KEY>"}
-   npx piardify init --project ${projectId}
+   npx moryn login --token ${key || "<YOUR_API_KEY>"}
+   npx moryn init --project ${projectId}
 
 2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
-   Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.md yang otomatis terpasang di workspace.
-   Verifikasi freshness konteks (AH-017): jika <project_context>.updatedAt lebih baru dari generatedAt di komentar header context.md, refresh dulu dengan: .piardify/sync context > .piardify/context.md, lalu baca ulang.
+   Setelah init selesai, baca file instruksi .agents/skills/moryn/SKILL.md dan .moryn/context.md yang otomatis terpasang di workspace.
+   Verifikasi freshness konteks (AH-017): jika <project_context>.updatedAt lebih baru dari generatedAt di komentar header context.md, refresh dulu dengan: .moryn/sync context > .moryn/context.md, lalu baca ulang.
 
 3. EKSEKUSI TASK & AUTOMATIC KANBAN SYNC:
-   - Cek task aktif dengan: .piardify/sync current
-   - Sebelum mulai mengedit kode, tandai status task sebagai IN_PROGRESS dengan: .piardify/sync start <task-id>
+   - Cek task aktif dengan: .moryn/sync current
+   - Sebelum mulai mengedit kode, tandai status task sebagai IN_PROGRESS dengan: .moryn/sync start <task-id>
    - Implementasikan solusi sesuai PRD dan aturan Anti-Hallucination.
    - WAJIB jalankan verifikasi lokal di terminal: npm run lint && npm run build
-   - Jika verifikasi lulus: tandai DONE dengan: .piardify/sync complete <task-id>
-   - Jika verifikasi gagal: tandai FAILED dengan: .piardify/sync fail <task-id> "alasan error"`;
+   - Jika verifikasi lulus: tandai DONE dengan: .moryn/sync complete <task-id>
+   - Jika verifikasi gagal: tandai FAILED dengan: .moryn/sync fail <task-id> "alasan error"`;
 
-  const aiPromptDisplay = `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Piardify ini.
+  const aiPromptDisplay = `Bertindaklah sebagai AI Senior Fullstack Engineer untuk proyek Moryn ini.
 
 Tolong jalankan alur kerja otomatisasi berikut:
 
 1. SETUP CLI & INSTALL SKILL (Terminal):
    Jalankan 2 perintah berikut di terminal:
-   npx piardify login --token ${sensoredApiKeyDisplay}
-   npx piardify init --project ${projectId}
+   npx moryn login --token ${sensoredApiKeyDisplay}
+   npx moryn init --project ${projectId}
 
 2. BACA SYSTEM DIRECTIVES & WORKFLOW SKILL:
-   Setelah init selesai, baca file instruksi .agents/skills/piardify/SKILL.md dan .piardify/context.md yang otomatis terpasang di workspace.
-   Verifikasi freshness konteks (AH-017): jika <project_context>.updatedAt lebih baru dari generatedAt di komentar header context.md, refresh dulu dengan: .piardify/sync context > .piardify/context.md, lalu baca ulang.
+   Setelah init selesai, baca file instruksi .agents/skills/moryn/SKILL.md dan .moryn/context.md yang otomatis terpasang di workspace.
+   Verifikasi freshness konteks (AH-017): jika <project_context>.updatedAt lebih baru dari generatedAt di komentar header context.md, refresh dulu dengan: .moryn/sync context > .moryn/context.md, lalu baca ulang.
 
 3. EKSEKUSI TASK & AUTOMATIC KANBAN SYNC:
-   - Cek task aktif dengan: .piardify/sync current
-   - Sebelum mulai mengedit kode, tandai status task sebagai IN_PROGRESS dengan: .piardify/sync start <task-id>
+   - Cek task aktif dengan: .moryn/sync current
+   - Sebelum mulai mengedit kode, tandai status task sebagai IN_PROGRESS dengan: .moryn/sync start <task-id>
    - Implementasikan solusi sesuai PRD dan aturan Anti-Hallucination.
    - WAJIB jalankan verifikasi lokal di terminal: npm run lint && npm run build
-   - Jika verifikasi lulus: tandai DONE dengan: .piardify/sync complete <task-id>
-   - Jika verifikasi gagal: tandai FAILED dengan: .piardify/sync fail <task-id> "alasan error"`;
+   - Jika verifikasi lulus: tandai DONE dengan: .moryn/sync complete <task-id>
+   - Jika verifikasi gagal: tandai FAILED dengan: .moryn/sync fail <task-id> "alasan error"`;
 
   const copyToClipboard = async (text: string, setCopiedState: (val: boolean) => void) => {
     try {
@@ -341,7 +341,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
               marginBottom: 16,
             }}
           >
-            Jalankan <strong>2 perintah terminal</strong> di bawah ini atau tempelkan prompt setup langsung ke AI Coding Agent Anda (seperti <strong>Antigravity, Cursor, Claude Code</strong>). Perintah <code>npx piardify init</code> akan meng-install <strong>Piardify Agent Skill</strong> dan native 10ms sync helper secara otomatis.
+            Jalankan <strong>2 perintah terminal</strong> di bawah ini atau tempelkan prompt setup langsung ke AI Coding Agent Anda (seperti <strong>Antigravity, Cursor, Claude Code</strong>). Perintah <code>npx moryn init</code> akan meng-install <strong>Moryn Agent Skill</strong> dan native 10ms sync helper secara otomatis.
           </p>
 
           {/* Terminal Code Block */}
@@ -385,7 +385,7 @@ Tolong jalankan alur kerja otomatisasi berikut:
                 padding: "4px 0",
               }}
             >
-              {isLoadingKey ? "# Memuat API Key milik Anda...\nnpx piardify login\nnpx piardify init" : cliCommandsDisplay}
+              {isLoadingKey ? "# Memuat API Key milik Anda...\nnpx moryn login\nnpx moryn init" : cliCommandsDisplay}
             </pre>
           </div>
 

@@ -104,7 +104,7 @@ export default function GeneratePage() {
         backdropFilter: "blur(12px)",
       }}>
         <Link href="/" id="gen-back-home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <Image src="/piardify-logo.svg" alt="Piardify" width={800} height={200} style={{ height: "28px", width: "auto" }} />
+          <Image src="/logo/Moryn-Light-Mode.webp" alt="Moryn" width={800} height={200} style={{ height: "28px", width: "auto" }} />
         </Link>
         <span style={{
           fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600,

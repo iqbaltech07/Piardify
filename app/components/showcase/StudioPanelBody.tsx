@@ -55,7 +55,7 @@ export function StudioPanelBody({
               <span className="w-4 h-4 rounded bg-[#6366F1] text-white text-[10px] font-mono font-bold flex items-center justify-center">
                 1
               </span>
-              <span>Generate Scaffold via Piardify CLI</span>
+              <span>Generate Scaffold via Moryn CLI</span>
             </h4>
             <div className="p-3 rounded-lg bg-[#121318] border border-[#222634] flex items-center justify-between font-mono text-xs text-slate-200">
               <code>{currentComponent.cliCommand}</code>

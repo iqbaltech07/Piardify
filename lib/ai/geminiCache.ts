@@ -52,7 +52,7 @@ export async function generateWithGeminiContextCache({
       const cacheResponse = await ai.caches.create({
         model: model,
         config: {
-          displayName: `piardify_${hash}`,
+          displayName: `moryn_${hash}`,
           systemInstruction: systemInstruction,
           ttl: `${ttlSeconds}s`
         }

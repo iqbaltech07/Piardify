@@ -89,7 +89,7 @@ export default function LeaderboardSection() {
             <span style={{ color: "var(--color-signal)" }}>Top PRD Creators</span>
           </h2>
           <p className="lb-subheading">
-            Celebrating the top 8 visionaries turning ideas into structured PRDs with Piardify.
+            Celebrating the top 8 visionaries turning ideas into structured PRDs with Moryn.
           </p>
         </div>
 

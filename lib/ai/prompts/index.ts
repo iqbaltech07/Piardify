@@ -1,5 +1,5 @@
 /**
- * Centralized AI Prompts Registry & Type-Safe Builders for Piardify
+ * Centralized AI Prompts Registry & Type-Safe Builders for Moryn
  *
  * All system prompts, few-shot templates, and prompt builder functions
  * for all AI generation flows (Questions, Recommend Stack, PRD, Edit PRD,

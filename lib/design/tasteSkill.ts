@@ -45,7 +45,7 @@ export const SKILL_ROUTING_RULES: SkillRoutingRule[] = [
 
 export const DEFAULT_TASTE_SKILL_KEY = "designTasteFrontend";
 
-/** Number of skill-file lines embedded into .piardify/context.md (token budget). */
+/** Number of skill-file lines embedded into .moryn/context.md (token budget). */
 const CONTEXT_TASTE_SKILL_MAX_LINES = 140;
 
 function escapeRegex(value: string): string {
@@ -91,7 +91,7 @@ function excerptSkill(content: string, maxLines: number): string {
   return `${lines.slice(0, maxLines).join("\n")}
 
 >>> [CONTEXT OPTIMIZED] This skill file has ${lines.length} lines total (partially embedded to save tokens). Before complex UI work, fetch the COMPLETE skill:
-    - npx piardify project taste-skill --skill <active_key>
+    - npx moryn project taste-skill --skill <active_key>
     - or API: section=taste-skill&skill=<active_key>`;
 }
 
@@ -113,7 +113,7 @@ export const TASTE_SKILL_DIRECTIVES = {
   // getFilteredTasteSkill, so the payload and the runtime logic can't drift.
   // ==========================================
   designSkillRouter: {
-    rule: "AI Agent MUST match project design style from <design_data> in .piardify/context.md to the exact skill key in <system_directives> taste_skill",
+    rule: "AI Agent MUST match project design style from <design_data> in .moryn/context.md to the exact skill key in <system_directives> taste_skill",
     skillMapping: SKILL_ROUTING_RULES.map(({ keywords, targetSkill }) => ({ keywords, targetSkill })),
     mandatoryDeclaration: "AI Agent MUST output '🎨 Design Skill Active: <targetSkill>' before generating any Frontend UI components."
   },
@@ -204,7 +204,7 @@ export const TASTE_SKILL_DIRECTIVES = {
  *   against SKILL_ROUTING_RULES using word-boundary matching (no false
  *   positives from words like "MOTION_INTENSITY" or "clean architecture").
  * - `fullContent: false` returns an excerpt of the active skill to keep
- *   .piardify/context.md token-efficient (the default skill is ~89 KB).
+ *   .moryn/context.md token-efficient (the default skill is ~89 KB).
  */
 export function getFilteredTasteSkill(
   designTextOrVibe?: string,
@@ -255,7 +255,7 @@ export function getFilteredTasteSkill(
       selectedReason,
       availableSkills: Object.keys(allSkills),
       fetchOtherSkillInstruction:
-        "To fetch another specific skill on demand, request section=taste-skill&skill=<skillName> (or run: npx piardify project taste-skill --skill <skillName>)"
+        "To fetch another specific skill on demand, request section=taste-skill&skill=<skillName> (or run: npx moryn project taste-skill --skill <skillName>)"
     },
     tasteSkillDirectives: TASTE_SKILL_DIRECTIVES.tasteSkillDirectives,
     codeSkeletons: TASTE_SKILL_DIRECTIVES.codeSkeletons,

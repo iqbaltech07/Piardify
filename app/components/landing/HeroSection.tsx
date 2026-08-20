@@ -380,7 +380,7 @@ export default function HeroSection({ onSeeExample }: { onSeeExample: () => void
               maxWidth: 480,
             }}
           >
-            Piardify converts raw product ideas into structured PRDs, visual mindmaps, and NPX CLI skills (<code style={{ color: "var(--color-circuit)" }}>npx piardify init</code>) for autonomous AI Agent execution.
+            Moryn converts raw product ideas into structured PRDs, visual mindmaps, and NPX CLI skills (<code style={{ color: "var(--color-circuit)" }}>npx moryn init</code>) for autonomous AI Agent execution.
           </motion.p>
 
           {/* CTAs */}

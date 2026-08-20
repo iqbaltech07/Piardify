@@ -14,7 +14,7 @@ export function ConfigForm({
   title = "Project Configuration",
   onSubmit,
 }: ConfigFormProps) {
-  const [formData, setFormData] = useState({ appName: "Piardify Engine", environment: "production" });
+  const [formData, setFormData] = useState({ appName: "Moryn Engine", environment: "production" });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +33,7 @@ export function ConfigForm({
           type="text"
           value={formData.appName}
           onChange={(e) => setFormData({ ...formData, appName: e.currentTarget.value })}
-          placeholder="e.g. Piardify Engine"
+          placeholder="e.g. Moryn Engine"
           className="w-full px-3 py-2 bg-[#090A0C] border border-[#222634] rounded-md text-xs text-[#F3F4F6] placeholder-[#6B7280] focus:outline-none focus:border-[#6366F1] transition-colors"
           required
         />

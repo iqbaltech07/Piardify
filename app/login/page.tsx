@@ -62,7 +62,7 @@ export default function LoginPage() {
         {/* Content */}
         <div style={{ position: "relative", zIndex: 1 }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
-            <Image src="/piardify-logo.svg" alt="Piardify" width={800} height={200} style={{ height: "48px", width: "auto" }} />
+            <Image src="/logo/Moryn-Light-Mode.webp" alt="Moryn" width={800} height={200} style={{ height: "48px", width: "auto" }} />
           </Link>
         </div>
 
@@ -137,7 +137,7 @@ export default function LoginPage() {
           {/* Quote mark */}
           <div style={{ fontFamily: "var(--font-display)", fontSize: "32px", color: "var(--color-signal)", lineHeight: 1, marginBottom: 8, opacity: 0.7 }}>"</div>
           <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--fg-secondary)", lineHeight: 1.65, marginBottom: 14 }}>
-            Piardify saved me hours of documentation work. Got a full PRD for my capstone project in just 2 minutes.
+            Moryn saved me hours of documentation work. Got a full PRD for my capstone project in just 2 minutes.
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
@@ -168,7 +168,7 @@ export default function LoginPage() {
         {/* Mobile logo */}
         <div className="lg:hidden" style={{ marginBottom: 32 }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
-            <Image src="/piardify-logo.svg" alt="Piardify" width={800} height={200} style={{ height: "44px", width: "auto" }} />
+            <Image src="/logo/Moryn-Light-Mode.webp" alt="Moryn" width={800} height={200} style={{ height: "44px", width: "auto" }} />
           </Link>
         </div>
 
@@ -196,14 +196,14 @@ export default function LoginPage() {
                   color: "var(--color-signal)", marginBottom: 14,
                 }}>
                   <FileText size={10} />
-                  Piardify · PRD Generator
+                  Moryn · PRD Generator
                 </div>
                 <h2 style={{
                   fontFamily: "var(--font-display)",
                   fontSize: "22px", fontWeight: 800,
                   color: "var(--fg-primary)", marginBottom: 6, lineHeight: 1.2,
                 }}>
-                  Welcome to Piardify
+                  Welcome to Moryn
                 </h2>
                 <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--color-mist)", lineHeight: 1.6 }}>
                   Sign in to generate, manage, and export your PRDs.
@@ -290,7 +290,7 @@ export default function LoginPage() {
 
               {/* Terms */}
               <p style={{ marginTop: 20, fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--fg-muted)", textAlign: "center", lineHeight: 1.6, letterSpacing: "0.03em" }}>
-                By continuing, you agree to Piardify's{" "}
+                By continuing, you agree to Moryn's{" "}
                 <Link href="#" style={{ color: "var(--color-signal)", textDecoration: "underline" }}>Terms</Link>
                 {" "}and{" "}
                 <Link href="#" style={{ color: "var(--color-signal)", textDecoration: "underline" }}>Privacy Policy</Link>.

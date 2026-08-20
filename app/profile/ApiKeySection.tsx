@@ -131,7 +131,7 @@ export default function ApiKeySection() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                API Key Integrasi AI Agent (npx piardify)
+                API Key Integrasi AI Agent (npx moryn)
               </h3>
               <p
                 style={{
@@ -142,7 +142,7 @@ export default function ApiKeySection() {
                   letterSpacing: "0.03em",
                 }}
               >
-                Gunakan API key ini untuk login via CLI: <code>npx piardify login --token &lt;KEY&gt;</code>
+                Gunakan API key ini untuk login via CLI: <code>npx moryn login --token &lt;KEY&gt;</code>
               </p>
             </div>
           </div>
@@ -312,7 +312,7 @@ export default function ApiKeySection() {
               lineHeight: 1.5,
             }}
           >
-            ⚠️ API Key hanya ditampilkan SEKALI saat dibuat. Simpan sebelum menutup halaman. Regenerasi membatalkan key lama; token CLI `npx piardify login` perlu diperbarui dengan key baru.
+            ⚠️ API Key hanya ditampilkan SEKALI saat dibuat. Simpan sebelum menutup halaman. Regenerasi membatalkan key lama; token CLI `npx moryn login` perlu diperbarui dengan key baru.
           </p>
 
           {!confirmRegenerate ? (

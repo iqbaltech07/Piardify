@@ -441,7 +441,7 @@ function PreviewPageContent() {
           {markdown.length.toLocaleString()} chars · {markdown.split("\n").length} lines
         </span>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-muted)", letterSpacing: "0.04em" }}>
-          {appName} · Piardify
+          {appName} · Moryn
         </span>
       </footer>
 

@@ -9,8 +9,8 @@ export function StudioHeader() {
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 text-decoration-none group">
           <Image
-            src="/piardify-logo.svg"
-            alt="Piardify"
+            src="/logo/Moryn-Light-Mode.webp"
+            alt="Moryn"
             width={120}
             height={26}
             className="h-6 w-auto"

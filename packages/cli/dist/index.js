@@ -102,31 +102,31 @@ async function main() {
         default:
             if (options.json) {
                 console.log(JSON.stringify({
-                    name: "piardify",
-                    version: "2.8.0",
+                    name: "moryn",
+                    version: "2.13.0",
                     commands: ["login", "init", "status", "project", "design", "task", "kanban", "validate-ui", "clean", "init-theme", "hook", "scaffold", "generate"],
                 }));
             }
             else {
-                console.log("\n  Piardify AI Agent CLI v2.8.0 (Anti-Slop Architecture)");
+                console.log("\n  Moryn AI Agent CLI v2.13.0 (Anti-Slop Architecture)");
                 console.log("  ==========================");
-                console.log("  Usage: npx piardify <command> [options]\n");
+                console.log("  Usage: npx moryn <command> [options]\n");
                 console.log("  Core Developer & Scaffolding Commands:");
-                console.log("    npx piardify scaffold <Name> [--type <hero|bento|card|table|form|modal>]");
-                console.log("    npx piardify generate <Name> [--type <hero|bento|card|table|form|modal>]");
-                console.log("    npx piardify login --token <TOKEN>         Save auth token");
-                console.log("    npx piardify init [--target web|mobile...] Connect project & setup Agent Skill");
-                console.log("    npx piardify status                        Display health & connection status\n");
-                console.log("  Anti-Slop Visual Governance & Tooling (v2.0):");
-                console.log("    npx piardify design                        Fetch design context & tokens");
-                console.log("    npx piardify validate-ui                   Run AST Anti-Slop Linter on workspace");
-                console.log("    npx piardify clean                         Automatically prune unused components & dead code");
-                console.log("    npx piardify init-theme                    Generate Tailwind preset & CSS tokens");
-                console.log("    npx piardify hook                          Install Git pre-commit & build hooks\n");
+                console.log("    npx moryn scaffold <Name> [--type <hero|bento|card|table|form|modal>]");
+                console.log("    npx moryn generate <Name> [--type <hero|bento|card|table|form|modal>]");
+                console.log("    npx moryn login --token <TOKEN>         Save auth token");
+                console.log("    npx moryn init [--target web|mobile...] Connect project & setup Agent Skill");
+                console.log("    npx moryn status                        Display health & connection status\n");
+                console.log("  Anti-Slop Visual Governance & Tooling:");
+                console.log("    npx moryn design                        Fetch design context & tokens");
+                console.log("    npx moryn validate-ui                   Run AST Anti-Slop Linter on workspace");
+                console.log("    npx moryn clean                         Automatically prune unused components & dead code");
+                console.log("    npx moryn init-theme                    Generate Tailwind preset & CSS tokens");
+                console.log("    npx moryn hook                          Install Git pre-commit & build hooks\n");
                 console.log("  AI Agent Task Commands:");
-                console.log("    npx piardify project [tokens|rules|prd...] Fetch modular context or full hybrid");
-                console.log("    npx piardify task <action> [id]            Task lifecycle (list, current, start, complete, fail)");
-                console.log("    npx piardify kanban                        Fetch full Kanban board state\n");
+                console.log("    npx moryn project [tokens|rules|prd...] Fetch modular context or full hybrid");
+                console.log("    npx moryn task <action> [id]            Task lifecycle (list, current, start, complete, fail)");
+                console.log("    npx moryn kanban                        Fetch full Kanban board state\n");
                 console.log("  Flags:");
                 console.log("    --type <hero|bento|card|table|form|modal>  Component archetype type");
                 console.log("    --target <web|mobile|iot|backend>          Specify multi-domain target ecosystem");

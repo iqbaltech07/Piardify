@@ -1,4 +1,4 @@
-// ── Piardify Modular Library Root Index ──
+// ── Moryn Modular Library Root Index ──
 
 export * from "./auth/index";
 export * from "./db/index";

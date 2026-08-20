@@ -17,8 +17,8 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           id: "AH-003",
-          rule: "STATUS SYNC: Update task status to 'in_progress' on start and 'done' upon verified completion via .piardify/sync.",
-          validation: "Execute .piardify/sync start <id> and .piardify/sync complete <id>.",
+          rule: "STATUS SYNC: Update task status to 'in_progress' on start and 'done' upon verified completion via .moryn/sync.",
+          validation: "Execute .moryn/sync start <id> and .moryn/sync complete <id>.",
           failure_consequence: "Broken Kanban tracking, desynchronized workflow."
         },
         {
@@ -77,7 +77,7 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           id: "AH-013",
-          rule: "ON-DEMAND TASTE SKILL: Fetch full taste skill via .piardify/sync taste <key> for complex UI scaffolding.",
+          rule: "ON-DEMAND TASTE SKILL: Fetch full taste skill via .moryn/sync taste <key> for complex UI scaffolding.",
           validation: "Ensure complete design guidelines are digested before large frontend refactors.",
           failure_consequence: "Generic boilerplate UI."
         },
@@ -89,7 +89,7 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           id: "AH-015",
-          rule: "CONTEXT PERSISTENCE: Re-verify .piardify/context.md before starting new tasks to maintain 100% project memory.",
+          rule: "CONTEXT PERSISTENCE: Re-verify .moryn/context.md before starting new tasks to maintain 100% project memory.",
           validation: "Read local context file snapshot at the beginning of task execution.",
           failure_consequence: "Context loss during long chat sessions."
         },
@@ -101,7 +101,7 @@ export const SYSTEM_DIRECTIVES = {
         },
         {
           id: "AH-017",
-          rule: "CONTEXT FRESHNESS: If project updatedAt is newer than snapshot generatedAt, refresh via .piardify/sync context > .piardify/context.md.",
+          rule: "CONTEXT FRESHNESS: If project updatedAt is newer than snapshot generatedAt, refresh via .moryn/sync context > .moryn/context.md.",
           validation: "Verify freshness timestamp before executing tasks.",
           failure_consequence: "Working on outdated requirements."
         },

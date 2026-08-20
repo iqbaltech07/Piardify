@@ -31,7 +31,7 @@ export const STEPS = [
   {
     number: "04",
     title: "Provision AI Skill & Sync",
-    desc: "Run 'npx piardify init' in your workspace. Provisions the Agent Skill and syncs Kanban tasks live as your AI Agent codes.",
+    desc: "Run 'npx moryn init' in your workspace. Provisions the Agent Skill and syncs Kanban tasks live as your AI Agent codes.",
     detail: "10ms native realtime sync.",
     accentVar: "var(--color-signal)",
     icon: <Cpu size={20} strokeWidth={1.5} />,

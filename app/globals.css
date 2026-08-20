@@ -1,48 +1,113 @@
 @import "tailwindcss";
 
-/* ==============================
-   DESIGN TOKENS — BLUEPRINT
-   ============================== */
+/* ==========================================
+   MORYN DESIGN TOKENS — TAILWIND V4 @theme
+   ========================================== */
+@theme inline {
+  --color-brand-ink: #141817;
+  --color-brand-orange: #e85d3f;
+
+  --color-background: #fcfbf8;
+  --color-surface: #f5f2ea;
+  --color-surface-raised: #ffffff;
+
+  --color-foreground: #141817;
+  --color-foreground-secondary: #4d5552;
+  --color-foreground-muted: #737b78;
+  --color-foreground-subtle: #9ca3a0;
+
+  --color-border: #d9ddd9;
+  --color-border-subtle: #e8ebe8;
+  --color-border-strong: #b9bfbc;
+
+  --color-primary: #141817;
+  --color-primary-foreground: #fcfbf8;
+
+  --color-accent: #e85d3f;
+  --color-accent-foreground: #ffffff;
+
+  --color-accent-soft: #fbe4de;
+
+  --color-success: #2f7d5c;
+  --color-warning: #b7791f;
+  --color-error: #c63d3d;
+  --color-info: #416b8d;
+}
+
+/* ==========================================
+   NATIVE CSS VARIABLES (MORYN SYSTEM MAPPINGS)
+   ========================================== */
 :root {
-  /* Core palette */
-  --color-ink:      #10182B;
-  --color-paper:    #F7F5EF;
-  --color-graphite: #1D2333;
-  --color-mist:     #8B93A7;
-  --color-signal:   #FFB627;
-  --color-circuit:  #4FD1C5;
+  /* Core Brand & Semantic Colors */
+  --color-brand-ink: #141817;
+  --color-brand-orange: #e85d3f;
 
-  /* Derived surface tokens */
-  --bg-base:     var(--color-ink);
-  --bg-surface:  #141C30;
-  --bg-elevated: #1A2238;
+  --color-background: #fcfbf8;
+  --color-surface: #f5f2ea;
+  --color-surface-raised: #ffffff;
 
-  /* Foreground */
-  --fg-primary:   #E8EBF4;
-  --fg-secondary: var(--color-mist);
-  --fg-muted:     #5A6275;
+  --color-foreground: #141817;
+  --color-foreground-secondary: #4d5552;
+  --color-foreground-muted: #737b78;
+  --color-foreground-subtle: #9ca3a0;
 
-  /* Border — hairline, flat */
-  --border-hairline: rgba(139, 147, 167, 0.18);
-  --border-subtle:   rgba(139, 147, 167, 0.12);
-  --border-strong:   rgba(139, 147, 167, 0.35);
+  --color-border: #d9ddd9;
+  --color-border-subtle: #e8ebe8;
+  --color-border-strong: #b9bfbc;
+
+  --color-primary: #141817;
+  --color-primary-foreground: #fcfbf8;
+
+  --color-accent: #e85d3f;
+  --color-accent-foreground: #ffffff;
+
+  --color-accent-soft: #fbe4de;
+
+  --color-success: #2f7d5c;
+  --color-warning: #b7791f;
+  --color-error: #c63d3d;
+  --color-info: #416b8d;
+
+  /* Legacy & Semantic Mappings for seamless compatibility */
+  --color-ink: var(--color-brand-ink);
+  --color-paper: var(--color-background);
+  --color-graphite: var(--color-foreground-secondary);
+  --color-mist: var(--color-foreground-muted);
+  --color-signal: var(--color-accent);
+  --color-circuit: var(--color-info);
+
+  /* Surfaces & Layers */
+  --bg-base: var(--color-background);
+  --bg-surface: var(--color-surface);
+  --bg-elevated: var(--color-surface-raised);
+
+  /* Foreground Hierarchy */
+  --fg-primary: var(--color-foreground);
+  --fg-secondary: var(--color-foreground-secondary);
+  --fg-muted: var(--color-foreground-muted);
+
+  /* Border Tokens */
+  --border-hairline: var(--color-border-subtle);
+  --border-subtle: var(--color-border);
+  --border-strong: var(--color-border-strong);
 
   /* Grid line color for drafting background */
-  --grid-line: rgba(139, 147, 167, 0.07);
+  --grid-line: rgba(20, 24, 23, 0.06);
 
   /* Typography */
   --font-display: var(--font-fraunces), "Georgia", serif;
-  --font-body:    var(--font-ibm-plex-sans), "Arial", sans-serif;
-  --font-mono:    var(--font-ibm-plex-mono), "Courier New", monospace;
+  --font-body: var(--font-ibm-plex-sans), "Arial", sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), "Courier New", monospace;
 
-  /* Border radius — deliberately tight */
+  /* Border radius */
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
 
-  /* Shadows — flat, no blur glow */
-  --shadow-card: 0 1px 0 var(--border-hairline);
+  /* Shadows — crisp & elevated */
+  --shadow-card: 0 1px 3px rgba(20, 24, 23, 0.05), 0 1px 2px rgba(20, 24, 23, 0.03);
+  --shadow-raised: 0 4px 12px rgba(20, 24, 23, 0.08);
 }
 
 /* ==============================
@@ -65,8 +130,8 @@ html {
 }
 
 body {
-  background-color: var(--color-ink);
-  color: var(--fg-primary);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -78,7 +143,7 @@ body {
    FOCUS STATES — accessible
    ============================== */
 :focus-visible {
-  outline: 2px solid var(--color-signal);
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
 }
@@ -98,8 +163,8 @@ body {
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(rgba(139, 147, 167, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 147, 167, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(20, 24, 23, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 24, 23, 0.03) 1px, transparent 1px);
   background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
 }
 
@@ -112,25 +177,26 @@ body {
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-mist);
+  color: var(--color-foreground-muted);
 }
 
 .mono-stat {
   font-family: var(--font-mono);
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--fg-primary);
+  color: var(--color-foreground);
 }
 
 /* ==============================
-   SIGNAL ACCENT
+   SIGNAL & ACCENT UTILITIES
    ============================== */
-.text-signal { color: var(--color-signal); }
-.text-circuit { color: var(--color-circuit); }
+.text-signal { color: var(--color-accent); }
+.text-circuit { color: var(--color-info); }
+.text-brand-orange { color: var(--color-brand-orange); }
 
 .signal-underline {
   text-decoration: underline;
-  text-decoration-color: var(--color-signal);
+  text-decoration-color: var(--color-accent);
   text-underline-offset: 4px;
   text-decoration-thickness: 2px;
 }
@@ -190,15 +256,15 @@ body {
    CUSTOM SCROLLBAR
    ============================== */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-mist); }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-foreground-muted); }
 
 /* ==============================
    MARKDOWN PREVIEW STYLES
    ============================== */
 .markdown-preview {
-  color: var(--fg-primary);
+  color: var(--color-foreground);
   line-height: 1.75;
   font-size: 0.9375rem;
   font-family: var(--font-body);
@@ -211,7 +277,7 @@ body {
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-hairline);
-  color: var(--fg-primary);
+  color: var(--color-foreground);
 }
 
 .markdown-preview h2 {
@@ -220,7 +286,7 @@ body {
   font-weight: 700;
   margin-top: 1.75rem;
   margin-bottom: 0.5rem;
-  color: var(--color-signal);
+  color: var(--color-accent);
 }
 
 .markdown-preview h3 {
@@ -228,12 +294,12 @@ body {
   font-weight: 600;
   margin-top: 1.25rem;
   margin-bottom: 0.4rem;
-  color: var(--fg-primary);
+  color: var(--color-foreground);
 }
 
 .markdown-preview p {
   margin-bottom: 0.875rem;
-  color: var(--fg-secondary);
+  color: var(--color-foreground-secondary);
 }
 
 .markdown-preview ul,
@@ -244,21 +310,21 @@ body {
 
 .markdown-preview li {
   margin-bottom: 0.25rem;
-  color: var(--fg-secondary);
+  color: var(--color-foreground-secondary);
 }
 
 .markdown-preview code {
-  background: rgba(79, 209, 197, 0.08);
-  color: var(--color-circuit);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   padding: 0.15em 0.45em;
   border-radius: var(--radius-sm);
   font-size: 0.875em;
   font-family: var(--font-mono);
-  border: 1px solid rgba(79, 209, 197, 0.18);
+  border: 1px solid rgba(232, 93, 63, 0.2);
 }
 
 .markdown-preview pre {
-  background: var(--bg-elevated);
+  background: var(--color-surface);
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-md);
   padding: 1rem;
@@ -269,14 +335,14 @@ body {
 .markdown-preview pre code {
   background: none;
   padding: 0;
-  color: var(--fg-primary);
+  color: var(--color-foreground);
   border: none;
 }
 
 .markdown-preview blockquote {
-  border-left: 2px solid var(--color-signal);
+  border-left: 2px solid var(--color-accent);
   padding-left: 1rem;
-  color: var(--fg-muted);
+  color: var(--color-foreground-muted);
   margin-bottom: 0.875rem;
 }
 
@@ -287,12 +353,12 @@ body {
 }
 
 .markdown-preview strong {
-  color: var(--fg-primary);
+  color: var(--color-foreground);
   font-weight: 700;
 }
 
 .markdown-preview a {
-  color: var(--color-signal);
+  color: var(--color-accent);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -310,7 +376,7 @@ button { font-family: inherit; }
   width: 28px;
   height: 28px;
   border: 2px solid var(--border-hairline);
-  border-top-color: var(--color-signal);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -340,9 +406,9 @@ button { font-family: inherit; }
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 75%
+    rgba(20, 24, 23, 0.03) 25%,
+    rgba(20, 24, 23, 0.08) 50%,
+    rgba(20, 24, 23, 0.03) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s ease-in-out infinite;

@@ -160,7 +160,7 @@ function compactJson(value: unknown): string {
 
 function renderSnapshotComment(): string {
   const generatedAt = new Date().toISOString();
-  return `<!-- Piardify Context Snapshot | generatedAt: ${generatedAt} | Freshness Gate AH-017: If project updatedAt is newer, refresh via .piardify/sync context > .piardify/context.md -->`;
+  return `<!-- Moryn Context Snapshot | generatedAt: ${generatedAt} | Freshness Gate AH-017: If project updatedAt is newer, refresh via .moryn/sync context > .moryn/context.md -->`;
 }
 
 function renderSystemDirectives(directives: ContextInput["directives"], design?: DesignData): string {
@@ -176,7 +176,7 @@ function renderSystemDirectives(directives: ContextInput["directives"], design?:
     .join("\n");
 
   const ts = tasteSkill;
-  const tasteBlock = `  <active_skill key="${escapeXml(ts.activeSkillKey)}" fetch_cmd=".piardify/sync taste ${escapeXml(ts.activeSkillKey)}">
+  const tasteBlock = `  <active_skill key="${escapeXml(ts.activeSkillKey)}" fetch_cmd=".moryn/sync taste ${escapeXml(ts.activeSkillKey)}">
     Selected: ${escapeXml(ts.routerInfo.selectedReason)} | Baseline: Obsidian (#090A0C), 150-250ms spring physics, shadcn/ui mandatory, zero-slop.
   </active_skill>`;
 

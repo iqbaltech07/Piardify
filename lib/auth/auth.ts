@@ -8,6 +8,7 @@ export const auth = betterAuth({
   }),
   baseURL: {
     allowedHosts: [
+      "moryn.vercel.app",
       "piardify.vercel.app",
       "*.vercel.app",
       "localhost:3000",

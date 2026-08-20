@@ -61,7 +61,7 @@ export default function ChangelogPage() {
             className="inline-flex items-center gap-2 text-xs font-mono text-(--color-mist) hover:text-(--fg-primary) transition-colors"
           >
             <ArrowLeft size={14} />
-            Back to Piardify
+            Back to Moryn
           </Link>
         </div>
 
@@ -94,7 +94,7 @@ export default function ChangelogPage() {
           </div>
 
           <p className="text-sm text-(--fg-secondary) max-w-2xl leading-relaxed">
-            Catatan rilis resmi perkembangan platform Piardify, integrasi AI Agent, protokol sinkronisasi otonom, dan penyempurnaan desain sistem.
+            Catatan rilis resmi perkembangan platform Moryn, integrasi AI Agent, protokol sinkronisasi otonom, dan penyempurnaan desain sistem.
           </p>
 
           {/* Category Filter Tabs */}

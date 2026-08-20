@@ -47,7 +47,7 @@ export const RELEASES: Release[] = [
         type: "feat",
         title: "Automatic Dual-Skill Provisioning via CLI",
         description:
-          "Perintah `npx piardify init` kini secara otomatis memasang kedua skill utama (`piardify` workflow & `frontend` design thinking) langsung ke folder `.agents/skills/` di workspace pengguna.",
+          "Perintah `npx moryn init` kini secara otomatis memasang kedua skill utama (`moryn` workflow & `frontend` design thinking) langsung ke folder `.agents/skills/` di workspace pengguna.",
         tags: ["CLI", "Automation", "Agent Skill"],
       },
       {
@@ -68,15 +68,15 @@ export const RELEASES: Release[] = [
         type: "fix",
         title: "Real-Time Dynamic API Key Resolution in Modals",
         description:
-          "Memperbaiki bug salin API key di modal MCP Connect dan profil pengguna dengan pemanggilan data dinamis, memastikan token rahasia pengguna tidak lagi tertimpa placeholder <YOUR_API_KEY>.",
-        tags: ["Bugfix", "Auth", "API Key"],
+          "Modal integrasi MCP dan halaman profile kini menyelesaikan API key plaintext secara dinamis tanpa delay masking, memungkinkan copy-paste 1-klik instan untuk perintah CLI setup.",
+        tags: ["API Key", "Security", "UX", "Modals"],
       },
     ],
   },
   {
-    version: "v2.12.3",
+    version: "v2.12.0",
     date: "14 Agustus 2026",
-    title: "Tri-Combo Zero-Redundancy Context Engine, Gemini 3.7 Flash, & AI Tech Stack Auto-Recommend",
+    title: "Tri-Combo Zero-Redundancy Context Engine, Gemini 3.7 Flash, & AI Tech Stack Advisor",
     summary:
       "Pembaruan arsitektur besar untuk optimasi token context hingga 84%, integrasi model Gemini 3.7 Flash, engine rekomendasi tech stack otomatis oleh AI, preset stack Vanilla Web/Mobile/IoT, dan parser PRD multi-tier tangguh.",
     highlights: [
@@ -84,7 +84,7 @@ export const RELEASES: Release[] = [
         type: "feat",
         title: "Tri-Combo Zero-Redundancy Context Engine (84% Token Reduction)",
         description:
-          "Memangkas ukuran context payload dari 1050+ baris (~32KB) menjadi ~165 baris (~4.5KB) melalui lazy-loaded Taste Skill pointers (`npx piardify skill`), minified 1-line Anti-Hallucination tags (AH-001..AH-021), dan windowing task queue.",
+          "Memangkas ukuran context payload dari 1050+ baris (~32KB) menjadi ~165 baris (~4.5KB) melalui lazy-loaded Taste Skill pointers (`npx moryn project taste-skill`), minified 1-line Anti-Hallucination tags (AH-001..AH-021), dan windowing task queue.",
         tags: ["Token Reduction", "Zero Redundancy", "Performance", "Context Engine"],
       },
       {
@@ -126,13 +126,13 @@ export const RELEASES: Release[] = [
     codeSnippet: {
       language: "bash",
       code: `# Initialize Tri-Combo Zero-Redundancy Context
-npx piardify init
+npx moryn init
 
 # Fetch full Taste Skill on-demand (10ms)
-npx piardify skill
+npx moryn project taste-skill
 
 # Run AST Anti-Slop Linter
-npx piardify validate-ui`,
+npx moryn validate-ui`,
     },
   },
   {
@@ -140,7 +140,7 @@ npx piardify validate-ui`,
     date: "13 Agustus 2026",
     title: "AST Anti-Slop Linter Engine, Multi-Archetype Generators, & Live Design Context Router",
     summary:
-      "Perombakan arsitektur besar Piardify CLI v2.7 dengan 5 perintah baru (design, validate-ui, init-theme, generate, hook), AST Anti-Slop Linter, Multi-Domain target adapter, 6 scaffold archetype UI, Git/NPM guardrail hooks, dan direktif AH-018.",
+      "Perombakan arsitektur besar Moryn CLI v2.7 dengan 5 perintah baru (design, validate-ui, init-theme, generate, hook), AST Anti-Slop Linter, Multi-Domain target adapter, 6 scaffold archetype UI, Git/NPM guardrail hooks, dan direktif AH-018.",
     highlights: [
       {
         type: "feat",
@@ -151,21 +151,21 @@ npx piardify validate-ui`,
       },
       {
         type: "feat",
-        title: "Live Design Context Router & SSOT Hierarchy (npx piardify design)",
+        title: "Live Design Context Router & SSOT Hierarchy (npx moryn design)",
         description:
-          "Memanggil live remote API untuk mengambil token warna dan aturan desain paling baru dari server Web App, dilengkapi fallback lokal .piardify/tokens.json dan hirarki SSOT.",
+          "Memanggil live remote API untuk mengambil token warna dan aturan desain paling baru dari server Web App, dilengkapi fallback lokal .moryn/tokens.json dan hirarki SSOT.",
         tags: ["Design Context", "SSOT", "Remote API First"],
       },
       {
         type: "feat",
-        title: "Multi-Archetype Component Generator (npx piardify generate)",
+        title: "Multi-Archetype Component Generator (npx moryn generate)",
         description:
           "Menghasilkan berkas komponen UI Anti-Slop modular 1 file per archetype dengan 6 pilihan pola UI: card, hero, table, form, modal, dan bento.",
         tags: ["Component Scaffolding", "Multi-Archetype", "Clean Code"],
       },
       {
         type: "feat",
-        title: "Automated Pre-Commit & Pre-Build Guardrail Hooks (npx piardify hook)",
+        title: "Automated Pre-Commit & Pre-Build Guardrail Hooks (npx moryn hook)",
         description:
           "Memasang Git Pre-Commit Hook (.git/hooks/pre-commit) dan NPM Pre-Build Step (package.json prebuild script) yang otomatis membatalkan commit/build jika ada pelanggaran Anti-Slop.",
         tags: ["CI/CD Guardrails", "Git Hook", "Automated QA"],
@@ -181,16 +181,16 @@ npx piardify validate-ui`,
     codeSnippet: {
       language: "bash",
       code: `# Fetch live design context & tokens
-npx piardify design
+npx moryn design
 
 # Run AST Anti-Slop Linter on workspace
-npx piardify validate-ui
+npx moryn validate-ui
 
 # Scaffold component archetype
-npx piardify generate hero LandingHero
+npx moryn generate hero LandingHero
 
 # Install automated pre-commit & build guardrails
-npx piardify hook`,
+npx moryn hook`,
     },
   },
   {
@@ -211,7 +211,7 @@ npx piardify hook`,
         type: "feat",
         title: "Lazy Loading Taste Skill (AH-013 Update)",
         description:
-          "Taste Skill kini tidak lagi di-embed penuh di context.md, melainkan dipotong (truncate) menjadi maksimal 140 baris. AI Agent diwajibkan (Mandatory Critical Gate) untuk memanggil npx piardify project taste-skill sebelum melakukan UI coding.",
+          "Taste Skill kini tidak lagi di-embed penuh di context.md, melainkan dipotong (truncate) menjadi maksimal 140 baris. AI Agent diwajibkan (Mandatory Critical Gate) untuk memanggil npx moryn project taste-skill sebelum melakukan UI coding.",
         tags: ["Lazy Load", "CLI Fetch", "Anti-Hallucination"],
       },
       {
@@ -300,17 +300,17 @@ npx piardify hook`,
         type: "improvement",
         title: "Hidden Background Skill Injection & English Console Logs",
         description:
-          "Taste Skill dan direktif sistem disuntikkan secara tersembunyi (hidden) di latar belakang melalui .piardify/context.md & .agents/skills/ tanpa mengotori tampilan terminal/UI manusia. Seluruh CLI log distandarisasi ke Bahasa Inggris.",
+          "Taste Skill dan direktif sistem disuntikkan secara tersembunyi (hidden) di latar belakang melalui .moryn/context.md & .agents/skills/ tanpa mengotori tampilan terminal/UI manusia. Seluruh CLI log distandarisasi ke Bahasa Inggris.",
         tags: ["CLI", "UX", "Hidden Directives"],
       },
     ],
     codeSnippet: {
       language: "bash",
       code: `# Fetch specific taste skill on-demand
-npx piardify project taste-skill --skill minimalistUi --json
+npx moryn project taste-skill --skill minimalistUi --json
 
 # Automatic Project Context with 90% Reduced Payload
-npx piardify project context --json`,
+npx moryn project context --json`,
     },
   },
   {
@@ -318,13 +318,13 @@ npx piardify project context --json`,
     date: "9 Agustus 2026",
     title: "NPX CLI, Agent Skill & 10ms Realtime Autonomous Sync",
     summary:
-      "Transformasi penuh integrasi AI Agent dari legacy MCP ke Zero-Friction NPX CLI, native Agent Skill (.agents/skills/piardify/SKILL.md), serta instant Upstash Redis sync engine (<10ms).",
+      "Transformasi penuh integrasi AI Agent dari legacy MCP ke Zero-Friction NPX CLI, native Agent Skill (.agents/skills/moryn/SKILL.md), serta instant Upstash Redis sync engine (<10ms).",
     highlights: [
       {
         type: "feat",
         title: "Zero-Friction NPX CLI Provisioning",
         description:
-          "Autentikasi dan inisialisasi ruang kerja serba otomatis dengan perintah 'npx piardify login' dan 'npx piardify init'. Otomatis menyuntikkan Agent Skill ke dalam .agents/skills/piardify/SKILL.md.",
+          "Autentikasi dan inisialisasi ruang kerja serba otomatis dengan perintah 'npx moryn login' dan 'npx moryn init'. Otomatis menyuntikkan Agent Skill ke dalam .agents/skills/moryn/SKILL.md.",
         tags: ["CLI", "Agent Skill", "DX"],
       },
       {
@@ -352,12 +352,12 @@ npx piardify project context --json`,
     codeSnippet: {
       language: "bash",
       code: `# Login & Inisialisasi Proyek dalam 1 Langkah
-npx piardify login --token piar_live_7667e783d8a93539758e2c8eb8f8dad0
-npx piardify init --project cmshkki2x0001l104vdj6hnfc
+npx moryn login --token piar_live_7667e783d8a93539758e2c8eb8f8dad0
+npx moryn init --project cmshkki2x0001l104vdj6hnfc
 
 # Klaim & Selesaikan Tugas secara Otonom
-npx piardify task start clx9988776655
-npx piardify task complete clx9988776655`,
+npx moryn task start clx9988776655
+npx moryn task complete clx9988776655`,
     },
   },
   {
@@ -395,7 +395,7 @@ npx piardify task complete clx9988776655`,
     date: "1 Agustus 2026",
     title: "Peluncuran Perdana AI PRD Architect & System Directives",
     summary:
-      "Rilis resmi Piardify — platform pembangkit PRD cerdas berbasis AI dengan wizard 7 langkah anti-halusinasi dan papan Kanban terintegrasi.",
+      "Rilis resmi Moryn — platform pembangkit PRD cerdas berbasis AI dengan wizard 7 langkah anti-halusinasi dan papan Kanban terintegrasi.",
     highlights: [
       {
         type: "feat",

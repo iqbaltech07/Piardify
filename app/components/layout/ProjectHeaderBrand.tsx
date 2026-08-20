@@ -149,8 +149,8 @@ export default function ProjectHeaderBrand({
           }}
         >
           <Image
-            src="/piardify-logo.svg"
-            alt="Piardify"
+            src="/logo/Moryn-Light-Mode.webp"
+            alt="Moryn"
             width={800}
             height={200}
             style={{ height: 28, width: "auto" }}
@@ -527,7 +527,7 @@ export default function ProjectHeaderBrand({
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    placeholder="Enter Project Name (e.g. Piardify)"
+                    placeholder="Enter Project Name (e.g. Moryn)"
                     required
                     autoFocus
                     style={{

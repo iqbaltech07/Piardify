@@ -8,7 +8,7 @@ export function StudioIntegrationCards({ cliCommand }: StudioIntegrationCardsPro
       <div className="p-4 rounded-xl bg-[#10182B] border border-white/10 space-y-1.5">
         <div className="text-[11px] font-mono font-bold text-[#818CF8] uppercase tracking-wider flex items-center gap-1.5">
           <Terminal size={13} />
-          <span>Piardify CLI Scaffolder</span>
+          <span>Moryn CLI Scaffolder</span>
         </div>
         <p className="text-xs text-slate-400 leading-relaxed">
           Jalankan <code className="text-slate-200">{cliCommand}</code> di terminal project Anda
@@ -22,7 +22,7 @@ export function StudioIntegrationCards({ cliCommand }: StudioIntegrationCardsPro
           <span>Zero-Slop Architectural Rules</span>
         </div>
         <p className="text-xs text-slate-400 leading-relaxed">
-          Template ini mematuhi aturan Anti-Slop Piardify: spatial whitespace yang proporsional,
+          Template ini mematuhi aturan Anti-Slop Moryn: spatial whitespace yang proporsional,
           solid typography, dan tanpa efek gradient/glow berlebihan.
         </p>
       </div>

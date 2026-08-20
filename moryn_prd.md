@@ -1,12 +1,12 @@
 # PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
-## Piardify — AI PRD Generator Platform
+## Moryn — AI PRD Generator Platform
 
 ---
 
 ## 1. Overview
 
-**Piardify** adalah aplikasi berbasis AI yang memungkinkan pengguna menghasilkan Product Requirements Document (PRD) secara otomatis, terstruktur, dan minim halusinasi.
+**Moryn** adalah aplikasi berbasis AI yang memungkinkan pengguna menghasilkan Product Requirements Document (PRD) secara otomatis, terstruktur, dan minim halusinasi.
 
 Platform ini membantu developer, product manager, dan mahasiswa dalam membuat dokumentasi produk dengan cepat, akurat, dan profesional.
 
@@ -47,8 +47,6 @@ Platform ini membantu developer, product manager, dan mahasiswa dalam membuat do
 ---
 
 ## 4. Features
-
-
 
 ### 4.1 AI PRD Generator
 
@@ -257,4 +255,4 @@ flowchart LR
 
 ## 14. Conclusion
 
-Piardify memberikan solusi cepat, akurat, dan terstruktur untuk pembuatan PRD tanpa memerlukan pengalaman mendalam dalam product documentation.
+Moryn memberikan solusi cepat, akurat, dan terstruktur untuk pembuatan PRD tanpa memerlukan pengalaman mendalam dalam product documentation.

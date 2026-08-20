@@ -13,15 +13,22 @@ export interface ProjectConfig {
   linkedAt?: string;
 }
 
-const GLOBAL_CONFIG_DIR = path.join(os.homedir(), ".piardify");
+const GLOBAL_CONFIG_DIR = path.join(os.homedir(), ".moryn");
 const GLOBAL_CONFIG_FILE = path.join(GLOBAL_CONFIG_DIR, "config.json");
-const PROJECT_CONFIG_DIR = path.join(process.cwd(), ".piardify");
+const LEGACY_GLOBAL_CONFIG_FILE = path.join(os.homedir(), ".piardify", "config.json");
+
+const PROJECT_CONFIG_DIR = path.join(process.cwd(), ".moryn");
 const PROJECT_CONFIG_FILE = path.join(PROJECT_CONFIG_DIR, "project.json");
+const LEGACY_PROJECT_CONFIG_FILE = path.join(process.cwd(), ".piardify", "project.json");
 
 export function getGlobalConfig(): GlobalConfig {
   try {
     if (fs.existsSync(GLOBAL_CONFIG_FILE)) {
       const content = fs.readFileSync(GLOBAL_CONFIG_FILE, "utf-8");
+      return JSON.parse(content);
+    }
+    if (fs.existsSync(LEGACY_GLOBAL_CONFIG_FILE)) {
+      const content = fs.readFileSync(LEGACY_GLOBAL_CONFIG_FILE, "utf-8");
       return JSON.parse(content);
     }
   } catch (e) {
@@ -54,11 +61,15 @@ export function getProjectConfig(): ProjectConfig {
       const content = fs.readFileSync(PROJECT_CONFIG_FILE, "utf-8");
       return JSON.parse(content);
     }
+    if (fs.existsSync(LEGACY_PROJECT_CONFIG_FILE)) {
+      const content = fs.readFileSync(LEGACY_PROJECT_CONFIG_FILE, "utf-8");
+      return JSON.parse(content);
+    }
   } catch (e) {}
 
   // Fallback: check environment variable
-  if (process.env.PIARDIFY_PROJECT_ID) {
-    return { projectId: process.env.PIARDIFY_PROJECT_ID };
+  if (process.env.MORYN_PROJECT_ID || process.env.PIARDIFY_PROJECT_ID) {
+    return { projectId: process.env.MORYN_PROJECT_ID || process.env.PIARDIFY_PROJECT_ID };
   }
   return {};
 }

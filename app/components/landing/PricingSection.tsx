@@ -224,7 +224,7 @@ export default function PricingSection() {
                   lineHeight: 1.55,
                 }}
               >
-                Perfect for trying out Piardify. Generate your first PRD with no strings attached.
+                Perfect for trying out Moryn. Generate your first PRD with no strings attached.
               </p>
             </div>
 

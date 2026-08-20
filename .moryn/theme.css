@@ -1,11 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCssVariablesContent = getCssVariablesContent;
-/**
- * CSS Variables Boilerplate Generator (Anti-Slop Compliant)
- */
-function getCssVariablesContent(target = "web") {
-    return `/* Moryn Anti-Slop Theme Boilerplate */
+/* Moryn Anti-Slop Theme Boilerplate */
 @theme inline {
   --color-brand-ink: #141817;
   --color-brand-orange: #e85d3f;
@@ -55,11 +48,26 @@ body {
 }
 
 /* Anti-Slop Helper Classes */
-.bg-moryn-dark { background-color: var(--moryn-bg); }
-.bg-moryn-surface { background-color: var(--moryn-surface-1); }
-.bg-moryn-elevated { background-color: var(--moryn-surface-2); }
-.border-moryn-subtle { border-color: var(--moryn-border); }
-.text-moryn-primary { color: var(--moryn-text); }
-.text-moryn-muted { color: var(--moryn-text-muted); }
-`;
+.bg-moryn-dark {
+  background-color: var(--moryn-bg);
+}
+
+.bg-moryn-surface {
+  background-color: var(--moryn-surface-1);
+}
+
+.bg-moryn-elevated {
+  background-color: var(--moryn-surface-2);
+}
+
+.border-moryn-subtle {
+  border-color: var(--moryn-border);
+}
+
+.text-moryn-primary {
+  color: var(--moryn-text);
+}
+
+.text-moryn-muted {
+  color: var(--moryn-text-muted);
 }

@@ -58,8 +58,8 @@ export default function Navbar() {
           style={{ display: "flex", alignItems: "center", textDecoration: "none" }}
         >
           <Image
-            src="/piardify-logo.svg"
-            alt="Piardify"
+            src="/logo/Moryn-Light-Mode.webp"
+            alt="Moryn"
             width={800}
             height={200}
             style={{ height: "32px", width: "auto" }}
